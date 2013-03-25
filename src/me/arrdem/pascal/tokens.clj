@@ -11,12 +11,6 @@
   :ws            #"[ \t\r\n]"
 
 ;;------------------------------------------------------------------------------
-;; Data literals
-  (deftoken pstring  string :val)
-  (deftoken floatnum #"(([0-9]+)(e[\+\-]?[0-9]+))|(([0-9]+)\.([0-9]+)(e[\+\-]?[0-9]+)?)" :val)
-  (deftoken intnum   #"[0-9]+" :val)
-
-;;------------------------------------------------------------------------------
 ;; Literal tokens
   (deftoken tok_array     "array")
   (deftoken tok_downto    "downto")
@@ -79,5 +73,9 @@
   (deftoken delim_dotdot  "..")
 
 ;;------------------------------------------------------------------------------
-  (deftoken identifier    #"[a-zA-Z]+" :val)
+;; Data literals
+  (deftoken pstring    string :val)
+  (deftoken identifier #"[a-zA-Z][a-zA-Z0-9]*" :val)
+  (deftoken floatnum   #"(([0-9]+)(e[\+\-]?[0-9]+))|(([0-9]+)\.([0-9]+)(e[\+\-]?[0-9]+)?)" :val)
+  (deftoken intnum     #"[0-9]+" :val)
   )
