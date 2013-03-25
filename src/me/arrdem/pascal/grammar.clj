@@ -139,39 +139,25 @@
 (defrule Expr
   (fnp/alt
    ;; Addition
-   (fnp/semantics (fnp/conc Expr
-                            op_add
-                            Term)
-                  binop)
-   ;; Subtraction
-   (fnp/semantics (fnp/conc Expr
-                            op_sub
-                            Term)
-                  binop)
-   ;; Logical or
-   (fnp/semantics (fnp/conc Expr
-                            op_or
-                            Term)
-                  binop)
+   (fnp/semantics
+    (fnp/conc Expr
+              (fnp/alt op_add
+                       op_sub
+                       op_or)
+              Term)
+    binop)
    ;; identity
    Term))
 
 (defrule Term
   (fnp/alt
    (fnp/semantics
-    (fnp/alt
-     (fnp/conc Term
-               op_mul
-               Factor)
-     (fnp/conc Term
-               op_div
-               Factor)
-     (fnp/conc Term
-               op_mod
-               Factor)
-     (fnp/conc Term
-               op_and
-               Factor))
+    (fnp/conc Term
+              (fnp/alt op_mul
+                       op_div
+                       op_mod
+                       op_and)
+              Factor)
     binop)
    Factor))
 
