@@ -1,5 +1,13 @@
 (ns me.arrdem.pascal.parser
-  (:require [name.choi.joshua.fnparse :as fnp]
-            [me.arrdem.pascal.parser.tokens :refer :all]))
+  (:require [clojure.pprint :as pp]
+            [me.arrdem.pascal.lexer :refer [pascal]]
+            [me.arrdem.pascal.grammar :refer [Program]]
+            [name.choi.joshua.fnparse :as fnp]
+            ))
 
-(def build-ast identity)
+(defn build-ast [toks]
+  (fnp/rule-match
+   Program
+   #(println "FAILED: " %)
+   #(println "LEFTOVER: " %2)
+   {:remainder toks}))
