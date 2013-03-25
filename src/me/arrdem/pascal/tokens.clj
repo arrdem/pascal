@@ -12,9 +12,9 @@
 
 ;;------------------------------------------------------------------------------
 ;; Data literals
-  (deftoken pstring  string)
-  (deftoken floatnum #"(([0-9]+)(e[\+\-]?[0-9]+))|(([0-9]+)\.([0-9]+)(e[\+\-]?[0-9]+)?)")
-  (deftoken intnum   #"[0-9]+")
+  (deftoken pstring  string :val)
+  (deftoken floatnum #"(([0-9]+)(e[\+\-]?[0-9]+))|(([0-9]+)\.([0-9]+)(e[\+\-]?[0-9]+)?)" :val)
+  (deftoken intnum   #"[0-9]+" :val)
 
 ;;------------------------------------------------------------------------------
 ;; Literal tokens
@@ -50,18 +50,21 @@
 
 ;;------------------------------------------------------------------------------
 ;; Literal operators
-  (deftoken op_add        "+")
-  (deftoken op_sub        "-")
-  (deftoken op_mul        "*")
-  (deftoken op_div        "_")
-  (deftoken op_assign     ":=")
-  (deftoken op_eq         "=")
+  (deftoken op_add        "+"   :val)
+  (deftoken op_sub        "-"   :val)
+  (deftoken op_or         "or"  :val)
+  (deftoken op_mul        "*"   :val)
+  (deftoken op_mod        "mod" :val)
+  (deftoken op_div        "/"   :val)
+  (deftoken op_and        "and" :val)
+  (deftoken op_assign     ":="  :val)
+  (deftoken op_eq         "="   :val)
   (deftoken op_ne         "<>")
-  (deftoken op_lt         "<")
-  (deftoken op_le         "<=")
-  (deftoken op_ge         ">=")
-  (deftoken op_gt         ">")
-  (deftoken op_point      "^")
+  (deftoken op_lt         "<"   :val)
+  (deftoken op_le         "<="  :val)
+  (deftoken op_ge         ">="  :val)
+  (deftoken op_gt         ">"   :val)
+  (deftoken op_point      "^"   :val)
   (deftoken op_dot        ".")
 
 ;;------------------------------------------------------------------------------
@@ -76,5 +79,5 @@
   (deftoken delim_dotdot  "..")
 
 ;;------------------------------------------------------------------------------
-  (deftoken identifier    #"[a-zA-Z]+")
+  (deftoken identifier    #"[a-zA-Z]+" :val)
   )
