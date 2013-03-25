@@ -2,8 +2,9 @@
   (:require [me.arrdem.pascal.tokens :refer :all :except [pascal-base]]
             [me.arrdem.pascal.symtab :refer [install! descend! ascend!]]
             [me.arrdem.pascal.semantics :refer [binop makeif makederef
-                                                makewhile makerepeat]]
-            [me.arrdem.pascal.hooks :refer [defrule]]
+                                                makewhile makerepeat
+                                                makeupfor makedownfor]]
+            [me.arrdem.pascal.hooks :refer [defrule]]0
             [name.choi.joshua.fnparse :as fnp]))
 
 ;; declared here
@@ -17,49 +18,53 @@
    (fnp/conc tok_program
              (fnp/semantics identifier
               (fn [i] (descend! i) i))
-             (fnp/semantics
-              (fnp/conc delim_lparen
-                        Identlist
-                        delim_rparen)
-              second)
-             delim_semi
-             (fnp/opt Const-header)
-             (fnp/opt Var-header)
-             Statements
+              (fnp/semantics
+               (fnp/conc delim_lparen
+                         Identlist
+                         delim_rparen)
+               second)
+              delim_semi
+              (fnp/opt Const-header)
+              (fnp/opt Var-header)
+               Statements
              op_dot)
    (fn [[_0 i v _1 _2 _3 s _4]]
      `(~'program ~i
-                 ~@(map (fn [p] `(progn ~p)) v)
-                 s))))
+                 ~@(map (fn [p] `(~'do ~p)) v)
+                 ~s))))
 
 (defrule Const-header
-  (fnp/constant-semantics
-   (fnp/conc tok_const
-             (fnp/rep+
-              (fnp/semantics
-               (fnp/conc identifier
-                         op_eq
-                         PNumber
-                         delim_semi)
-               (fn [[i _ v]]
-                 (let [v (assoc v :name i)]
-                   (install! v)
-                   v)))))
-   nil))
-
-(defrule Var-header
-  (fnp/conc tok_var
+  (fnp/conc tok_const
             (fnp/rep+
              (fnp/semantics
-              (fnp/conc Identlist
-                        delim_colon
-                        identifier)
-              (fn [[ids _ t]]
-                (doseq [i ids]
-                  (install! {:name i
-                             :type :symbol
-                             :type/data t}))
-                nil)))))
+              (fnp/conc identifier
+                        op_eq
+                        PNumber
+                        delim_semi)
+              (fn [[i _ v _d]]
+                (let [v (assoc v :name i)]
+                  (install! v)
+                  v))))))
+
+(defrule Var-header
+  (fnp/semantics
+   (fnp/conc tok_var
+             (fnp/rep+
+              (fnp/semantics
+               (fnp/conc
+                (fnp/semantics
+                 (fnp/conc Identlist
+                           delim_colon
+                           identifier)
+                 (fn [[ids _ t]]
+                   (doseq [i ids]
+                     (install! {:name i
+                                :type :symbol
+                                :type/data t}))
+                   ids))
+                delim_semi)
+               first)))
+   (comp flatten second)))
 
 (defrule Varlist
   (fnp/semantics
@@ -95,15 +100,17 @@
     list)))
 
 (defrule Statements
-  (fnp/alt
-   (fnp/semantics
-    (fnp/conc Statement
-              delim_semi
-              Statements)
-    #(cons %1 %3))
-   (fnp/semantics
-    Statement
-    list)))
+  (fnp/semantics
+   (fnp/conc tok_begin
+             Statement
+             (fnp/rep*
+              (fnp/semantics
+               (fnp/conc delim_semi
+                         Statement)
+               second))
+             tok_end)
+    (fn [[_0 s others _1]]
+      `(~'do ~s ~@others))))
 
 (defrule Statement
   (fnp/alt
@@ -117,6 +124,30 @@
                (fnp/conc tok_else
                          Statement)))
     makeif)
+
+   ;; FOR expression
+   (fnp/semantics
+    (fnp/conc tok_for
+              identifier
+              op_assign
+              Expr
+              tok_to
+              Expr
+              tok_do
+              Statements)
+    makeupfor)
+
+   (fnp/semantics
+    (fnp/conc tok_for
+              identifier
+              op_assign
+              Expr
+              tok_downto
+              Expr
+              tok_do
+              Statements)
+    makedownfor)
+
 
    ;; WHILE expression
    (fnp/semantics
