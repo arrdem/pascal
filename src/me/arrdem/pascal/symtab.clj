@@ -48,12 +48,14 @@ is resolved, or the stack is empty."
 (defn genlabel!
   "Generates and returns an integer label, side-effecting the :label count of the
 *symtab* registry."
-  [] (:label (swap! *symtab* update-in [:label] inc)))
+  ([] (:label
+       (swap! *symtab*
+              update-in [:label] inc))))
 
 (defn render-ns
   "Renders the *symns* stack to a prefix string for symbols."
   ([] (render-ns @*symns*))
-  ([stack] (apply str (interpose \. stack))))
+  ([stack] (apply str (interpose \. (reverse stack)))))
 
 (defn install!
   "Installs a symbol map (created by the caller) in the *symtab* registry
@@ -71,7 +73,7 @@ but the returning a nil value and throwing an exception are both acceptable."
      (let [qualified-sym (conj stack sym)
            rstack        (if-not (empty? stack) (pop stack))]
        (or (if-let [v (get @*symtab* qualified-sym)]
-             (assoc v :qname qualified-sym))
+             (assoc v :qname (render-ns qualified-sym)))
            (if-not (empty? stack)
              (recur sym rstack))))))
 
