@@ -26,13 +26,14 @@ traditional Clojure map pairs of key : re in the order of the order of the seq."
   "Generates an fnparse predicate bound to the symbolic argument, and returns
 a pair (key pattern) which the make-lexer macro can format into place for a
 Lexington lexer."
-  ([symbol pattern]
+  ([symbol pattern] `(deftoken ~symbol ~pattern false))
+  ([symbol pattern value?]
      (let [k (keyword (name symbol))]
        (eval `(def ~symbol
                 (fnp/semantics
                  (fnp/term
                   #(= (:lexington.tokens/type %1) ~k))
-                 :val)))
+                 ~(or value? identity))))
        (list k pattern))))
 
 ;;------------------------------------------------------------------------------
