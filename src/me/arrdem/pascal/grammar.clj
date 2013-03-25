@@ -1,7 +1,7 @@
 (ns me.arrdem.pascal.grammar
   (:require [me.arrdem.pascal.tokens :refer :all :except [pascal-base]]
             [me.arrdem.pascal.symtab :refer [install! descend! ascend!]]
-            [me.arrdem.pascal.semantics :refer [binop makeif
+            [me.arrdem.pascal.semantics :refer [binop makeif makederef
                                                 makewhile makerepeat]]
             [me.arrdem.pascal.hooks :refer [defrule]]
             [name.choi.joshua.fnparse :as fnp]))
@@ -33,16 +33,19 @@
                  s))))
 
 (defrule Const-header
-  (fnp/conc tok_const
-            (fnp/rep+
-             (fnp/semantics
-              (fnp/conc identifier
-                        op_eq
-                        PNumber)
-              (fn [[i _ v]]
-                (-> v
-                    (assoc :name i)
-                    install!))))))
+  (fnp/constant-semantics
+   (fnp/conc tok_const
+             (fnp/rep+
+              (fnp/semantics
+               (fnp/conc identifier
+                         op_eq
+                         PNumber
+                         delim_semi)
+               (fn [[i _ v]]
+                 (let [v (assoc v :name i)]
+                   (install! v)
+                   v)))))
+   nil))
 
 (defrule Var-header
   (fnp/conc tok_var
@@ -63,17 +66,21 @@
    (fnp/alt
     (fnp/conc Identlist
               delim_colon
-              Type
+              identifier
               delim_semi
               Varlist)
 
     (fnp/conc Identlist
               delim_colon
-              Type))
+              identifier))
 
-   (fn [[syms t]]
+   (fn [[syms _ t]]
      (doseq [sym syms]
-       (install! sym t)))))
+       (-> {}
+           (assoc :type/data t)
+           (assoc :type :symbol)
+           (assoc :name sym)
+           install!)))))
 
 (defrule Identlist
   (fnp/alt
@@ -81,7 +88,8 @@
     (fnp/conc identifier
               delim_comma
               Identlist)
-    #(cons %1 %3))
+    (fn [[a _ b]]
+      (cons a b)))
    (fnp/semantics
     identifier
     list)))
@@ -131,7 +139,9 @@
 
 (defrule Assignment
   (fnp/semantics
-   (fnp/conc identifier
+   (fnp/conc (fnp/semantics
+              identifier
+              makederef)
              op_assign
              Expr)
    binop))
@@ -140,11 +150,12 @@
   (fnp/alt
    ;; Addition
    (fnp/semantics
-    (fnp/conc Expr
-              (fnp/alt op_add
-                       op_sub
-                       op_or)
-              Term)
+    (fnp/conc Term
+              (fnp/alt (fnp/constant-semantics op_add '+)
+                       (fnp/constant-semantics op_sub '-)
+                       (fnp/constant-semantics op_or  'or)
+                       (fnp/constant-semantics op_eq  '=))
+              Expr)
     binop)
    ;; identity
    Term))
@@ -152,24 +163,40 @@
 (defrule Term
   (fnp/alt
    (fnp/semantics
-    (fnp/conc Term
-              (fnp/alt op_mul
-                       op_div
-                       op_mod
-                       op_and)
-              Factor)
+    (fnp/conc Factor
+              (fnp/alt (fnp/constant-semantics op_mul '*)
+                       (fnp/constant-semantics op_div '/)
+                       (fnp/constant-semantics op_mod 'mod)
+                       (fnp/constant-semantics op_and 'and))
+              Term)
     binop)
    Factor))
 
 (defrule Factor
   (fnp/alt
    (fnp/semantics
+    identifier
+    (fn [id]
+      (makederef id)))
+   (fnp/semantics
+    PNumber
+    :value)
+   (fnp/semantics
     (fnp/conc delim_lparen
               Expr
               delim_rparen)
-    second)
-   identifier
-   PNumber))
+    second)))
 
 (defrule PNumber
-  (fnp/alt floatnum intnum))
+  (fnp/alt
+   (fnp/semantics
+    floatnum
+    (fn [x]
+      {:type "real"
+       :value x}))
+
+   (fnp/semantics
+    intnum
+    (fn [x]
+      {:type "integer"
+       :value x}))))
