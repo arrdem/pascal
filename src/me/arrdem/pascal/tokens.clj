@@ -8,7 +8,8 @@
 ;; Comments & ignored crap
   :pcomment      #"\(\*.*\*\)"
   :bcomment      #"\{.*\}"
-  :ws            #"[ \t\r\n]"
+  :ws            #"[ \t]"
+  :nl            #"[\r\n]"
 
 ;;------------------------------------------------------------------------------
 ;; Literal tokens
@@ -53,13 +54,13 @@
   (deftoken op_and        "and" :val)
   (deftoken op_assign     ":="  :val)
   (deftoken op_eq         "="   :val)
-  (deftoken op_ne         "<>")
+  (deftoken op_ne         "<>"  :val)
   (deftoken op_lt         "<"   :val)
   (deftoken op_le         "<="  :val)
   (deftoken op_ge         ">="  :val)
   (deftoken op_gt         ">"   :val)
   (deftoken op_point      "^"   :val)
-  (deftoken op_dot        ".")
+  (deftoken op_dot        "."   :val)
 
 ;;------------------------------------------------------------------------------
 ;; Literal deliminators
