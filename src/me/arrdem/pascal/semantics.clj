@@ -3,7 +3,6 @@
             [name.choi.joshua.fnparse :as fnp]))
 
 (defn binop [args]
-  (println args)
   (let [[e0 op e1] args]
     `(~op ~e0 ~e1)))
 
@@ -27,3 +26,29 @@
 
 (defn makederef [sym]
   `(~'deref ~(symbol (:qname (search sym)))))
+
+(defn makeupfor [[_0 id _1 Vi _2 Vf _3 stmnts]]
+  (let [update `(~':= ~(makederef id) (~'+ ~(makederef id) 1))
+        lstart (genlabel!)
+        lend   (genlabel!)]
+    `((~'label ~lstart)
+      (~'if (~'>= ~(makederef id) ~Vf)
+            (~'goto ~lend))
+      (~'do
+        ~'stmnts)
+      ~update
+      (~'goto ~lstart)
+      (~'label ~lend))))
+
+(defn makedownfor [[_0 id _1 Vi _2 Vf _3 stmnts]]
+  (let [update `(~':= ~(makederef id) (~'- ~(makederef id) 1))
+        lstart (genlabel!)
+        lend   (genlabel!)]
+    `((~'label ~lstart)
+      (~'if (~'<= ~(makederef id) ~Vf)
+            (~'goto ~lend))
+      (~'do
+        ~'stmnts)
+      ~update
+      (~'goto ~lstart)
+      (~'label ~lend))))
