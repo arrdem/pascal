@@ -1,8 +1,8 @@
 (ns me.arrdem.pascal.lexer
-    (:require [lexington.lexer       :refer :all]
+    (:require [lexington.lexer :refer :all]
               [lexington.utils.lexer :refer :all]
               [me.arrdem.pascal.tokens :refer [pascal-base]]
-              [me.arrdem.pascal.util   :refer [strfn readerfn]]))
+              [me.arrdem.pascal.util :refer [strfn readerfn]]))
 
 ;; TODO:
 ;; Add some way to count the line and character number for ever token
