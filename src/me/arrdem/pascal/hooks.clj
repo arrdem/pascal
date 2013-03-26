@@ -1,5 +1,9 @@
 (ns me.arrdem.pascal.hooks
-  (:require [name.choi.joshua.fnparse :as fnp]))
+  (:require [name.choi.joshua.fnparse :as fnp]
+            [me.arrdem.pascal.debug :as dbg]))
+
+;;------------------------------------------------------------------------------
+;;------------------------------------------------------------------------------
 
 (defmacro defrule
   ([sym form] `(defrule ~sym "" ~form))
@@ -8,11 +12,13 @@
         (fnp/semantics
          (fnp/conc
           (fnp/effects
+           (me.arrdem.pascal.debug/push ~(name sym))
            ((get-pre-hook (quote ~sym))))
           (fnp/semantics ~form
-                         (get-semantics (quote ~sym)))
+                     (get-semantics (quote ~sym)))
           (fnp/effects
-           ((get-post-hook (quote ~sym)))))
+           ((get-post-hook (quote ~sym)))
+           (me.arrdem.pascal.debug/scope-pop)))
          second))))
 
 ;;------------------------------------------------------------------------------
