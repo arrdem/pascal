@@ -52,3 +52,6 @@
       ~update
       (~'goto ~lstart)
       (~'label ~lend))))
+
+(defn makefuncall [[sym _ args]]
+  `(funcall ~(symbol sym) ~@args))
