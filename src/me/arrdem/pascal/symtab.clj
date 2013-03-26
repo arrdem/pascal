@@ -73,7 +73,10 @@ but the returning a nil value and throwing an exception are both acceptable."
      (let [qualified-sym (conj stack sym)
            rstack        (if-not (empty? stack) (pop stack))]
        (or (if-let [v (get @*symtab* qualified-sym)]
-             (assoc v :qname (render-ns qualified-sym)))
+             (assoc v :qname (render-ns qualified-sym))
+             (if (empty? stack)
+               (do (println "WARNING: SYMBOL" qualified-sym "NOT FOUND")
+                 nil)))
            (if-not (empty? stack)
              (recur sym rstack))))))
 
