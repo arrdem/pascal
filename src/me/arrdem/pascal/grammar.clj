@@ -20,6 +20,8 @@
 
 ;;------------------------------------------------------------------------------
 ;; Literal tokens pulled out of the grammar by sad
+;; TODO update these to be lexer tokens rather than string literals which the
+;;      lexer does not generate.
 (defrule tok (fnp/lit ""))
 (defrule tok_nil (fnp/lit "nil"))
 (defrule tok_not (fnp/lit "not"))
@@ -81,13 +83,20 @@
 
 ;;------------------------------------------------------------------------------
 ;; Grammar terminals & nonterminals which were not defined in the grammar
+;; TODO Read the k&W book, figure out what these look like and get em defined
 (defrule identifier fnp/anything)
 (defrule unsigned-integer fnp/anything)
-(defrule integer fnp/anything)
-(defrule real fnp/anything)
 (defrule unsigned-real fnp/anything)
 (defrule string fnp/anything)
-(defrule empty tok)
+(defrule empty fnp/emptyness)
+
+(defrule integer
+  (fnp/conc (fnp/opt (fnp/alt tok_P tok_SUB))
+            integer))
+
+(defrule real
+  (fnp/conc (fnp/opt (fnp/alt tok_P tok_SUB))
+            unsigned-real))
 
 ;;------------------------------------------------------------------------------
 ;; The compiled grammar
