@@ -350,25 +350,77 @@
   (fnp/alt (fnp/conc identifier tok_COMMA parameterid-list)
            identifier))
 
+;;------------------------------------------------------------------------------
+;; a bunch of rules which were pulled out of statement to make it easier to
+;; build hook and semantics operations for them.
+
 (defrule statement-list
   (fnp/alt (fnp/conc statement tok_SEMI statement-list)
            statement))
 
+(defrule assignment
+  (fnp/conc variable tok_COL_EQ expression))
+
+(defrule statements
+      (fnp/conc tok_begin statement-list tok_end))
+
+(defrule ifte
+    (fnp/conc tok_if
+              expression
+              tok_then
+              statement
+              tok_else
+              statement))
+
+(defrule ift
+    (fnp/conc tok_if
+              expression
+              tok_then
+              statement))
+
+(defrule case-stmnt
+  (fnp/conc tok_case expression tok_of case-list tok_end))
+
+(defrule while-stmnt
+  (fnp/conc tok_while expression tok_do statement))
+
+(defrule repeat-stmnt
+  (fnp/conc tok_repeat statement-list tok_until expression))
+
+(defrule for-stmnt
+  (fnp/conc tok_for varid tok_COL_EQ for-list tok_do statement))
+
+(defrule procinvoke
+  (fnp/conc procid
+            (fnp/opt
+             (fnp/conc tok_LP expression-list tok_RP))))
+
+(defrule goto-stmnt
+  (fnp/conc tok_goto label))
+
+(defrule with-stmnt
+  (fnp/conc tok_with record-variable-list tok_do statement))
+
+(defrule label-stmnt
+  (fnp/conc label tok_COL statement))
+
+;;------------------------------------------------------------------------------
+;; Statement v2.0
+
 (defrule statement
   (fnp/alt
-    (fnp/conc variable tok_COL_EQ expression)
-    (fnp/conc tok_begin statement-list tok_end)
-    (fnp/conc tok_if expression tok_then statement)
-    (fnp/conc tok_if expression tok_then statement tok_else statement)
-    (fnp/conc tok_case expression tok_of case-list tok_end)
-    (fnp/conc tok_while expression tok_do statement)
-    (fnp/conc tok_repeat statement-list tok_until expression)
-    (fnp/conc tok_for varid tok_COL_EQ for-list tok_do statement)
-    procid
-    (fnp/conc procid tok_LP expression-list tok_RP)
-    (fnp/conc tok_goto label)
-    (fnp/conc tok_with record-variable-list tok_do statement)
-    (fnp/conc label tok_COL statement)
+    statements
+    assignment
+    ifte
+    ift
+    case-stmnt
+    while-stmnt
+    repeat-stmnt
+    for-stmnt
+    procinvoke
+    goto-stmnt
+    with-stmnt
+    label-stmnt
     empty))
 
 ;; Recursively defines valid variable or address access, being either a
@@ -384,9 +436,9 @@
 
 (defrule var-postfix
   (fnp/alt
-   (fnp/conc variable tok_LB subscript-list tok_RB)
-   (fnp/conc variable tok_DOT fieldid)
-   (fnp/conc variable tok_UP)))
+   (fnp/conc tok_LB subscript-list tok_RB)
+   (fnp/conc tok_DOT fieldid)
+   (fnp/conc tok_UP)))
 
 (defrule var-postfixes
   (fnp/alt (fnp/conc var-postfix var-postfixes)
