@@ -88,7 +88,7 @@
 (defrule unsigned-integer fnp/anything)
 (defrule unsigned-real fnp/anything)
 (defrule string fnp/anything)
-(defrule empty fnp/emptyness)
+(defrule empty fnp/emptiness)
 
 (defrule integer
   (fnp/conc (fnp/opt (fnp/alt tok_P tok_SUB))
