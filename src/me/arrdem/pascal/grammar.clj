@@ -2,21 +2,6 @@
   (:require [name.choi.joshua.fnparse :as fnp]
             [me.arrdem.sad.runtime :refer [defrule]]))
 
-(defmacro fail-sem
-  ([rule succ-fn]
-     `(semantics ~rule
-                 ~succ-fn))
-  ([rule succ-fn fail-fn]
-     `(failpoint (semantics ~rule
-                            ~succ-fn)
-                 ~fail-fn)))
-
-(defmacro p [& rest]
-  `(fn [& _#]
-     (me.arrdem.pascal.debug/debug ~@rest)))
-
-;; declared here
-
 (declare
     label-declaration
     unary-expression
