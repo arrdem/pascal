@@ -19,6 +19,14 @@
       (install! v)))
   varseq)
 
+(defn vardecls
+  [[decl [_ rest]]]
+  (cons decl rest))
+
+(defn variable-declaration
+  [[_ decls]]
+  decls)
+
 (defn const-assign
   [[id _ v]]
   (let [v {:name      id
@@ -77,3 +85,16 @@
 (defn assignment
   [[target assignop expr]]
   `(~assignop ~target ~expr))
+
+(defn pascal-program
+  [[progn id heading _ block __]]
+  `(~'program ~id ~@heading ~block))
+
+(defn program-heading
+  [[_l ids _r]]
+  (map (fn [i] `(~'progn ~i))
+       ids))
+
+(defn identifier-list
+  [[id [_ rest]]]
+  (cons id rest))

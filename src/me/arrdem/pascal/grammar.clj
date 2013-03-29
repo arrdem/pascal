@@ -48,23 +48,29 @@
 ;; The compiled grammar
 
 (def pascal-program
-  (fnp/conc tok_program
-            identifier
-            program-heading
-            delim_semi
-            block
-            op_dot))
+  (fnp/semantics
+   (fnp/conc tok_program
+             identifier
+             program-heading
+             delim_semi
+             block
+             op_dot)
+   s/pascal-program))
 
 (def program-heading
-  (fnp/conc delim_lparen
-            identifier-list
-            delim_rparen))
+  (fnp/semantics
+   (fnp/conc delim_lparen
+             identifier-list
+             delim_rparen)
+   s/program-heading))
 
 (def identifier-list
-  (fnp/alt (fnp/conc identifier
-                     delim_comma
-                     identifier-list)
-           identifier))
+  (fnp/semantics
+   (fnp/conc identifier
+             (fnp/opt
+              (fnp/conc delim_comma
+                        identifier-list)))
+   s/identifier-list))
 
 (def block
   (fnp/alt (fnp/conc label-declaration
@@ -148,13 +154,17 @@
    s/vardecl))
 
 (def vardecls
-  (fnp/conc vardecl
-            (fnp/opt
-             (fnp/conc delim_semi vardecls))))
+  (fnp/semantics
+   (fnp/conc vardecl
+             (fnp/opt
+              (fnp/conc delim_semi vardecls)))
+   s/vardecls))
 
 (def variable-declaration
-  (fnp/conc tok_var
-            vardecls))
+  (fnp/semantics
+   (fnp/conc tok_var
+             vardecls)
+   s/variable-declaration))
 
 ;; variableid-list is now OK, consistently returns a pair [id ids?] where
 ;; ids? may be nil. semantics also in place.
