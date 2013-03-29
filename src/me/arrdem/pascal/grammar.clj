@@ -434,9 +434,11 @@
                      delim_comma
                      record-variable-list)))
 (def expression
-  (fnp/alt
-   (fnp/conc expression relational-op additive-expression)
-   additive-expression))
+  (fnp/semantics
+   (fnp/conc additive-expression
+             (fnp/opt
+              (fnp/conc relational-op expression)))
+   s/additive-expression))
 
 (def relational-op
   (fnp/alt op_le
@@ -447,21 +449,23 @@
            op_gt))
 
 (def additive-expression
-  (fnp/alt
+  (fnp/semantics
    (fnp/conc multiplicative-expression
-             additive-op
-             additive-expression)
-   multiplicative-expression))
+             (fnp/opt
+              (fnp/conc additive-op
+                        additive-expression)))
+   s/additive-expression))
 
 (def additive-op
   (fnp/alt op_add op_sub op_or))
 
 (def multiplicative-expression
-  (fnp/alt
+  (fnp/semantics
    (fnp/conc unary-expression
-             multiplicative-op
-             multiplicative-expression)
-   unary-expression))
+             (fnp/opt
+              (fnp/conc multiplicative-op
+                        multiplicative-expression)))
+   s/additive-expression))
 
 (def multiplicative-op
   (fnp/alt op_mul

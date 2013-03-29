@@ -65,3 +65,9 @@
   [[id postfixes]]
   `(~'-> ~id
          ~@postfixes))
+
+(defn additive-expression
+  [[me tail]]
+  (if-let [[op adxpr] tail]
+    `(~op ~me ~adxpr)
+    me))
