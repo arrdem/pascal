@@ -51,7 +51,7 @@
   (deftoken op_or         "or"  :val)
   (deftoken op_mul        "*"   :val)
   (deftoken op_mod        "mod" :val)
-  (deftoken op_in         "in"  :val)
+;  (deftoken op_in         "in"  :val)
   (deftoken op_div        "/"   :val)
   (deftoken op_and        "and" :val)
   (deftoken op_assign     ":="  :val)
@@ -82,4 +82,5 @@
   (deftoken identifier #"[a-zA-Z][a-zA-Z0-9]*" :val)
   (deftoken floatnum   #"(([0-9]+)(e[\+\-]?[0-9]+))|(([0-9]+)\.([0-9]+)(e[\+\-]?[0-9]+)?)" :val)
   (deftoken intnum     #"[0-9]+" :val)
+
   )
