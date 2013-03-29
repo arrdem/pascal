@@ -60,3 +60,8 @@
   (println ls)
   (let [ls (map second ls)]
     `(~'comment "found label declarations" ~@(cons l0 ls))))
+
+(defn variable
+  [[id postfixes]]
+  `(~'-> ~id
+         ~@postfixes))

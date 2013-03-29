@@ -399,14 +399,11 @@
    (fnp/conc op_dot fieldid)
    (fnp/conc op_point)))
 
-(def var-postfixes
-  (fnp/alt (fnp/conc var-postfix var-postfixes)
-           var-postfix))
-
 (def variable
-  (fnp/alt
-   (fnp/conc identifier var-postfixes)
-   identifier))
+  (fnp/semantics
+   (fnp/conc identifier
+             (fnp/rep* var-postfix))
+   s/variable))
 
 (def subscript-list
   (fnp/alt (fnp/conc expression delim_comma subscript-list)
