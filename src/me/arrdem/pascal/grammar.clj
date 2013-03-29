@@ -22,13 +22,13 @@
 ;;------------------------------------------------------------------------------
 ;; Grammar terminals & nonterminals which were not defined in the grammar
 ;; TODO Read the k&W book, figure out what these look like and get em defined
-(defrule unsigned-integer fnp/anything)
-(defrule unsigned-real fnp/anything)
-(defrule string fnp/anything)
+(defrule unsigned-integer intnum)
+(defrule unsigned-real floatnum)
+(defrule string pstring)
 
 (defrule integer
   (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
-            integer))
+            unsigned-integer))
 
 (defrule real
   (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
@@ -137,11 +137,13 @@
   (fnp/conc tok_var
             vardecls))
 
+;; variableid-list is now OK, consistently returns a pair [id ids?] where
+;; ids? may be nil. semantics also in place.
 (defrule variableid-list
-  (fnp/alt (fnp/conc identifier
-                     delim_comma
-                     variableid-list)
-           identifier))
+  (fnp/conc identifier
+            (fnp/opt
+             (fnp/conc delim_comma
+                       variableid-list))))
 
 (defrule constant
   (fnp/alt integer
