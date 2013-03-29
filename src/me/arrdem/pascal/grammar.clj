@@ -117,12 +117,14 @@
    s/const-assign))
 
 (def constant-declaration
-  (fnp/conc tok_const
-            const-assign
-            (fnp/rep*
-             (fnp/conc
-              delim_semi
-              const-assign))))
+  (fnp/semantics
+   (fnp/conc tok_const
+             const-assign
+             (fnp/rep*
+              (fnp/conc
+               delim_semi
+               const-assign)))
+   s/constant-declaration))
 
 (def type-declaration
   (fnp/alt

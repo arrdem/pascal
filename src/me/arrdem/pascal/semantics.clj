@@ -24,8 +24,14 @@
   (let [v {:name      id
            :value     (:value v)
            :type      (:type v)}]
-    (pprint v)
-    (install! v)))
+    (install! v)
+    v))
+
+(defn constant-declaration
+  [[_ c0 cs]]
+  (let [cs (map second cs)]
+    `(~'comment "got constant decl group:"
+                ~@(cons (:name c0) (map :name cs)))))
 
 (defn string
   [s]
