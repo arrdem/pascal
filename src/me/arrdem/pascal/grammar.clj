@@ -137,11 +137,13 @@
   (fnp/conc tok_var
             vardecls))
 
+;; variableid-list is now OK, consistently returns a pair [id ids?] where
+;; ids? may be nil. semantics also in place.
 (defrule variableid-list
-  (fnp/alt (fnp/conc identifier
-                     delim_comma
-                     variableid-list)
-           identifier))
+  (fnp/conc identifier
+            (fnp/opt
+             (fnp/conc delim_comma
+                       variableid-list))))
 
 (defrule constant
   (fnp/alt integer
