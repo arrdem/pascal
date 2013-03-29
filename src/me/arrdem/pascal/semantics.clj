@@ -39,3 +39,11 @@
                  (-) -1)]
     {:value (* factor ival)
      :type  "integer"}))
+
+(defn real
+  [[sign? rval]]
+  (let [factor (case sign?
+                 (+ nil) 1
+                 (-) -1)]
+    {:value (* factor rval)
+     :type  "real"}))

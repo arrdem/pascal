@@ -39,8 +39,10 @@
    s/integer))
 
 (def real
-  (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
-            unsigned-real))
+  (fnp/semantics
+   (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
+             unsigned-real)
+   s/real))
 
 ;;------------------------------------------------------------------------------
 ;; The compiled grammar
