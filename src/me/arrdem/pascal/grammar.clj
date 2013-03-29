@@ -1,8 +1,8 @@
 (ns me.arrdem.pascal.grammar
   (:require [name.choi.joshua.fnparse :as fnp]
             [me.arrdem.pascal.tokens :refer :all]
-;            [me.arrdem.sad.runtime :refer [defrule]]
-            [me.arrdem.pascal.semantics :as s]
+           ;; [me.arrdem.sad.runtime :refer [defrule]]
+           [me.arrdem.pascal.semantics :as s]
             ))
 
 ;;------------------------------------------------------------------------------
@@ -70,42 +70,24 @@
              (fnp/opt
               (fnp/conc delim_comma
                         identifier-list)))
-   s/identifier-list))
+   s/tail-cons))
 
 (def block
-  (fnp/alt (fnp/conc label-declaration
-                     delim_semi
-                     block1)
-           block1))
-
-(def block1
-  (fnp/alt (fnp/conc constant-declaration
-                     delim_semi
-                     block2)
-           block2))
-
-(def block2
-  (fnp/alt (fnp/conc type-declaration
-                     delim_semi
-                     block3)
-           block3))
-
-(def block3
-  (fnp/alt (fnp/conc variable-declaration
-                     delim_semi
-                     block4)
-           block4))
-
-(def block4
-  (fnp/alt (fnp/conc proc-and-func-declaration
-                     delim_semi
-                     block5)
-           block5))
-
-(def block5
-  (fnp/conc tok_begin
-            statement-list
-            tok_end))
+  (fnp/semantics
+   (fnp/conc
+    (fnp/semantics
+     (fnp/conc
+      (fnp/opt (fnp/conc label-declaration delim_semi))
+      (fnp/opt (fnp/conc constant-declaration delim_semi))
+      (fnp/opt (fnp/conc type-declaration delim_semi))
+      (fnp/opt (fnp/conc variable-declaration delim_semi))
+      (fnp/opt (fnp/conc proc-and-func-declaration delim_semi)))
+     (comp (partial remove nil?)
+           (partial map first)))
+    (fnp/semantics
+     (fnp/conc tok_begin statement-list tok_end)
+     s/block2progn))
+   s/block))
 
 (def label-declaration
   (fnp/semantics
@@ -174,7 +156,7 @@
              (fnp/opt
               (fnp/conc delim_comma
                         variableid-list)))
-   s/variableid-list))
+   s/tail-cons))
 
 (def constant
   (fnp/alt integer
@@ -324,8 +306,11 @@
 ;; build hook and semantics operations for them.
 
 (def statement-list
-  (fnp/alt (fnp/conc statement delim_semi statement-list)
-           statement))
+  (fnp/semantics
+   (fnp/conc statement
+             (fnp/opt
+              (fnp/conc delim_semi statement-list)))
+   s/statement-list))
 
 (def assignment
   (fnp/semantics
@@ -358,13 +343,36 @@
 (def repeat-stmnt
   (fnp/conc tok_repeat statement-list tok_until expression))
 
+(def for-downto
+  (fnp/semantics
+   (fnp/conc expression
+             tok_downto
+             expression)
+   s/for-downto))
+
+(def for-to
+  (fnp/semantics
+   (fnp/conc expression
+             tok_to
+             expression)
+   s/for-to))
+
+(def for-list
+  (fnp/alt
+   for-downto
+   for-to))
+
 (def for-stmnt
-  (fnp/conc tok_for varid op_assign for-list tok_do statement))
+  (fnp/semantics
+   (fnp/conc tok_for varid op_assign for-list tok_do statement)
+   s/for-stmnt))
 
 (def procinvoke
-  (fnp/conc procid
-            (fnp/opt
-             (fnp/conc delim_lparen expression-list delim_rparen))))
+  (fnp/semantics
+   (fnp/conc procid
+             (fnp/opt
+              (fnp/conc delim_lparen expression-list delim_rparen)))
+   s/procinvoke))
 
 (def goto-stmnt
   (fnp/conc tok_goto label))
@@ -426,16 +434,13 @@
    (fnp/conc statement delim_colon case-label-list delim_semi case-list)
    (fnp/conc statement delim_colon case-label-list)))
 
-(def for-list
-  (fnp/alt
-   (fnp/conc expression tok_to expression)
-   (fnp/conc expression tok_downto expression)))
-
 (def expression-list
-  (fnp/alt expression
-           (fnp/conc expression-list
-                     delim_comma
-                     expression)))
+  (fnp/semantics
+   (fnp/conc expression
+             (fnp/opt
+              (fnp/conc delim_comma
+                        expression-list)))
+   s/tail-cons))
 
 (def label
   unsigned-integer)
