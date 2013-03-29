@@ -26,3 +26,8 @@
            :type      (:type v)}]
     (pprint v)
     (install! v)))
+
+(defn string
+  [s]
+  {:value s
+   :type  "string"})

@@ -27,7 +27,10 @@
 (def unsigned-integer intnum)
 (def unsigned-real floatnum)
 
-(def string pstring)
+(def string
+  (fnp/semantics
+   pstring
+   s/string))
 
 (def integer
   (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
