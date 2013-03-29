@@ -1,10 +1,16 @@
 (ns me.arrdem.pascal.symtab)
 
 (def ^:private base_st
-  {'("real")     {:name "real"     :type :basic :size 8}
+  {
+;;------------------------------------------------------------------------------
+;; Predefined types
+   '("real")     {:name "real"     :type :basic :size 8}
    '("integer")  {:name "integer"  :type :basic :size 4}
    '("char")     {:name "char"     :type :basic :size 1}
    '("boolean")  {:name "boolean"  :type :basic :size 4}
+
+;;------------------------------------------------------------------------------
+;; Predefined functions
    '("exp")      {:name "exp"      :type :fn    :type/ret "real"    :type/arg ["real"]}
    '("tfexp")    {:name "trexp"    :type :fn    :type/ret "real"    :type/arg ["real"]}
    '("sin")      {:name "sin"      :type :fn    :type/ret "real"    :type/arg ["real"]}
@@ -24,7 +30,35 @@
    '("writelni") {:name "writelni" :type :fn    :type/ret nil       :type/arg ["integer"]}
    '("read")     {:name "read"     :type :fn    :type/ret nil       :type/arg []}
    '("readln")   {:name "readln"   :type :fn    :type/ret nil       :type/arg []}
-   '("eof")      {:name "eof"      :type :fn    :type/ret "boolean" :type/arg []}})
+   '("eof")      {:name "eof"      :type :fn    :type/ret "boolean" :type/arg []}
+
+;;------------------------------------------------------------------------------
+;; Predefined macros
+;; ("functions") which need to be expanded via some sort of macro system in
+;; order to properly express their runtime behavior: ex. new() which requires
+;; type data.
+;;
+;; MACROS:
+;;   Macros shall have the type :macro, and the key :fn. As with lisp macros,
+;;   macros will be invoked with arguments equal to the tail of the base
+;;   form and are expected to return either an atom, or a sequence which will be
+;;   assumed contain macros and will be macroexpanded until such time as the
+;;   returned value is no longer a list, or is empty, or the expand is equal to
+;;   the input.
+
+;;------------------------------------------------------------------------------
+;; Variables
+;; There are (for obvious reasons) no pre-defined variables, but this is a spec
+;; for what a variable entry must contain.
+;;
+;;   {:name       <string  name of the symbol>
+;;    :type       :symbol ; this is non-negotiable
+;;    :type/data  <type of the value stored here,
+;;                 being a basic type or a pointer thereto>
+;;    :type/value <initial value of the symbol or nil if none>
+;;   }
+
+   })
 
 (def ^:dynamic *symns*
   "Used to track the namespace levels above the current point of evaluation.
