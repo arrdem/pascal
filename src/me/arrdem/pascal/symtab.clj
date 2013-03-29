@@ -44,7 +44,8 @@
 ;;   form and are expected to return either an atom, or a sequence which will be
 ;;   assumed contain macros and will be macroexpanded until such time as the
 ;;   returned value is no longer a list, or is empty, or the expand is equal to
-;;   the input.
+;;   the input. Also, macros shall only be defined at the top level and for this
+;;   pascal compiler are not user-definable. Hardcoded only.
 
 ;;------------------------------------------------------------------------------
 ;; Variables
@@ -138,3 +139,22 @@ and program definitions which may have local bindings."
 scope. Invoked when returning from function and program definitions as they may
 contain symbol bindings."
   [] (swap! *symns* pop))
+
+(defn macroexpand
+  "A quick and dirty implementation of an \"outermost first\" macroexpand. Looks
+up macros from the symbol table, and applies them if possible."
+  [expr]
+  (if (seq? expr)
+    (let [expander (macroexpand (first expr))
+          expander (if (symbol? expander
+                                (name expander)
+                                (str expander)))
+          expander (:fn (search expander))
+          res      (if expander
+                     (apply expander (rest partial))
+                     (cons (first expr) (rest partial)))
+          res      (cons (first res) (map macroexpand (rest res)))]
+      (if expander
+        (macroexpand res)
+        res))
+    expr))
