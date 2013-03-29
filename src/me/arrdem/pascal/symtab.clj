@@ -26,7 +26,7 @@
    '("readln")   {:name "readln"   :type :fn    :type/ret nil       :type/arg []}
    '("eof")      {:name "eof"      :type :fn    :type/ret "boolean" :type/arg []}})
 
-(def ^:rebindable ^:dynamic *symns*
+(def ^:dynamic *symns*
   "Used to track the namespace levels above the current point of evaluation.
 An empty list signifies that we are operating at the \"top\" level where program
 forms and other such values live. It is here that the \"standard library\" lives.
@@ -39,10 +39,11 @@ with the concatonation of the stack, searching and poping until either the symbo
 is resolved, or the stack is empty."
   (atom (list)))
 
-(def ^:rebindable ^:dynamic *symtab*
+(def ^:dynamic  *symtab*
   "Used to track all symbols."
   (atom (-> base_st
             (assoc :label 0)
+            (assoc :gensym 0)
             )))
 
 (defn genlabel!
@@ -63,6 +64,18 @@ providing name qualification appropriate to the *symns* stack."
   [sym]
   (let [path (conj @*symns* (:name sym))]
     (swap! *symtab* assoc path sym)))
+
+(defn gensym!
+  "Generates a symbol name (string) which is guranteed by use of an incrementing
+counter to be unique to the current compile session. Optionally takes a string
+prefix for the generated name which does not effect the numeric part of the
+name. Returns a string being the prefix argument or \"G__\" followed by the
+string render of the gensym counter before it was incremented."
+  ([] (gensym! "G__"))
+  ([s] (str s
+            (:gensym
+             (swap! *symtab*
+                    update-in [:gensym] inc)))))
 
 (defn search
   "Recursively searches the symbol table for a symbol with an argument name.
