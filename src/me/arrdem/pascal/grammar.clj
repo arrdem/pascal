@@ -28,7 +28,7 @@
 
 (defrule integer
   (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
-            integer))
+            unsigned-integer))
 
 (defrule real
   (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
@@ -140,7 +140,7 @@
 ;; variableid-list is now OK, consistently returns a pair [id ids?] where
 ;; ids? may be nil. semantics also in place.
 (defrule variableid-list
-  (fnp/conc identifier
+  (fnp/conc identifierv
             (fnp/opt
              (fnp/conc delim_comma
                        variableid-list))))
