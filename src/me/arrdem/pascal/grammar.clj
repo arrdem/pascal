@@ -2,6 +2,7 @@
   (:require [name.choi.joshua.fnparse :as fnp]
             [me.arrdem.pascal.tokens :refer :all]
 ;            [me.arrdem.sad.runtime :refer [defrule]]
+            [me.arrdem.pascal.semantics :as s]
             ))
 
 ;;------------------------------------------------------------------------------
@@ -25,6 +26,7 @@
 ;; TODO Read the k&W book, figure out what these look like and get em defined
 (def unsigned-integer intnum)
 (def unsigned-real floatnum)
+
 (def string pstring)
 
 (def integer
@@ -100,18 +102,20 @@
               delim_comma
               unsigned-integer))))
 
-(def constant-declaration
-  (fnp/alt
-   (fnp/conc
-    identifier
-    op_eq
-    constant
-    delim_semi
-    constant-declaration)
-   (fnp/conc tok_const
-             identifier
+(def const-assign
+  (fnp/semantics
+   (fnp/conc identifier
              op_eq
-             constant)))
+             constant)
+   s/const-assign))
+
+(def constant-declaration
+  (fnp/conc tok_const
+            const-assign
+            (fnp/rep*
+             (fnp/conc
+              delim_semi
+              const-assign))))
 
 (def type-declaration
   (fnp/alt
@@ -126,13 +130,16 @@
              ptype)))
 
 (def vardecl
-  (fnp/conc variableid-list
-            delim_colon
-            ptype))
+  (fnp/semantics
+   (fnp/conc variableid-list
+             delim_colon
+             ptype)
+   s/vardecl))
 
 (def vardecls
-  (fnp/alt (fnp/conc vardecl delim_semi vardecls)
-           vardecl))
+  (fnp/conc vardecl
+            (fnp/opt
+             (fnp/conc delim_semi vardecls))))
 
 (def variable-declaration
   (fnp/conc tok_var
@@ -141,10 +148,12 @@
 ;; variableid-list is now OK, consistently returns a pair [id ids?] where
 ;; ids? may be nil. semantics also in place.
 (def variableid-list
-  (fnp/conc identifier
-            (fnp/opt
-             (fnp/conc delim_comma
-                       variableid-list))))
+  (fnp/semantics
+   (fnp/conc identifier
+             (fnp/opt
+              (fnp/conc delim_comma
+                        variableid-list)))
+   s/variableid-list))
 
 (def constant
   (fnp/alt integer
@@ -451,7 +460,8 @@
            op_div
            op_mod
            op_and
-           op_in))
+           ;; op_in
+           ))
 
 (def unary-expression
   (fnp/alt (fnp/conc unary-op unary-expression)
