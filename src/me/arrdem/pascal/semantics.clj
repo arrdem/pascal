@@ -1,6 +1,7 @@
 (ns me.arrdem.pascal.semantics
   (:require [clojure.pprint :refer [pprint]]
-            [me.arrdem.pascal.symtab :refer [genlabel! install! search]]
+            [me.arrdem.pascal.symtab :refer [genlabel! install!
+                                             search gensym!]]
             [name.choi.joshua.fnparse :as fnp]))
 
 ;;------------------------------------------------------------------------------
@@ -36,7 +37,6 @@
 
 ;;------------------------------------------------------------------------------
 ;; NEW generation code..
-
 (defn variableid-list
   ([[first [_ rest]]]
      (cons first rest)))
@@ -51,7 +51,8 @@
              :type/data type}]
       (pprint v)
       (install! v)))
-  varseq)
+  (map (comp :qname search)
+       varseq))
 
 (defn vardecls
   [[decl [_ rest]]]
@@ -64,10 +65,11 @@
 (defn const-assign
   [[id _ v]]
   (let [v {:name      id
-           :value     (:value v)
-           :type      (:type v)}]
+           :value     v
+           :type      :symbol
+           :type/data :reference}]
     (install! v)
-    v))
+    (:qname (search v))))
 
 (defn constant-declaration
   [[_ c0 cs]]
@@ -77,24 +79,32 @@
 
 (defn string
   [s]
-  {:value s
-   :type  "string"})
+  (let [sym (gensym! "str_")
+        val {:name sym
+             :value s
+             :type :symbol
+             :type/data "string"}]
+    (install! val)
+    (:qname (search sym))))
 
-(defn integer
-  [[sign? ival]]
+(defn snum
+  [prefix [sign? rval]]
   (let [factor (case sign?
                  (+ nil) 1
-                 (-) -1)]
-    {:value (* factor ival)
-     :type  "integer"}))
+                 (-) -1)
+        sym (gensym! (str prefix "_"))
+        val {:name sym
+             :value (* factor rval)
+             :type :symbol
+             :type/data prefix}]
+    (install! sym)
+    (:qname (search sym))))
 
-(defn real
-  [[sign? rval]]
-  (let [factor (case sign?
-                 (+ nil) 1
-                 (-) -1)]
-    {:value (* factor rval)
-     :type  "real"}))
+(def integer
+  (partial snum "integer"))
+
+(def real
+  (partial snum "real"))
 
 (defn label-declaration
   [[_l l0 ls]]
@@ -105,10 +115,12 @@
 
 (defn variable
   [[id postfixes]]
-  (if (empty? postfixes)
-    id
-    `(~'-> ~id
-           ~@postfixes)))
+  (let [id (:qname (search id))]
+    (assert id)
+    (if (empty? postfixes)
+      id
+      `(~'-> ~id
+             ~@postfixes))))
 
 (defn additive-expression
   [[me tail]]
