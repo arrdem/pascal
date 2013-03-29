@@ -1,7 +1,7 @@
 (ns me.arrdem.pascal.semantics
   (:require [clojure.pprint :refer [pprint]]
             [me.arrdem.pascal.symtab :refer [genlabel! install!
-                                             search gensym!]]
+                                             search gensym! render-ns]]
             [name.choi.joshua.fnparse :as fnp]))
 
 ;;------------------------------------------------------------------------------
@@ -37,6 +37,10 @@
 
 ;;------------------------------------------------------------------------------
 ;; NEW generation code..
+(defn abs-name
+  [sym]
+  (str (render-ns (butlast (:qname sym))) "/" (:name sym)))
+
 (defn variableid-list
   ([[first [_ rest]]]
      (cons first rest)))
@@ -69,7 +73,7 @@
            :type      :symbol
            :type/data :reference}]
     (install! v)
-    (:qname (search v))))
+    (abs-name (search v))))
 
 (defn constant-declaration
   [[_ c0 cs]]
@@ -85,7 +89,7 @@
              :type :symbol
              :type/data "string"}]
     (install! val)
-    (:qname (search sym))))
+    (abs-name (search sym))))
 
 (defn snum
   [prefix [sign? rval]]
@@ -98,7 +102,7 @@
              :type :symbol
              :type/data prefix}]
     (install! sym)
-    (:qname (search sym))))
+    (abs-name (search sym))))
 
 (def integer
   (partial snum "integer"))
@@ -115,7 +119,7 @@
 
 (defn variable
   [[id postfixes]]
-  (let [id (:qname (search id))]
+  (let [id (abs-name (search id))]
     (assert id)
     (if (empty? postfixes)
       id
@@ -164,7 +168,8 @@
 (defn for-stmnt [[_0 id _1 flist _3 stmnts]]
   (let [[Vi update end] flist
         lstart (genlabel!)
-        lend   (genlabel!)]
+        lend   (genlabel!)
+        id     (abs-name (search id))]
     `(~'progn
       (~'label ~lstart)
       (~':= ~id ~Vi)
