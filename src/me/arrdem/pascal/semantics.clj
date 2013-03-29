@@ -31,3 +31,11 @@
   [s]
   {:value s
    :type  "string"})
+
+(defn integer
+  [[sign? ival]]
+  (let [factor (case sign?
+                 (+ nil) 1
+                 (-) -1)]
+    {:value (* factor ival)
+     :type  "integer"}))

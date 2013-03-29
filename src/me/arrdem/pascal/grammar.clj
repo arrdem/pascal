@@ -33,8 +33,10 @@
    s/string))
 
 (def integer
-  (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
-            unsigned-integer))
+  (fnp/semantics
+   (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
+             unsigned-integer)
+   s/integer))
 
 (def real
   (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
