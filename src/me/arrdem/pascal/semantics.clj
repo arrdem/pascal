@@ -53,3 +53,10 @@
                  (-) -1)]
     {:value (* factor rval)
      :type  "real"}))
+
+(defn label-declaration
+  [[_l l0 ls]]
+  (println l0)
+  (println ls)
+  (let [ls (map second ls)]
+    `(~'comment "found label declarations" ~@(cons l0 ls))))

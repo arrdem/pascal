@@ -102,12 +102,14 @@
             tok_end))
 
 (def label-declaration
-  (fnp/conc tok_label
-            unsigned-integer
-            (fnp/rep*
-             (fnp/conc
-              delim_comma
-              unsigned-integer))))
+  (fnp/semantics
+   (fnp/conc tok_label
+             unsigned-integer
+             (fnp/rep*
+              (fnp/conc
+               delim_comma
+               unsigned-integer)))
+   s/label-declaration))
 
 (def const-assign
   (fnp/semantics
