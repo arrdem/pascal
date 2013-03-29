@@ -63,11 +63,17 @@
 
 (defn variable
   [[id postfixes]]
-  `(~'-> ~id
-         ~@postfixes))
+  (if (empty? postfixes)
+    id
+    `(~'-> ~id
+           ~@postfixes)))
 
 (defn additive-expression
   [[me tail]]
   (if-let [[op adxpr] tail]
     `(~op ~me ~adxpr)
     me))
+
+(defn assignment
+  [[target assignop expr]]
+  `(~assignop ~target ~expr))

@@ -318,7 +318,9 @@
            statement))
 
 (def assignment
-  (fnp/conc variable op_assign expression))
+  (fnp/semantics
+   (fnp/conc variable op_assign expression)
+   s/assignment))
 
 (def statements
   (fnp/conc tok_begin statement-list tok_end))
