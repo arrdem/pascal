@@ -4,33 +4,33 @@
   {
 ;;------------------------------------------------------------------------------
 ;; Predefined types
-   '("real")     {:name "real"     :type :basic :size 8}
-   '("integer")  {:name "integer"  :type :basic :size 4}
-   '("char")     {:name "char"     :type :basic :size 1}
-   '("boolean")  {:name "boolean"  :type :basic :size 4}
+   '("real" "toplevel")     {:name "real"     :type :basic :size 8}
+   '("integer" "toplevel")  {:name "integer"  :type :basic :size 4}
+   '("char" "toplevel")     {:name "char"     :type :basic :size 1}
+   '("boolean" "toplevel")  {:name "boolean"  :type :basic :size 4}
 
 ;;------------------------------------------------------------------------------
 ;; Predefined functions
-   '("exp")      {:name "exp"      :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("tfexp")    {:name "trexp"    :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("sin")      {:name "sin"      :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("cos")      {:name "cos"      :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("trsin")    {:name "trsin"    :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("sqrt")     {:name "sqrt"     :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("round")    {:name "round"    :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("iround")   {:name "iround"   :type :fn    :type/ret "integer" :type/arg ["real"]}
-   '("ord")      {:name "ord"      :type :fn    :type/ret "integer" :type/arg ["integer"]}
-   '("new")      {:name "new"      :type :fn    :type/ret "integer" :type/arg ["integer"]}
-   '("trnew")    {:name "trnew"    :type :fn    :type/ret "integer" :type/arg ["integer"]}
-   '("write")    {:name "write"    :type :fn    :type/ret nil       :type/arg ["char"]}
-   '("writeln")  {:name "writeln"  :type :fn    :type/ret nil       :type/arg ["charsym"]}
-   '("writef")   {:name "writef"   :type :fn    :type/ret nil       :type/arg ["real"]}
-   '("writelnf") {:name "writelnf" :type :fn    :type/ret nil       :type/arg ["real"]}
-   '("writei")   {:name "writei"   :type :fn    :type/ret nil       :type/arg ["integer"]}
-   '("writelni") {:name "writelni" :type :fn    :type/ret nil       :type/arg ["integer"]}
-   '("read")     {:name "read"     :type :fn    :type/ret nil       :type/arg []}
-   '("readln")   {:name "readln"   :type :fn    :type/ret nil       :type/arg []}
-   '("eof")      {:name "eof"      :type :fn    :type/ret "boolean" :type/arg []}
+   '("exp" "toplevel")      {:name "exp"      :type :fn    :type/ret "real"    :type/arg ["real"]}
+   '("tfexp" "toplevel")    {:name "trexp"    :type :fn    :type/ret "real"    :type/arg ["real"]}
+   '("sin" "toplevel")      {:name "sin"      :type :fn    :type/ret "real"    :type/arg ["real"]}
+   '("cos" "toplevel")      {:name "cos"      :type :fn    :type/ret "real"    :type/arg ["real"]}
+   '("trsin" "toplevel")    {:name "trsin"    :type :fn    :type/ret "real"    :type/arg ["real"]}
+   '("sqrt" "toplevel")     {:name "sqrt"     :type :fn    :type/ret "real"    :type/arg ["real"]}
+   '("round" "toplevel")    {:name "round"    :type :fn    :type/ret "real"    :type/arg ["real"]}
+   '("iround" "toplevel")   {:name "iround"   :type :fn    :type/ret "integer" :type/arg ["real"]}
+   '("ord" "toplevel")      {:name "ord"      :type :fn    :type/ret "integer" :type/arg ["integer"]}
+   '("new" "toplevel")      {:name "new"      :type :fn    :type/ret "integer" :type/arg ["integer"]}
+   '("trnew" "toplevel")    {:name "trnew"    :type :fn    :type/ret "integer" :type/arg ["integer"]}
+   '("write" "toplevel")    {:name "write"    :type :fn    :type/ret nil       :type/arg ["char"]}
+   '("writeln" "toplevel")  {:name "writeln"  :type :fn    :type/ret nil       :type/arg ["charsym"]}
+   '("writef" "toplevel")   {:name "writef"   :type :fn    :type/ret nil       :type/arg ["real"]}
+   '("writelnf" "toplevel") {:name "writelnf" :type :fn    :type/ret nil       :type/arg ["real"]}
+   '("writei" "toplevel")   {:name "writei"   :type :fn    :type/ret nil       :type/arg ["integer"]}
+   '("writelni" "toplevel") {:name "writelni" :type :fn    :type/ret nil       :type/arg ["integer"]}
+   '("read" "toplevel")     {:name "read"     :type :fn    :type/ret nil       :type/arg []}
+   '("readln" "toplevel")   {:name "readln"   :type :fn    :type/ret nil       :type/arg []}
+   '("eof" "toplevel")      {:name "eof"      :type :fn    :type/ret "boolean" :type/arg []}
 
 ;;------------------------------------------------------------------------------
 ;; Predefined macros
@@ -103,7 +103,7 @@ is resolved, or the stack is empty."
 providing name qualification appropriate to the *symns* stack."
   [sym]
   (let [path (conj @*symns* (:name sym))]
-    (println path)
+    (println ";    installed to path" path "\n")
     (swap! *symtab* assoc path sym)))
 
 (defn gensym!

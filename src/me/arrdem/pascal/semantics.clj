@@ -57,7 +57,8 @@
 
 (defn dbg-install
   ([v]
-     (pprint v)
+     (println "; installing symbol" (:name v))
+     (println ";     " (select-keys v [:type :type/data :value :name]))
      (install! v)
      (:name v)))
 
@@ -191,7 +192,8 @@
     `(~'progn (~'label ~lbl)
             ~stmnts
             (~'if (~'not ~expr)
-              (~'goto ~lbl)))))
+              (~'goto ~lbl)))
+    ))
 
 (defn procinvoke
   [[id [_0 params _1]]]
