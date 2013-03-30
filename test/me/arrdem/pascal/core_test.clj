@@ -20,5 +20,11 @@
             (is (search (:name s#))
                 (str "symbol " (:qname s#) " was not defined!"))))))))
 
-(full-test-case triv-pas-test data/triv-pas)
-(full-test-case trivb-pas-test data/trivb-pas)
+;;------------------------------------------------------------------------------
+;; the big test cases over assignment inputs...
+
+(full-test-case triv-pas-test data/triv-pas)    ;; parser assignment 1
+(full-test-case trivb-pas-test data/trivb-pas)  ;; half of parser assignment 2
+
+;;------------------------------------------------------------------------------
+;; TODO: partial test cases over subsets of the grammar
