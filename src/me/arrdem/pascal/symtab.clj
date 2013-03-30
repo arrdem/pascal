@@ -59,6 +59,13 @@
 ;;    :type/value <initial value of the symbol or nil if none>
 ;;   }
 
+
+
+;;------------------------------------------------------------------------------
+;; Values
+;; These are "magic" values which various parts of the compiler rely on.
+   :label 0
+   :gensym 0
    })
 
 (def ^:dynamic *symns*
