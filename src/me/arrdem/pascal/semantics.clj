@@ -36,8 +36,8 @@
 
 
 ;;------------------------------------------------------------------------------
-;; TODO reduce this out
-
+;; TODO: reduce this out, need to eliminate calls to the other three from the
+;;       grammar before I can delete them here.
 
 (defn tail-cons
   [[s [_ rest]]]
