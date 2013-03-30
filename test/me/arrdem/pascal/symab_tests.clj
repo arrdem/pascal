@@ -1,12 +1,7 @@
-(ns me.arrdem.pascal.core-test
-  (:use clojure.test
-        me.arrdem.pascal.symtab))
+(ns me.arrdem.pascal.symtab-tests
+  (:require [clojure.test :refer :all
+            [me.arrdem.pascal.symtab :refer :all])))
 
-(defmacro symtab-wrapper [& forms]
-  `(binding [me.arrdem.pascal.symtab/*symns* (atom '("toplevel"))
-             me.arrdem.pascal.symtab/*symtab* (atom {})]
-     ~@forms))
-
-(deftest a-test
+(deftest gensym-test
   (testing "FIXME, I fail."
     (is (= 0 1))))
