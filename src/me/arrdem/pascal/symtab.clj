@@ -61,7 +61,7 @@
 
    })
 
-(def ^:dynamic *symns*
+(def *symns*
   "Used to track the namespace levels above the current point of evaluation.
 An empty list signifies that we are operating at the \"top\" level where program
 forms and other such values live. It is here that the \"standard library\" lives.
@@ -72,14 +72,13 @@ rise! function is called which pops the top element off of this stack.
 Symbol resolution is performed by iteratively prefixing the symbol to be resolved
 with the concatonation of the stack, searching and poping until either the symbol
 is resolved, or the stack is empty."
-  (atom (list)))
+  (atom (list "toplevel")))
 
-(def ^:dynamic  *symtab*
+(def *symtab*
   "Used to track all symbols."
   (atom (-> base_st
             (assoc :label 0)
-            (assoc :gensym 0)
-            )))
+            (assoc :gensym 0))))
 
 (defn genlabel!
   "Generates and returns an integer label, side-effecting the :label count of the
@@ -91,13 +90,15 @@ is resolved, or the stack is empty."
 (defn render-ns
   "Renders the *symns* stack to a prefix string for symbols."
   ([] (render-ns @*symns*))
-  ([stack] (apply str (interpose \. (reverse stack)))))
+  ([stack] (str (apply str (interpose \. (reverse (next stack))))
+                "/" (first stack))))
 
 (defn install!
   "Installs a symbol map (created by the caller) in the *symtab* registry
 providing name qualification appropriate to the *symns* stack."
   [sym]
   (let [path (conj @*symns* (:name sym))]
+    (println path)
     (swap! *symtab* assoc path sym)))
 
 (defn gensym!
@@ -140,21 +141,21 @@ scope. Invoked when returning from function and program definitions as they may
 contain symbol bindings."
   [] (swap! *symns* pop))
 
-(defn macroexpand
+(defn pmacroexpand
   "A quick and dirty implementation of an \"outermost first\" macroexpand. Looks
 up macros from the symbol table, and applies them if possible."
   [expr]
   (if (seq? expr)
-    (let [expander (macroexpand (first expr))
-          expander (if (symbol? expander
-                                (name expander)
-                                (str expander)))
+    (let [expander (pmacroexpand (first expr))
+          expander (if (symbol? expander)
+                     (name expander)
+                     (str expander))
           expander (:fn (search expander))
           res      (if expander
                      (apply expander (rest partial))
-                     (cons (first expr) (rest partial)))
-          res      (cons (first res) (map macroexpand (rest res)))]
+                     (cons (first expr) (next partial)))
+          res      (cons (first res) (map pmacroexpand (rest res)))]
       (if expander
-        (macroexpand res)
+        (pmacroexpand res)
         res))
     expr))
