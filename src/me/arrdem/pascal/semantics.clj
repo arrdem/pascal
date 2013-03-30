@@ -185,6 +185,14 @@
       (~'goto ~lstart)
       (~'label ~lend))))
 
+(defn repeat-stmnt
+  [[_rep stmnts _unt expr]]
+  (let [lbl (genlabel!)]
+    `(~'progn (~'label ~lbl)
+            ~stmnts
+            (~'if (~'not ~expr)
+              (~'goto ~lbl)))))
+
 (defn procinvoke
   [[id [_0 params _1]]]
   `(~'funcall ~id ~@params))

@@ -352,7 +352,9 @@
   (fnp/conc tok_while expression tok_do statement))
 
 (def repeat-stmnt
-  (fnp/conc tok_repeat statement-list tok_until expression))
+  (fnp/semantics
+   (fnp/conc tok_repeat statement-list tok_until expression)
+   s/repeat-stmnt))
 
 (def for-downto
   (fnp/semantics
