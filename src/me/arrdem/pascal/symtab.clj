@@ -1,4 +1,5 @@
-(ns me.arrdem.pascal.symtab)
+(ns me.arrdem.pascal.symtab
+  (:require [clojure.string :refer [split]]))
 
 (def base_st
   {
@@ -16,7 +17,7 @@
    '("sin" "toplevel")      {:name "sin"      :type :fn    :type/ret "real"    :type/arg ["real"]}
    '("cos" "toplevel")      {:name "cos"      :type :fn    :type/ret "real"    :type/arg ["real"]}
    '("trsin" "toplevel")    {:name "trsin"    :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("sqrt" "toplevel")     {:name "sqrt"     :type :fn    :type/ret "real"    :type/arg ["real"]}
+   '("sqrt"" cl ftoplevel") {:name "sqrt"     :type :fn    :type/ret "real"    :type/arg ["real"]}
    '("round" "toplevel")    {:name "round"    :type :fn    :type/ret "real"    :type/arg ["real"]}
    '("iround" "toplevel")   {:name "iround"   :type :fn    :type/ret "integer" :type/arg ["real"]}
    '("ord" "toplevel")      {:name "ord"      :type :fn    :type/ret "integer" :type/arg ["integer"]}
@@ -62,8 +63,9 @@
 ;;------------------------------------------------------------------------------
 ;; Values
 ;; These are "magic" values which various parts of the compiler rely on.
-   :label 0
-   :gensym 0
+
+   :label  0 ;; counter used for label generation
+   :gensym 0 ;; counter shared by all symbol generation
    })
 
 (def ^:dynamic *symns*
@@ -79,11 +81,21 @@ with the concatonation of the stack, searching and poping until either the symbo
 is resolved, or the stack is empty."
   (atom (list "toplevel")))
 
+(defn descend!
+  "Pushes the argument namespace onto the *symns* stack, altering how symbols are
+resolved until the *symns* stack is poped. Used for recuring into function
+and program definitions which may have local bindings."
+  [ns] (swap! *symns* conj ns))
+
+(defn ascend!
+  "Pops the *synms* stack, taking any symbols defined in a nested ns out of
+scope. Invoked when returning from function and program definitions as they may
+contain symbol bindings."
+  [] (swap! *symns* pop))
+
 (def ^:dynamic *symtab*
   "Used to track all symbols."
-  (atom (-> base_st
-            (assoc :label 0)
-            (assoc :gensym 0))))
+  (atom base_st))
 
 (defn genlabel!
   "Generates and returns an integer label, side-effecting the :label count of the
@@ -118,7 +130,7 @@ string render of the gensym counter before it was incremented."
              (swap! *symtab*
                     update-in [:gensym] inc)))))
 
-(defn search
+(defn stack-search
   "Recursively searches the symbol table for a symbol with an argument name.
 Returns the symbol map if such a symbol exists. Failure behavior is undefined,
 but the returning a nil value and throwing an exception are both acceptable."
@@ -134,33 +146,40 @@ but the returning a nil value and throwing an exception are both acceptable."
            (if-not (empty? stack)
              (recur sym rstack))))))
 
-(defn descend!
-  "Pushes the argument namespace onto the *symns* stack, altering how symbols are
-resolved until the *symns* stack is poped. Used for recuring into function
-and program definitions which may have local bindings."
-  [ns] (swap! *symns* conj ns))
-
-(defn ascend!
-  "Pops the *synms* stack, taking any symbols defined in a nested ns out of
-scope. Invoked when returning from function and program definitions as they may
-contain symbol bindings."
-  [] (swap! *symns* pop))
+(defn search
+  "A wrapper around stack-search wich provides the base case logic required to
+parse fully qualified names into a full stack path. Defaults to using
+stack-search before returning a failure result."
+  [name]
+  (let [stack (reverse (split name #"[\./]"))]
+    (get @*symtab* stack     ;; ideal case of a fully-qualified name
+         (stack-search name) ;; base case of a full symtab search
+         )))
 
 (defn pmacroexpand
-  "A quick and dirty implementation of an \"outermost first\" macroexpand. Looks
-up macros from the symbol table, and applies them if possible."
-  [expr]
-  (if (seq? expr)
-    (let [expander (pmacroexpand (first expr))
-          expander (if (symbol? expander)
-                     (name expander)
-                     (str expander))
-          expander (:fn (search expander))
-          res      (if expander
-                     (apply expander (rest partial))
-                     (cons (first expr) (next partial)))
-          res      (cons (first res) (map pmacroexpand (rest res)))]
-      (if expander
-        (pmacroexpand res)
-        res))
-    expr))
+  "An \"outermost first\" macro implementation. Looks up macros from the symbol
+table, and applies them if possible. Note that in the two arguments case, the
+second argument is the key used for pulling transformation functions out of
+symbol table entries. This exists so that the macro system can be employed first
+ at AST generation time to do type conversion and soforth, and later at code
+generation time so that I'm not writing two macro systems when one will do."
+  ([expr]
+     (pmacroexpand expr :fn))
+  ([expr key]
+     (if (seq? expr)
+       (let [expander (pmacroexpand (first expr) key)
+             expander (if (symbol? expander)
+                        (name expander)
+                        (str expander))
+             expander (search expander)
+             expander (if (= :macro (:type expander))
+                        (get expander key identity))
+             res      (if expander
+                        (apply expander (rest partial))
+                        (cons (first expr) (next partial)))
+             res      (cons (first res) (map #(pmacroexpand %1 key)
+                                             (rest res)))]
+         (if expander
+           (pmacroexpand res key)
+           res))
+       expr)))
