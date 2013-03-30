@@ -63,6 +63,37 @@ behavior also holds for literals such as 1 and 32, for which integer variables
 with explicit values are created. Note that constants are typed to be refs to 
 these generated variables rather than hold the value in and of themselves.
 
+## Source code
+The source for this project is located under src/, the following is a quick list 
+of file names and rough descriptions.
+
+### src/me/arrdem/pascal.clj 
+Contains the main method & formatting code
+
+### src/me/arrdem/pascal/grammar.clj 
+Defines the grammar of pascal in terms of tokens, I'm proud to say that this 
+grammar was programaticly generated using the latest build of the sad toolkit
+ which I posted on the piazza page some time ago.
+
+### src/me/arrdem/pascal/semantics.clj
+Defines a large number of semantic transformations on the grammar which the
+grammar file defines, used to generate the IR which is pretty-printed and
+to incur side-effects such as symbol table manipulation.
+
+### src/me/arrdem/pascal/lexer.clj
+Defines the lexer in terms of some transforms atop the tokens defined in
+
+### src/me/arrdem/pascal/tokens.clj
+Defines the basic tokens for the pascal lexer. Via a macro in util, also
+defines rules used by the grammar for matching these tokens.
+
+### src/me/arrdem/pascal/util.clj
+Holding pen for code with no better home as of yet
+
+### src/me/arrde/pascal/symtab.clj
+Defines the symbol table and the various legal operations therupon such as
+install! and search.
+
 ## License
 
 Copyright © 2013 Reid "arrdem" McKenzie
