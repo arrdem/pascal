@@ -1,6 +1,6 @@
 (ns me.arrdem.pascal.symtab)
 
-(def ^:private base_st
+(def base_st
   {
 ;;------------------------------------------------------------------------------
 ;; Predefined types
@@ -61,7 +61,7 @@
 
    })
 
-(def *symns*
+(def ^:dynamic *symns*
   "Used to track the namespace levels above the current point of evaluation.
 An empty list signifies that we are operating at the \"top\" level where program
 forms and other such values live. It is here that the \"standard library\" lives.
@@ -74,7 +74,7 @@ with the concatonation of the stack, searching and poping until either the symbo
 is resolved, or the stack is empty."
   (atom (list "toplevel")))
 
-(def *symtab*
+(def ^:dynamic *symtab*
   "Used to track all symbols."
   (atom (-> base_st
             (assoc :label 0)
