@@ -2,7 +2,8 @@
   (:require [name.choi.joshua.fnparse :as fnp]
             [me.arrdem.pascal.tokens :refer :all]
            ;; [me.arrdem.sad.runtime :refer [defrule]]
-           [me.arrdem.pascal.semantics :as s]
+            [me.arrdem.pascal.semantics :as s]
+            [me.arrdem.pascal.symtab :refer [ascend! descend!]]
             ))
 
 ;;------------------------------------------------------------------------------
@@ -24,6 +25,12 @@
 ;;------------------------------------------------------------------------------
 ;; Grammar terminals & nonterminals which were not defined in the grammar
 ;; TODO Read the k&W book, figure out what these look like and get em defined
+
+;; (def identifier
+;;   (fnp/semantics
+;;    me.arrdem.pascal.tokens/identifier
+;;    s/identifier))
+
 (def unsigned-integer intnum)
 (def unsigned-real floatnum)
 
@@ -33,24 +40,26 @@
    s/string))
 
 (def integer
-  (fnp/semantics
-   (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
-             unsigned-integer)
-   s/integer))
+  unsigned-integer)
 
 (def real
-  (fnp/semantics
-   (fnp/conc (fnp/opt (fnp/alt op_add op_sub))
-             unsigned-real)
-   s/real))
+  unsigned-real)
 
 ;;------------------------------------------------------------------------------
 ;; The compiled grammar
 
-(def pascal-program
+(def prognid
   (fnp/semantics
    (fnp/conc tok_program
-             identifier
+             identifier)
+   (fn [[_ id]]
+     (println "dropping into program" id)
+     (descend! id)
+     [_ id])))
+
+(def pascal-program
+  (fnp/semantics
+   (fnp/conc prognid
              program-heading
              delim_semi
              block
@@ -310,7 +319,7 @@
    (fnp/conc statement
              (fnp/opt
               (fnp/conc delim_semi statement-list)))
-   s/statement-list))
+   s/cons-ht))
 
 (def assignment
   (fnp/semantics
@@ -318,7 +327,9 @@
    s/assignment))
 
 (def statements
-  (fnp/conc tok_begin statement-list tok_end))
+  (fnp/semantics
+   (fnp/conc tok_begin statement-list tok_end)
+   second))
 
 (def ifte
   (fnp/conc tok_if
@@ -370,8 +381,7 @@
 (def procinvoke
   (fnp/semantics
    (fnp/conc procid
-             (fnp/opt
-              (fnp/conc delim_lparen expression-list delim_rparen)))
+             (fnp/conc delim_lparen expression-list delim_rparen))
    s/procinvoke))
 
 (def goto-stmnt
@@ -489,26 +499,26 @@
            op_div
            op_mod
            op_and
-           ;; op_in
            ))
 
 (def unary-expression
-  (fnp/alt (fnp/conc unary-op unary-expression)
-           primary-expression))
+  (fnp/semantics
+   (fnp/conc (fnp/opt unary-op)
+             primary-expression)
+   s/unary-expression))
 
 (def unary-op
   (fnp/alt op_add op_sub op_not))
 
 (def primary-expression
-  (fnp/alt variable
+  (fnp/alt procinvoke
+           (fnp/conc delim_lbrack element-list delim_rbrack)
+           (fnp/conc delim_lparen expression delim_rparen)
+           variable
            unsigned-integer
            unsigned-real
            string
-           tok_nil
-           (fnp/conc funcid
-                     delim_lparen expression-list delim_rparen)
-           (fnp/conc delim_lbrack element-list delim_rbrack)
-           (fnp/conc delim_lparen expression delim_rparen)))
+           tok_nil))
 
 (def element-list
   (fnp/alt (fnp/conc element delim_comma element-list)

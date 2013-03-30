@@ -36,14 +36,33 @@
 
 
 ;;------------------------------------------------------------------------------
-;; NEW generation code..
+;; TODO reduce this out
+
+
+(defn tail-cons
+  [[s [_ rest]]]
+  (cons s rest))
+
+(def cons-ht tail-cons)
+(def variableid-list tail-cons)
+(def vardecls tail-cons)
+
+;;------------------------------------------------------------------------------
+;; some supporting functions...
+
 (defn abs-name
   [sym]
-  (str (render-ns (butlast (:qname sym))) "/" (:name sym)))
+  (or (:qname sym)
+      (:qname (search sym))))
 
-(defn variableid-list
-  ([[first [_ rest]]]
-     (cons first rest)))
+(defn dbg-install
+  ([v]
+     (pprint v)
+     (install! v)
+     (:name v)))
+
+;;------------------------------------------------------------------------------
+;; NEW generation code..
 
 (defn vardecl
   "Semantics for the vardecl rule in grammar.clj.
@@ -53,14 +72,9 @@
     (let [v {:name v
              :type :symbol
              :type/data type}]
-      (pprint v)
-      (install! v)))
-  (map (comp :qname search)
+      (dbg-install v)))
+  (map (comp abs-name search)
        varseq))
-
-(defn vardecls
-  [[decl [_ rest]]]
-  (cons decl rest))
 
 (defn variable-declaration
   [[_ decls]]
@@ -72,14 +86,13 @@
            :value     v
            :type      :symbol
            :type/data :reference}]
-    (install! v)
-    (abs-name (search v))))
+    (dbg-install v)))
 
 (defn constant-declaration
   [[_ c0 cs]]
   (let [cs (map second cs)]
     `(~'comment "got constant decl group:"
-                ~@(cons (:name c0) (map :name cs)))))
+                ~@(cons c0 cs))))
 
 (defn string
   [s]
@@ -88,7 +101,7 @@
              :value s
              :type :symbol
              :type/data "string"}]
-    (install! val)
+    (dbg-install val)
     (abs-name (search sym))))
 
 (defn snum
@@ -101,14 +114,10 @@
              :value (* factor rval)
              :type :symbol
              :type/data prefix}]
-    (install! sym)
-    (abs-name (search sym))))
+    (dbg-install val)))
 
-(def integer
-  (partial snum "integer"))
-
-(def real
-  (partial snum "real"))
+(def integer (partial snum "integer"))
+(def real (partial snum "real"))
 
 (defn label-declaration
   [[_l l0 ls]]
@@ -137,7 +146,7 @@
   `(~assignop ~target ~expr))
 
 (defn pascal-program
-  [[progn id heading _ block __]]
+  [[[_0 id] heading _1 block _2]]
   `(~'program ~id ~@heading ~@block))
 
 (defn program-heading
@@ -149,13 +158,9 @@
   [[comments progn]]
   (concat comments (list progn)))
 
-(defn tail-cons
-  [[s [_ rest]]]
-  (cons s rest))
-
 (defn block2progn
   [[_0 exprs _1]]
-  `(~'progn ~@exprs))
+  `(~'progn ~@(remove nil? exprs)))
 
 (defn for-downto
   [[s0 _ sf]]
@@ -183,3 +188,18 @@
 (defn procinvoke
   [[id [_0 params _1]]]
   `(~'funcall ~id ~@params))
+
+(defn identifier
+  ([id] (abs-name (search id))))
+
+(defn unary-expression
+  [[op expr]]
+  (let [form (case op
+               (+) nil
+               (-) `(~'* -1)
+               (not) `(~'not)
+               (nil) nil)
+        ]
+    (if form
+    `(~@form ~expr)
+    expr)))
