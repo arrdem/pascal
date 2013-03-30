@@ -181,7 +181,7 @@
       (~':= ~id ~Vi)
       (~'if (~@end ~id)
         (~'goto ~lend))
-      ~stmnts
+      ~@stmnts
       (~':=  ~id (~@update ~id))
       (~'goto ~lstart)
       (~'label ~lend))))
@@ -190,7 +190,7 @@
   [[_rep stmnts _unt expr]]
   (let [lbl (genlabel!)]
     `(~'progn (~'label ~lbl)
-            ~stmnts
+            ~@stmnts
             (~'if (~'not ~expr)
               (~'goto ~lbl)))
     ))
