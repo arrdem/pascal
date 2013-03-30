@@ -165,26 +165,23 @@
 
 (defn for-downto
   [[s0 _ sf]]
-  [s0 `(~'- 1) `(~'>= ~sf)])
+  [s0 `(~'- 1) '>= sf])
 
 (defn for-to
   [[s0 _ sf]]
-  [s0 `(~'+ 1) `(~'<= ~sf)])
+  [s0 `(~'+ 1) '<= sf])
 
 (defn for-stmnt [[_0 id _1 flist _3 stmnts]]
-  (let [[Vi update end] flist
+  (let [[Vi update comp end] flist
         lstart (genlabel!)
-        lend   (genlabel!)
         id     (abs-name (search id))]
     `(~'progn
       (~'label ~lstart)
       (~':= ~id ~Vi)
-      (~'if (~@end ~id)
-        (~'goto ~lend))
-      ~@stmnts
-      (~':=  ~id (~@update ~id))
-      (~'goto ~lstart)
-      (~'label ~lend))))
+      (~'if (~comp ~id ~end)
+        (~'progn ~@stmnts
+                 (~':=  ~id (~@update ~id))
+                 (~'goto ~lstart))))))
 
 (defn repeat-stmnt
   [[_rep stmnts _unt expr]]
