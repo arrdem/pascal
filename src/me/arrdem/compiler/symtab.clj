@@ -1,49 +1,9 @@
 (ns me.arrdem.compiler.symtab
-  (:require [clojure.string :refer [split]]))
+  (:require [clojure.string :refer [split]]
+            [me.arrdem.compiler.symtab-util :refer [m-install! m-search]]))
 
 (def base_st
   {
-;;------------------------------------------------------------------------------
-;; Predefined functions
-   '("exp")      {:name "exp"      :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("tfexp")    {:name "trexp"    :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("sin")      {:name "sin"      :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("cos")      {:name "cos"      :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("trsin")    {:name "trsin"    :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("sqrt")     {:name "sqrt"     :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("round")    {:name "round"    :type :fn    :type/ret "real"    :type/arg ["real"]}
-   '("iround")   {:name "iround"   :type :fn    :type/ret "integer" :type/arg ["real"]}
-   '("ord")      {:name "ord"      :type :fn    :type/ret "integer" :type/arg ["integer"]}
-   '("new")      {:name "new"      :type :fn    :type/ret "integer" :type/arg ["integer"]}
-   '("trnew")    {:name "trnew"    :type :fn    :type/ret "integer" :type/arg ["integer"]}
-   '("write")    {:name "write"    :type :fn    :type/ret nil       :type/arg ["char"]}
-   '("writeln")  {:name "writeln"  :type :fn    :type/ret nil       :type/arg ["charsym"]}
-   '("writef")   {:name "writef"   :type :fn    :type/ret nil       :type/arg ["real"]}
-   '("writelnf") {:name "writelnf" :type :fn    :type/ret nil       :type/arg ["real"]}
-   '("writei")   {:name "writei"   :type :fn    :type/ret nil       :type/arg ["integer"]}
-   '("writelni") {:name "writelni" :type :fn    :type/ret nil       :type/arg ["integer"]}
-   '("read")     {:name "read"     :type :fn    :type/ret nil       :type/arg []}
-   '("readln")   {:name "readln"   :type :fn    :type/ret nil       :type/arg []}
-   '("eof")      {:name "eof"      :type :fn    :type/ret "boolean" :type/arg []}
-
-;;------------------------------------------------------------------------------
-;; Type conversion functions
-   '("ctoi")     {:name "ctoi"     :type :fn    :type/ret "integer" :type/arg ["char"]}
-   '("btoi")     {:name "btoi"     :type :fn    :type/ret "integer" :type/arg ["boolean"]}
-   '("itof")     {:name "itof"     :type :fn    :type/ret "real"    :type/arg ["integer"]}
-
-;;------------------------------------------------------------------------------
-;; Variables
-;; There are (for obvious reasons) no pre-defined variables, but this is a spec
-;; for what a variable entry must contain.
-;;
-;;   {:name       <string  name of the symbol>
-;;    :type       :symbol ; this is non-negotiable
-;;    :type/data  <type of the value stored here,
-;;                 being a basic type or a pointer thereto>
-;;    :type/value <initial value of the symbol or nil if none>
-;;   }
-
 ;;------------------------------------------------------------------------------
 ;; Values
 ;; These are "magic" values which various parts of the compiler rely on.
@@ -53,7 +13,10 @@
 
    })
 
-(def ^:dynamic *symns*
+;;------------------------------------------------------------------------------
+;; The namespace stack
+
+(def ^:dynamic ^:private *symns*
   "Used to track the namespace levels above the current point of evaluation.
 An empty list signifies that we are operating at the \"top\" level where program
 forms and other such values live. It is here that the \"standard library\" lives.
@@ -78,9 +41,24 @@ scope. Invoked when returning from function and program definitions as they may
 contain symbol bindings."
   [] (swap! *symns* pop))
 
-(def ^:dynamic *symtab*
+;;------------------------------------------------------------------------------
+;; The symbol table
+
+(def ^:dynamic ^:private *symtab*
   "Used to track all symbols."
-  (atom base_st))
+  (atom {}))
+
+(defn gensym!
+  "Generates a symbol name (string) which is guranteed by use of an incrementing
+counter to be unique to the current compile session. Optionally takes a string
+prefix for the generated name which does not effect the numeric part of the
+name. Returns a string being the prefix argument or \"G__\" followed by the
+string render of the gensym counter before it was incremented."
+  ([] (gensym! "G__"))
+  ([s] (str s
+            (:gensym
+             (swap! *symtab*
+                    update-in [:gensym] inc)))))
 
 (defn genlabel!
   "Generates and returns an integer label, side-effecting the :label count of the
@@ -98,47 +76,13 @@ contain symbol bindings."
             "/" (first stack))
        (first stack))))
 
-(defn install!
-  "Installs a symbol map (created by the caller) in the *symtab* registry
-providing name qualification appropriate to the *symns* stack."
-  [sym]
-  (let [path (conj @*symns* (:name sym))]
-    (println ";    installed to path" path "\n")
-    (swap! *symtab* assoc path sym)))
-
-(defn gensym!
-  "Generates a symbol name (string) which is guranteed by use of an incrementing
-counter to be unique to the current compile session. Optionally takes a string
-prefix for the generated name which does not effect the numeric part of the
-name. Returns a string being the prefix argument or \"G__\" followed by the
-string render of the gensym counter before it was incremented."
-  ([] (gensym! "G__"))
-  ([s] (str s
-            (:gensym
-             (swap! *symtab*
-                    update-in [:gensym] inc)))))
-
-(defn search
-  "A wrapper around stack-search wich provides the base case logic required to
-parse fully qualified names into a full stack path. Defaults to using
-stack-search before returning a failure result."
+(defn decomp-ns
+  "Unrenders a namespace"
   [name]
-  (let [stack (reverse (split name #"[\./]"))]
-    (get @*symtab* stack
-         (stack-search name))))
+  (reverse (split name #"[\./]")))
 
-(defn stack-search
-  "Recursively searches the symbol table for a symbol with an argument name.
-Returns the symbol map if such a symbol exists. Failure behavior is undefined,
-but the returning a nil value and throwing an exception are both acceptable."
-  ([sym] (stack-search sym @*symns*))
-  ([sym stack]
-     (let [qualified-sym (conj stack sym)
-           rstack        (if-not (empty? stack) (pop stack))]
-       (or (if-let [v (get @*symtab* qualified-sym)]
-             (assoc v :qname (render-ns qualified-sym))
-             (if (empty? stack)
-               (do (println "WARNING: SYMBOL" qualified-sym "NOT FOUND")
-                 nil)))
-           (if-not (empty? stack)
-             (recur sym rstack))))))
+;;------------------------------------------------------------------------------
+;; The public symbol table searching routines
+
+(def search (partial m-search *symns*))
+(def install! (partial m-install! *symns*))
