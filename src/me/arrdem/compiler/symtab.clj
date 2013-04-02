@@ -4,13 +4,6 @@
 (def base_st
   {
 ;;------------------------------------------------------------------------------
-;; Predefined types
-   '("real")     {:name "real"     :type :basic :size 8}
-   '("integer")  {:name "integer"  :type :basic :size 4}
-   '("char")     {:name "char"     :type :basic :size 1}
-   '("boolean")  {:name "boolean"  :type :basic :size 4}
-
-;;------------------------------------------------------------------------------
 ;; Predefined functions
    '("exp")      {:name "exp"      :type :fn    :type/ret "real"    :type/arg ["real"]}
    '("tfexp")    {:name "trexp"    :type :fn    :type/ret "real"    :type/arg ["real"]}
@@ -34,19 +27,10 @@
    '("eof")      {:name "eof"      :type :fn    :type/ret "boolean" :type/arg []}
 
 ;;------------------------------------------------------------------------------
-;; Predefined macros
-;; ("functions") which need to be expanded via some sort of macro system in
-;; order to properly express their runtime behavior: ex. new() which requires
-;; type data.
-;;
-;; MACROS:
-;;   Macros shall have the type :macro, and the key :fn. As with lisp macros,
-;;   macros will be invoked with arguments equal to the tail of the base
-;;   form and are expected to return either an atom, or a sequence which will be
-;;   assumed contain macros and will be macroexpanded until such time as the
-;;   returned value is no longer a list, or is empty, or the expand is equal to
-;;   the input. Also, macros shall only be defined at the top level and for this
-;;   pascal compiler are not user-definable. Hardcoded only.
+;; Type conversion functions
+   '("ctoi")     {:name "ctoi"     :type :fn    :type/ret "integer" :type/arg ["char"]}
+   '("btoi")     {:name "btoi"     :type :fn    :type/ret "integer" :type/arg ["boolean"]}
+   '("itof")     {:name "itof"     :type :fn    :type/ret "real"    :type/arg ["integer"]}
 
 ;;------------------------------------------------------------------------------
 ;; Variables
@@ -66,6 +50,7 @@
 
    :label  0 ;; counter used for label generation
    :gensym 0 ;; counter shared by all symbol generation
+
    })
 
 (def ^:dynamic *symns*
@@ -150,36 +135,7 @@ but the returning a nil value and throwing an exception are both acceptable."
   "A wrapper around stack-search wich provides the base case logic required to
 parse fully qualified names into a full stack path. Defaults to using
 stack-search before returning a failure result."
-  [name]
-  (let [stack (reverse (split name #"[\./]"))]
-    (get @*symtab* stack     ;; ideal case of a fully-qualified name
-         (stack-search name) ;; base case of a full symtab search
-         )))
-
-(defn pmacroexpand
-  "An \"outermost first\" macro implementation. Looks up macros from the symbol
-table, and applies them if possible. Note that in the two arguments case, the
-second argument is the key used for pulling transformation functions out of
-symbol table entries. This exists so that the macro system can be employed first
- at AST generation time to do type conversion and soforth, and later at code
-generation time so that I'm not writing two macro systems when one will do."
-  ([expr]
-     (pmacroexpand expr :fn))
-  ([expr key]
-     (if (seq? expr)
-       (let [expander (pmacroexpand (first expr) key)
-             expander (if (symbol? expander)
-                        (name expander)
-                        (str expander))
-             expander (search expander)
-             expander (if (= :macro (:type expander))
-                        (get expander key identity))
-             res      (if expander
-                        (apply expander (rest partial))
-                        (cons (first expr) (next partial)))
-             res      (cons (first res) (map #(pmacroexpand %1 key)
-                                             (rest res)))]
-         (if expander
-           (pmacroexpand res key)
-           res))
-       expr)))
+  ([name] (search name *symtab*))
+  ([name atom]
+     (let [stack (reverse (split name #"[\./]"))]
+       (get @atom stack (stack-search name))))
