@@ -5,6 +5,7 @@
 - Add tests for the various grammar fragments
 - Fix the existing tests to reflect the changed for behavior
 - Fix the existing tests to remove the deleted parser.clj dep
+- Add type table and structure alignment tests
 
 - Rework the way that +, -, * and / generate in the IR, replacing them with
 -- M+, M-, M* and M/, being macros which do type checking and argument type conversion before expanding to
