@@ -1,5 +1,5 @@
 (ns me.arrdem.pascal.symtab
-  (:require [me.arrdem.compiler.symtab :refer :all]))
+  (:require [me.arrdem.compiler.symtab]))
 
 (def pascal_base_st
   {
@@ -44,3 +44,11 @@
 ;;    :type/value <initial value of the symbol or nil if none>
 ;;   }
   })
+
+(defmacro with-p-symtab
+  [& forms]
+  `(binding [me.arrdem.compiler.symtab/*symtab* (atom pascal_base_st)]
+     ~@forms))
+
+(def install! me.arrdem.compiler.symtab/install!)
+(def search   me.arrdem.compiler.symtab/search)
