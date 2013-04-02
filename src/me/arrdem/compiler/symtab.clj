@@ -1,6 +1,5 @@
 (ns me.arrdem.compiler.symtab
-  (:require [clojure.string :refer [split]]
-            [me.arrdem.compiler.symtab-util :refer [m-install! m-search]]))
+  (:require [clojure.string :refer [split]]))
 
 (def base_st
   {
