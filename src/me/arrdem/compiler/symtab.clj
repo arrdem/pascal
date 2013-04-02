@@ -64,7 +64,7 @@ rise! function is called which pops the top element off of this stack.
 Symbol resolution is performed by iteratively prefixing the symbol to be resolved
 with the concatonation of the stack, searching and poping until either the symbol
 is resolved, or the stack is empty."
-  (atom (list)))
+  (atom '()))
 
 (defn descend!
   "Pushes the argument namespace onto the *symns* stack, altering how symbols are
@@ -92,8 +92,11 @@ contain symbol bindings."
 (defn render-ns
   "Renders the *symns* stack to a prefix string for symbols."
   ([] (render-ns @*symns*))
-  ([stack] (str (apply str (interpose \. (reverse (next stack))))
-                "/" (first stack))))
+  ([stack]
+     (if (< 1 (count stack))
+       (str (apply str (interpose \. (reverse (next stack))))
+            "/" (first stack))
+       (first stack))))
 
 (defn install!
   "Installs a symbol map (created by the caller) in the *symtab* registry
@@ -115,11 +118,20 @@ string render of the gensym counter before it was incremented."
              (swap! *symtab*
                     update-in [:gensym] inc)))))
 
+(defn search
+  "A wrapper around stack-search wich provides the base case logic required to
+parse fully qualified names into a full stack path. Defaults to using
+stack-search before returning a failure result."
+  [name]
+  (let [stack (reverse (split name #"[\./]"))]
+    (get @*symtab* stack
+         (stack-search name))))
+
 (defn stack-search
   "Recursively searches the symbol table for a symbol with an argument name.
 Returns the symbol map if such a symbol exists. Failure behavior is undefined,
 but the returning a nil value and throwing an exception are both acceptable."
-  ([sym] (search sym @*symns*))
+  ([sym] (stack-search sym @*symns*))
   ([sym stack]
      (let [qualified-sym (conj stack sym)
            rstack        (if-not (empty? stack) (pop stack))]
@@ -130,12 +142,3 @@ but the returning a nil value and throwing an exception are both acceptable."
                  nil)))
            (if-not (empty? stack)
              (recur sym rstack))))))
-
-(defn search
-  "A wrapper around stack-search wich provides the base case logic required to
-parse fully qualified names into a full stack path. Defaults to using
-stack-search before returning a failure result."
-  ([name] (search name *symtab*))
-  ([name atom]
-     (let [stack (reverse (split name #"[\./]"))]
-       (get @atom stack (stack-search name))))
