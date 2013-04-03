@@ -30,3 +30,5 @@
 - Implement the nested dereference operation required for struct and array access to work as expected.
 
 - Implement a debug library with selectable printing ala debug.h.
+
+- Update the writeup to reflect me.arrdem.compiler.* and me.arrdem.pascal.symtab.*
