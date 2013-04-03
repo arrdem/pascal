@@ -15,16 +15,16 @@ but
 and
 `cat file.pas | java -jar target/me.arrdem.pascal-0.1.0-SNAPSHOT-standalone.jar file.pas`
 will all invoke the same code which will read the input and attempt to generate
-a valid internal representation from it for pretty-printing. 
+a valid internal representation from it for pretty-printing.
 
-Unfortunately, if the input is bad this parser/lexer pair will fail absolutely 
+Unfortunately, if the input is bad this parser/lexer pair will fail absolutely
 with horrific and utterly useless output.
 
 ## Output semantics
-(comment & vals) 
+(comment & vals)
     these groups are purely for debugging and are ignored
 
-(progn & forms) 
+(progn & forms)
     behaves as a control grouping operation, evaluates subsequent forms.
 
 (goto <integer)
@@ -34,7 +34,7 @@ with horrific and utterly useless output.
     behaves as one would expect, may be the target of (goto)s elsewhere.
 
 (funcall identifier & args)
-    behaves as one would expect and invokes a function with a fully qualified 
+    behaves as one would expect and invokes a function with a fully qualified
     name with the trailing arguments.
 
 (:= identifier expr)
@@ -47,7 +47,7 @@ I present symbols for printing as fully-qualified paths, being a string
 <base ns>.<child ns>.<2nd child ns>. ... /<symbol>
 so for instance the constant d in graph1 is "toplevel.graph1/d" and soforth.
 These semantics are used to note not only variables, but also functions with
-functions such as "writeln" being special cases and declared _at_ the top 
+functions such as "writeln" being special cases and declared _at_ the top
 level.
 
 For your benifit the compiler is configured to debug the symbol table
@@ -55,23 +55,23 @@ _after_ it has dumped the generated IR as a table seperated from the code by a
 line of "-" characters.
 
 Please note that strings and literal values are replaced with generated symbols.
-The string " " for instance is likely to be given a name such as 
-toplevel.graph1/string_0. Because we will eventually have to compute a data 
+The string " " for instance is likely to be given a name such as
+toplevel.graph1/string_0. Because we will eventually have to compute a data
 segment, I have take the preemptive measure of interning strings and all other
-constants in the symbol table for later optimization or simple inclusion. This 
-behavior also holds for literals such as 1 and 32, for which integer variables 
-with explicit values are created. Note that constants are typed to be refs to 
+constants in the symbol table for later optimization or simple inclusion. This
+behavior also holds for literals such as 1 and 32, for which integer variables
+with explicit values are created. Note that constants are typed to be refs to
 these generated variables rather than hold the value in and of themselves.
 
 ## Source code
-The source for this project is located under src/, the following is a quick list 
+The source for this project is located under src/, the following is a quick list
 of file names and rough descriptions.
 
-### src/me/arrdem/pascal.clj 
+### src/me/arrdem/pascal.clj
 Contains the main method & formatting code
 
-### src/me/arrdem/pascal/grammar.clj 
-Defines the grammar of pascal in terms of tokens, I'm proud to say that this 
+### src/me/arrdem/pascal/grammar.clj
+Defines the grammar of pascal in terms of tokens, I'm proud to say that this
 grammar was programaticly generated using the latest build of the sad toolkit
  which I posted on the piazza page some time ago.
 
