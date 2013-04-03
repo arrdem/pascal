@@ -41,7 +41,8 @@ type and macro specific initializers elsewhere."
 above. Not sure why you would need this as the typical case is single program
 invocation per compile batch but here it is anyway."
   ([]
-     (reset! me.arrdem.compiler.symtab/*symtab* pascal_base_st)))
+     (reset! me.arrdem.compiler.symtab/*symtab* {})
+     (init!)))
 
 (def fmnt "%-25s : %s")
 
