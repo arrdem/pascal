@@ -15,7 +15,7 @@
           (is (= result# (:ast ~val)))
           ;; check symbol table contents...
           (doseq [s# (:symbols ~val)]
-            (is (search (:name s#))
+            (is (= (search (:name s#)) s#)
                 (str "symbol " (:qname s#) " was not defined!"))))))))
 
 ;;------------------------------------------------------------------------------
