@@ -14,7 +14,7 @@
                   (progn "output")
                   (comment "defined variables" "graph1/i")
                   (progn (:= "graph1/i" 3)))
-   :symbols [{:name "i" :type/data "integer" :qname "graph1/i"}]})
+   :symbols [{:name "i" :type/data "integer" :qname "graph1/i" :type :symbol}]})
 
 (def trivb-pas
   {:text "program graph1(output);
@@ -38,8 +38,8 @@
                                 (:= "graph1/i" (+ 1 "graph1/i"))
                                 (goto 1)
                                 (label 2))))
-   :symbols [{:name "i" :type/data "integer" :qname "graph1/i"}
-             {:name "lim" :type/data "integer" :qname "graph1/lim"}]})
+   :symbols [{:name "i" :type/data "integer" :qname "graph1/i" :type :symbol}
+             {:name "lim" :type/data "integer" :qname "graph1/lim" :type :symbol}]})
 
 ;;------------------------------------------------------------------------------
 ;; future test cases
