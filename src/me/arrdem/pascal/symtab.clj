@@ -1,5 +1,5 @@
 (ns me.arrdem.pascal.symtab
-  (:require [me.arrdem.compiler.symtab]
+  (:require [me.arrdem.compiler.symtab :as cst]
             [me.arrdem.pascal.symtab.stdlib :as stdl]
             [me.arrdem.pascal.symtab.stdmacros :as stdm]
             [me.arrdem.pascal.symtab.stdtypes :as stdt]))
@@ -31,7 +31,8 @@ type and macro specific initializers elsewhere."
 
 (defmacro with-p-symtab
   [& forms]
-  `(binding [me.arrdem.compiler.symtab/*symtab* (atom {})]
+  `(binding [cst/*symtab* (atom {})
+             cst/*symns* (atom (list))]
      (init!)
      ~@forms))
 
