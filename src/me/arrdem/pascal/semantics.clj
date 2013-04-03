@@ -60,7 +60,7 @@
   ([v]
      (println "; declared var " v)
      (install! v)
-     (:qname v)))
+     (abs-name (:name v))))
 
 ;;------------------------------------------------------------------------------
 ;; NEW generation code..
