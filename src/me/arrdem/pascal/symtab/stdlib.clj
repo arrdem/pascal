@@ -2,8 +2,9 @@
   (:require [me.arrdem.compiler.symtab :refer [install!]]))
 
 (defn Function [name ret-type & arg-types]
-  {:name name
-   :type :fn
+  {:name     name
+   :type     :fn
+   :arity    (count arg-types)
    :type/ret ret-type
    :type/arg arg-types})
 
@@ -11,7 +12,8 @@
   "Function of no arguments, its sole purpose is to side-effect the symbol
 table to install the basic Pascal functions."
   ([]
-     (doseq [f [(Function "exp"      "real"    "real")
+     (doseq [f [
+                (Function "exp"      "real"    "real")
                 (Function "trexp"    "real"    "real")
                 (Function "sin"      "real"    "real")
                 (Function "cos"      "real"    "real")
@@ -20,7 +22,6 @@ table to install the basic Pascal functions."
                 (Function "round"    "real"    "real")
                 (Function "iround"   "integer" "real")
                 (Function "ord"      "integer" "char")
-                (Function "new"      "integer" "integer") ;; this guy needs to be a macro
                 (Function "trnew"    "integer" "integer")
                 (Function "write"    nil       "char")
                 (Function "writeln"  nil       "charsym")
@@ -31,5 +32,8 @@ table to install the basic Pascal functions."
                 (Function "read"     nil       )
                 (Function "readln"   nil       )
                 (Function "eof"      "boolean" )
-                  ]]
+                (Function "ctoi"     "integer" "char")
+                (Function "btoi"     "integer" "boolean")
+                (Function "itof"     "real"    "integer")
+                ]]
        (install! f))))
