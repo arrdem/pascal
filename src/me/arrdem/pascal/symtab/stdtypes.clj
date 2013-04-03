@@ -35,8 +35,5 @@ with the standard 'primitive' types which Pascal supports."
              {:name "char^"    :type :reference :type/data "char"    :size 4}
              {:name "boolean^" :type :reference :type/data "boolean" :size 4}
              {:name "real^"    :type :reference :type/data "real"    :size 4}
-
-             ;;-----------------------------------------------------------------
-             ;;
              ]]
     (install! t)))
