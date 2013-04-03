@@ -52,13 +52,15 @@
 
 (defn abs-name
   [sym]
+  (println "; searching for symbol" sym)
   (or (:qname sym)
       (:qname (search sym))))
 
 (defn dbg-install
   ([v]
+     (println "; declared var " v)
      (install! v)
-     (:name v)))
+     (:qname v)))
 
 ;;------------------------------------------------------------------------------
 ;; NEW generation code..
@@ -100,8 +102,7 @@
              :value s
              :type :symbol
              :type/data "string"}]
-    (dbg-install val)
-    (abs-name (search sym))))
+    (dbg-install val)))
 
 (defn snum
   [prefix [sign? rval]]
@@ -125,7 +126,7 @@
 
 (defn variable
   [[id postfixes]]
-  (let [id (abs-name (search id))]
+  (let [id (abs-name id)]
     (assert id)
     (if (empty? postfixes)
       id
@@ -167,7 +168,7 @@
   [[s0 _ sf]]
   [s0 `(~'+ 1) '<= sf])
 
-(defn for-stmnt [[_0 id _1 flist _3 stmnts]]
+(defn for-stmnt [[_0 id _1 flist _3 stmnt]]
   (let [[Vi update comp end] flist
         lstart (genlabel!)
         id     (abs-name (search id))]
@@ -175,7 +176,7 @@
       (~'label ~lstart)
       (~':= ~id ~Vi)
       (~'if (~comp ~id ~end)
-        (~'progn ~@stmnts
+        (~'progn ~stmnt
                  (~':=  ~id (~@update ~id))
                  (~'goto ~lstart))))))
 
@@ -190,7 +191,9 @@
 
 (defn procinvoke
   [[id [_0 params _1]]]
-  `(~'funcall ~id ~@params))
+  (if-not (empty? params)
+    `(~'funcall ~id ~@params)
+    `(~'funcall ~id)))
 
 (defn identifier
   ([id] (abs-name (search id))))
