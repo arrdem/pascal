@@ -32,13 +32,13 @@ is resolved, or the stack is empty."
   "Pushes the argument namespace onto the *symns* stack, altering how symbols are
 resolved until the *symns* stack is poped. Used for recuring into function
 and program definitions which may have local bindings."
-  [ns] (swap! *symns* conj ns))
+  [ns] (swap! *symns* concat (list ns)))
 
 (defn ascend!
   "Pops the *synms* stack, taking any symbols defined in a nested ns out of
 scope. Invoked when returning from function and program definitions as they may
 contain symbol bindings."
-  [] (swap! *symns* pop))
+  [] (swap! *symns* butlast))
 
 ;;------------------------------------------------------------------------------
 ;; The symbol table
@@ -74,14 +74,14 @@ string render of the gensym counter before it was incremented."
   ([] (render-ns @*symns*))
   ([stack]
      (if (< 1 (count stack))
-       (str (apply str (interpose \. (reverse (next stack))))
-            "/" (first stack))
+       (str (apply str (interpose \. (butlast stack)))
+            "/" (last stack))
        (first stack))))
 
 (defn decomp-ns
   "Unrenders a namespace"
   [name]
-  (reverse (split name #"[\./]")))
+  (split name #"[\./]"))
 
 ;;------------------------------------------------------------------------------
 ;; Manipulation routines for the various symbol registries which this system
@@ -92,7 +92,7 @@ string render of the gensym counter before it was incremented."
   "Meta symbol installer. Takes a namespace structure and a record as arguments,
 and performs the appropriate swap! respecting the namespacing stack."
   [atom sym]
-  (let [path (conj @*symns* (:name sym))]
+  (let [path (concat @*symns* (list (:name sym)))]
     (swap! atom assoc-in path sym)))
 
 (defn- stack-search
@@ -100,7 +100,7 @@ and performs the appropriate swap! respecting the namespacing stack."
 Returns the symbol map if such a symbol exists. Failure behavior is undefined,
 but the returning a nil value and throwing an exception are both acceptable."
   ([atom sym stack]
-     (let [qualified-sym (conj stack sym)
+     (let [qualified-sym (concat stack (list sym))
            rstack        (rest stack)]
        (or (if-let [v (get-in @atom qualified-sym)]
              (assoc v :qname (render-ns qualified-sym))
@@ -113,9 +113,11 @@ but the returning a nil value and throwing an exception are both acceptable."
 parse fully qualified names into a full stack path. Defaults to using
 stack-search before returning a failure result."
   [atom name]
-  (let [stack (decomp-ns name)]
-    (get @atom stack
-         (stack-search atom name stack))))
+  (let [stack (decomp-ns name)
+        name  (last stack)
+        stack (butlast stack)
+        stack (if (empty? stack) @*symns* stack)]
+    (stack-search atom name stack)))
 
 ;;------------------------------------------------------------------------------
 ;; The public symbol table searching routines
