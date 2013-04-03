@@ -1,17 +1,15 @@
 (ns me.arrdem.pascal.core-test
   (:require [clojure.test :refer :all]
 
-            [me.arrdem.pascal.test-util :refer [symtab-wrapper]]
             [me.arrdem.pascal.test-text :as data]
 
-            [me.arrdem.pascal :refer [process-string]]
-            [me.arrdem.pascal.parser :refer [build-ast]]
-            [me.arrdem.pascal.symtab :refer [search]]))
+            [me.arrdem.pascal :refer [process-string build-ast]]
+            [me.arrdem.pascal.symtab :refer [search with-p-symtab]]))
 
 (defmacro full-test-case [sym val]
   `(deftest ~sym
      (testing
-         (symtab-wrapper
+         (with-p-symtab
           (let [result# (process-string (:text ~val))]
           ;; check AST result...
           (is (= result# (:ast ~val)))
