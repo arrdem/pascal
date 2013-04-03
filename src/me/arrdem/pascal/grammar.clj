@@ -328,7 +328,7 @@
 (def statements
   (fnp/semantics
    (fnp/conc tok_begin statement-list tok_end)
-   second))
+   s/statements))
 
 (def ifte
   (fnp/conc tok_if
