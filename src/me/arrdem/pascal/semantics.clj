@@ -86,7 +86,10 @@
   (let [v {:name      id
            :value     v
            :type      :symbol
-           :type/data :reference}]
+           :type/data (cond
+                       (string? v) "string"
+                       (float? v) "real"
+                       (integer? v) "integer")}]
     (dbg-install v)))
 
 (defn constant-declaration
