@@ -41,13 +41,13 @@ then decomp will target stdin as its token source."
          (-> f
              slurp
              process-string
-             code-pp)
+             pr-code)
          (pr-symtab)
          nil)
 
        (do (-> *in*
                slurp
                process-string
-               code-pp)
+               pr-code)
            (pr-symtab)
            nil))))
