@@ -1,4 +1,4 @@
-(defproject me.arrdem.pascal "0.1.0-SNAPSHOT"
+(defproject me.arrdem.pascal "0.2.0-SNAPSHOT"
   :description "A Pascal lexer, parser and AST generator"
   ;; :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
