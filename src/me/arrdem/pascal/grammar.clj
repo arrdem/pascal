@@ -446,12 +446,13 @@
    (fnp/conc statement delim_colon case-label-list)))
 
 (def expression-list
-  (fnp/semantics
-   (fnp/conc expression
-             (fnp/opt
-              (fnp/conc delim_comma
-                        expression-list)))
-   s/tail-cons))
+  (fnp/opt
+   (fnp/semantics
+    (fnp/conc expression
+              (fnp/opt
+               (fnp/conc delim_comma
+                         expression-list)))
+    s/tail-cons)))
 
 (def label
   unsigned-integer)
@@ -513,13 +514,13 @@
 
 (def primary-expression
   (fnp/alt procinvoke
+           string
+           tok_nil
            (fnp/conc delim_lbrack element-list delim_rbrack)
            (fnp/conc delim_lparen expression delim_rparen)
            variable
            unsigned-integer
-           unsigned-real
-           string
-           tok_nil))
+           unsigned-real))
 
 (def element-list
   (fnp/alt (fnp/conc element delim_comma element-list)
