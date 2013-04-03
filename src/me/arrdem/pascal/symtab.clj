@@ -4,11 +4,6 @@
             [me.arrdem.pascal.symtab.stdmacros :as stdm]
             [me.arrdem.pascal.symtab.stdtypes :as stdt]))
 
-(defmacro with-p-symtab
-  [& forms]
-  `(binding [me.arrdem.compiler.symtab/*symtab* (atom pascal_base_st)]
-     ~@forms))
-
 (def install!
   "Duplicate me.arrdem.compiler.symtab/install! into this namespace"
   me.arrdem.compiler.symtab/install!)
@@ -33,6 +28,13 @@ type and macro specific initializers elsewhere."
      (stdm/init!)
      (stdl/init!)
      (stdt/init!)))
+
+(defmacro with-p-symtab
+  [& forms]
+  `(binding [me.arrdem.compiler.symtab/*symtab* (atom {})]
+     (init!)
+     ~@forms))
+
 
 (defn clear!
   "Nukes the symbol table, replacing it with the Pascal basic table as defined
