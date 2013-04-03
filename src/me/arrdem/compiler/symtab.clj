@@ -15,7 +15,7 @@
 ;;------------------------------------------------------------------------------
 ;; The namespace stack
 
-(def ^:dynamic ^:private *symns*
+(def ^:dynamic *symns*
   "Used to track the namespace levels above the current point of evaluation.
 An empty list signifies that we are operating at the \"top\" level where program
 forms and other such values live. It is here that the \"standard library\" lives.
@@ -43,7 +43,7 @@ contain symbol bindings."
 ;;------------------------------------------------------------------------------
 ;; The symbol table
 
-(def ^:dynamic ^:private *symtab*
+(def ^:dynamic *symtab*
   "Used to track all symbols."
   (atom {}))
 
