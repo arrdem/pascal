@@ -50,5 +50,33 @@
   `(binding [me.arrdem.compiler.symtab/*symtab* (atom pascal_base_st)]
      ~@forms))
 
-(def install! me.arrdem.compiler.symtab/install!)
-(def search   me.arrdem.compiler.symtab/search)
+(def install!
+  "Duplicate me.arrdem.compiler.symtab/install! into this namespace"
+  me.arrdem.compiler.symtab/install!)
+
+(def search
+  "Duplicate me.arrdem.compiler.symtab/search into this namespace"
+  me.arrdem.compiler.symtab/search)
+
+(def ascend!
+  "Duplicate me.arrdem.compiler.symtab/ascend! into this namespace"
+  me.arrdem.compiler.symtab/ascend!)
+
+(def descend!
+  "Duplicate me.arrdem.compiler.symtab/descend! into this namespace"
+  me.arrdem.compiler.symtab/descend!)
+
+(defn clear!
+  "Nukes the symbol table, replacing it with the Pascal basic table as defined
+above. Not sure why you would need this as the typical case is single program
+invocation per compile batch but here it is anyway."
+  ([]
+     (reset! me.arrdem.compiler.symtab/*symtab* pascal_base_st)))
+
+(defn pr-symtab
+  "Pretty-prints the core symbol table. Indended for debugging, may be migrated
+to compiler.symtab and linked here. Needs to be modified to print symbols in
+some sort of namespace derived order."
+  ([]
+     (doseq [[k v] @me.arrdem.compiler.symtab/*symtab*]
+       (println (format fmnt (str k) (str v))))))
