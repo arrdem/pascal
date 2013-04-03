@@ -27,17 +27,17 @@ with horrific and utterly useless output.
 (progn & forms)
     behaves as a control grouping operation, evaluates subsequent forms.
 
-(goto <integer)
+(goto <integer>)
     behaves as one would expect, a goto to a (label) statement elsewhere.
 
-(label <integer)
+(label <integer>)
     behaves as one would expect, may be the target of (goto)s elsewhere.
 
 (funcall identifier & args)
     behaves as one would expect and invokes a function with a fully qualified
     name with the trailing arguments.
 
-(:= identifier expr)
+(:= <identifier> <expr>)
     assignment operator, +, -, *, / etc behave the same way.
 
 ## Qualified names and the symbol table
@@ -56,7 +56,7 @@ line of "-" characters.
 
 Please note that strings and literal values are replaced with generated symbols.
 The string " " for instance is likely to be given a name such as
-toplevel.graph1/string_0. Because we will eventually have to compute a data
+graph1/string_0. Because we will eventually have to compute a data
 segment, I have take the preemptive measure of interning strings and all other
 constants in the symbol table for later optimization or simple inclusion. This
 behavior also holds for literals such as 1 and 32, for which integer variables
@@ -90,9 +90,15 @@ defines rules used by the grammar for matching these tokens.
 ### src/me/arrdem/pascal/util.clj
 Holding pen for code with no better home as of yet
 
-### src/me/arrde/pascal/symtab.clj
+### src/me/arrdem/pascal/symtab.clj
 Defines the symbol table and the various legal operations therupon such as
-install! and search.
+install! and search. As of 0.2.0 backed largely by code in
+me.arrdem.compiler.
+
+### src/me/arrdem/compiler/*
+Various elements of the compiler largely related to the symbol table, type
+and macro systems which I am deliberately over-engineering with the intent
+of building a serious Lisp compiler after the end of this course.
 
 ## License
 
