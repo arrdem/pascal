@@ -24,20 +24,15 @@
             for i := 0 to lim do
               writeln('*')
           end."
-   :ast '(program "graph1"
-                  (progn "output")
-                  (comment "defined variables"
-                           "graph1/i"
-                           "graph1/lim")
+   :ast '(program "graph1" (progn "output")
+                  (comment "defined variables" "graph1/i" "graph1/lim")
                   (progn (:= "graph1/lim" 7)
-                         (progn (label 1)
+                         (progn (label 0)
                                 (:= "graph1/i" 0)
-                                (if (<= "graph1/lim" "graph1/i")
-                                  (goto 2))
-                                (funcall "writeln" "graph1/str_1")
-                                (:= "graph1/i" (+ 1 "graph1/i"))
-                                (goto 1)
-                                (label 2))))
+                                (if (<= "graph1/i" "graph1/lim")
+                                  (progn (funcall "writeln" nil)
+                                         (:= "graph1/i" (+ 1 "graph1/i"))
+                                         (goto 0))))))
    :symbols [{:name "i" :type/data "integer" :qname "graph1/i" :type :symbol}
              {:name "lim" :type/data "integer" :qname "graph1/lim" :type :symbol}]})
 
