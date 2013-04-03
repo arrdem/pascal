@@ -40,6 +40,11 @@ scope. Invoked when returning from function and program definitions as they may
 contain symbol bindings."
   [] (swap! *symns* butlast))
 
+(defn reset-symns!
+  "Nukes the *symns* value restoring it to its base state. Usefull for testing,
+multiple compile runs without restart."
+  ([] (reset! *symns* (list))))
+
 ;;------------------------------------------------------------------------------
 ;; The symbol table
 
@@ -59,8 +64,11 @@ string render of the gensym counter before it was incremented."
              (swap! *symtab*
                     update-in [:gensym] inc)))))
 
-;;------------------------------------------------------------------------------
-;; Namespace stringification and destringification
+(defn reset-gensym!
+  "Nukes the *symtab* gensym counter restoring it to its base state. Usefull for
+testing, multiple compile runs without restart."
+  ([] (swap! *symtab* assoc :gensym 0)))
+
 
 (defn genlabel!
   "Generates and returns an integer label, side-effecting the :label count of the
@@ -68,6 +76,14 @@ string render of the gensym counter before it was incremented."
   ([] (:label
        (swap! *symtab*
               update-in [:label] inc))))
+
+(defn reset-genlabel!
+  "Nukes the *symtab* genlabel counter restoring it to its base state. Usefull for
+testing, multiple compile runs without restart."
+  ([] (swap! *symtab* assoc :label 0)))
+
+;;------------------------------------------------------------------------------
+;; Namespace stringification and destringification
 
 (defn render-ns
   "Renders the *symns* stack to a prefix string for symbols."
