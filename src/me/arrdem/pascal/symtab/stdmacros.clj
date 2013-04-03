@@ -1,11 +1,7 @@
 (ns me.arrdem.pascal.symtab.stdmacros
   (:require [me.arrdem.compiler.symtab :refer [install! search]]
-            [me.arrdem.compiler.types  :refer [sizeof]]))
-
-(defn Macro [name fn]
-  {:name     name
-   :type     :macro
-   :expander fn})
+            [me.arrdem.compiler.types  :refer [sizeof]]
+            [me.arrdem.compiler.macros :refer [Macro]]))
 
 ;;------------------------------------------------------------------------------
 
