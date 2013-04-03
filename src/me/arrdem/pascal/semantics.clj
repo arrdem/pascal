@@ -1,7 +1,7 @@
 (ns me.arrdem.pascal.semantics
   (:require [clojure.pprint :refer [pprint]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
-                                             search gensym! render-ns]]
+                                               search gensym! render-ns]]
             [name.choi.joshua.fnparse :as fnp]))
 
 ;;------------------------------------------------------------------------------
@@ -57,8 +57,6 @@
 
 (defn dbg-install
   ([v]
-     (println "; installing symbol" (:name v))
-     (println ";     " (select-keys v [:type :type/data :value :name]))
      (install! v)
      (:name v)))
 
@@ -122,8 +120,6 @@
 
 (defn label-declaration
   [[_l l0 ls]]
-  (println l0)
-  (println ls)
   (let [ls (map second ls)]
     `(~'comment "found label declarations" ~@(cons l0 ls))))
 
