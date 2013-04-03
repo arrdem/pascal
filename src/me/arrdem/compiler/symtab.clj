@@ -52,6 +52,10 @@ multiple compile runs without restart."
   "Used to track all symbols."
   (atom {}))
 
+(defn ninc
+  "An inc which doesn't friggin die on nil."
+  [x] (if x (inc x) 0))
+
 (defn gensym!
   "Generates a symbol name (string) which is guranteed by use of an incrementing
 counter to be unique to the current compile session. Optionally takes a string
@@ -62,7 +66,7 @@ string render of the gensym counter before it was incremented."
   ([s] (str s
             (:gensym
              (swap! *symtab*
-                    update-in [:gensym] inc)))))
+                    update-in [:gensym] ninc)))))
 
 (defn reset-gensym!
   "Nukes the *symtab* gensym counter restoring it to its base state. Usefull for
@@ -75,7 +79,7 @@ testing, multiple compile runs without restart."
 *symtab* registry."
   ([] (:label
        (swap! *symtab*
-              update-in [:label] inc))))
+              update-in [:label] ninc))))
 
 (defn reset-genlabel!
   "Nukes the *symtab* genlabel counter restoring it to its base state. Usefull for
