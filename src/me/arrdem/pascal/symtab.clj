@@ -43,6 +43,7 @@ above. Not sure why you would need this as the typical case is single program
 invocation per compile batch but here it is anyway."
   ([]
      (reset! me.arrdem.compiler.symtab/*symtab* {})
+     (reset! me.arrdem.compiler.symtab/*symns*  '())
      (init!)))
 
 (def fmnt "%-25s : %s")
