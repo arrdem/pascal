@@ -21,19 +21,20 @@
 (defn init!
   "Function of no arguments which serves simply to populate the symbol table
 with the standard 'primitive' types which Pascal supports."
-  (doseq [t [
-             ;;-----------------------------------------------------------------
-             ;; Basic types
-             {:name "integer"  :type :primitive :type/data "integer" :size 4}
-             {:name "char"     :type :primitive :type/data "integer" :size 1}
-             {:name "boolean"  :type :primitive :type/data "integer" :size 4}
-             {:name "real"     :type :primitive :type/data "real"    :size 8}
+  ([]
+     (doseq [t [
+                ;;--------------------------------------------------------------
+                ;; Basic types
+                {:name "integer"  :type :primitive :type/data "integer" :size 4}
+                {:name "char"     :type :primitive :type/data "integer" :size 1}
+                {:name "boolean"  :type :primitive :type/data "integer" :size 4}
+                {:name "real"     :type :primitive :type/data "real"    :size 8}
 
-             ;;-----------------------------------------------------------------
-             ;; Pointer types
-             {:name "integer^" :type :reference :type/data "integer" :size 4}
-             {:name "char^"    :type :reference :type/data "char"    :size 4}
-             {:name "boolean^" :type :reference :type/data "boolean" :size 4}
-             {:name "real^"    :type :reference :type/data "real"    :size 4}
-             ]]
-    (install! t)))
+                ;;--------------------------------------------------------------
+                ;; Pointer types
+                {:name "integer^" :type :reference :type/data "integer" :size 4}
+                {:name "char^"    :type :reference :type/data "char"    :size 4}
+                {:name "boolean^" :type :reference :type/data "boolean" :size 4}
+                {:name "real^"    :type :reference :type/data "real"    :size 4}
+                ]]
+       (install! t))))
