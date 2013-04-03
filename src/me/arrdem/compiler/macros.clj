@@ -33,6 +33,10 @@ Macro records quick and relatively easy."
   [sym]
   (= :macro (typeof sym)))
 
+(def expander
+  "Operator to get the expander of a macro record."
+  :expander)
+
 (defn pmacroexpand
   "An \"outermost first\" macro implementation. Looks up macros from the symbol
 table, and applies them if possible. Note that in the two arguments case, the
@@ -41,7 +45,7 @@ symbol table entries. This exists so that the macro system can be employed first
  at AST generation time to do type conversion and soforth, and later at code
 generation time so that I'm not writing two macro systems when one will do."
   ([expr]
-     (pmacroexpand expr :expander))
+     (pmacroexpand expr expander))
   ([expr key]
      (if (seq? expr)
        (let [expander (pmacroexpand (first expr) key)
