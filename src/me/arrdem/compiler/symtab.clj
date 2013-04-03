@@ -93,7 +93,7 @@ string render of the gensym counter before it was incremented."
 and performs the appropriate swap! respecting the namespacing stack."
   [atom sym]
   (let [path (conj @*symns* (:name sym))]
-    (swap! atom assoc path sym)))
+    (swap! atom assoc-in path sym)))
 
 (defn- stack-search
   "Recursively searches the symbol table for a symbol with an argument name.
@@ -101,8 +101,8 @@ Returns the symbol map if such a symbol exists. Failure behavior is undefined,
 but the returning a nil value and throwing an exception are both acceptable."
   ([atom sym stack]
      (let [qualified-sym (conj stack sym)
-           rstack        (pop stack)]
-       (or (if-let [v (get @atom qualified-sym)]
+           rstack        (rest stack)]
+       (or (if-let [v (get-in @atom qualified-sym)]
              (assoc v :qname (render-ns qualified-sym))
              (if (empty? stack) nil))
            (if-not (empty? stack)
@@ -115,10 +115,10 @@ stack-search before returning a failure result."
   [atom name]
   (let [stack (decomp-ns name)]
     (get @atom stack
-         (stack-search atom name))))
+         (stack-search atom name stack))))
 
 ;;------------------------------------------------------------------------------
 ;; The public symbol table searching routines
 
-(def search (partial m-search *symns*))
-(def install! (partial m-install! *symns*))
+(def search (partial m-search *symtab*))
+(def install! (partial m-install! *symtab*))
