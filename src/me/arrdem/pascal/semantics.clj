@@ -209,3 +209,7 @@
     (if form
     `(~@form ~expr)
     expr)))
+
+(defn statements
+  [[_0 stmnts _1]]
+  (cons 'progn stmnts))
