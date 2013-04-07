@@ -5,7 +5,7 @@
       :author "Reid McKenzie"
       :added  "0.2.0"}
   me.arrdem.pascal.ast
-  (:require [me.arrdem.pascal.symtab :refer [search install!]]))
+  (:require [me.arrdem.pascal.symtab :refer [search install! genlabel!]]))
 
 ;;------------------------------------------------------------------------------
 ;; Symbol table manipulation
@@ -31,11 +31,16 @@
 
 ;;------------------------------------------------------------------------------
 ;; Expression fragments
+(defn makecomment [& cmnts]
+  `("comment" ~@cmnts))
+
 (defn makegoto [label]
   `("goto" ~label))
 
 (defn makeprogn [forms]
-  `("progn" ~@forms))
+  (if (< 1 (count forms))
+    `("progn" ~@forms)
+    (first forms)))
 
 (defn binop [e0 op e1]
   `(~op ~e0 ~e1))
@@ -45,7 +50,7 @@
 
 (defn makeif
   ([test s] (makeif test s nil))
-  ([test s e])`("if" ~test ~s ~e))
+  ([test s e] `("if" ~test ~s ~e)))
 
 (defn makederef [sym]
   (:qname (search sym)))
