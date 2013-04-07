@@ -4,10 +4,70 @@
                as a utility suite for macros when they come down the pipe."
       :author "Reid McKenzie"
       :added  "0.2.0"}
-  me.arrdem.pascal.ast)
+  me.arrdem.pascal.ast
+  (:require [me.arrdem.pascal.symtab :refer [search install!]]))
 
+;;------------------------------------------------------------------------------
+;; Symbol table manipulation
+(defn abs-name
+  ([sym]
+     (println "; searching for symbol" sym)
+     (or (:qname sym)
+         (:qname (search sym)))))
+
+(defn dbg-install
+  ([v]
+     (println "; declared var " v)
+     (install! v)
+     (abs-name v)))
+
+;;------------------------------------------------------------------------------
+;; Expression manipulators
 (defn ecomp [fx fn]
   `(~fn ~fx))
 
 (defn e-> [v & fns]
   (reduce ecomp v fns))
+
+;;------------------------------------------------------------------------------
+;; Expression fragments
+(defn makegoto [label]
+  `("goto" ~label))
+
+(defn makeprogn [forms]
+  `("progn" ~@forms))
+
+(defn binop [e0 op e1]
+  `(~op ~e0 ~e1))
+
+(defn makelabel [v]
+  `("label" ~v))
+
+(defn makeif
+  ([test s] (makeif test s nil))
+  ([test s e])`("if" ~test ~s ~e))
+
+(defn makederef [sym]
+  (:qname (search sym)))
+
+(defn makefuncall [sym args]
+  `("funcall" ~(symbol sym) ~@args))
+
+;;------------------------------------------------------------------------------
+;; Common control structures
+(defn makewhile [test s]
+  (let [label (genlabel!)]
+    (makeprogn
+     [(makelabel label)
+      (makeif test
+              (makeprogn [s
+                          (makegoto ~label)]))
+      ])))
+
+(defn makerepeat [s test]
+  (let [label (genlabel!)]
+    (makeprogn
+      [(makelabel label)
+      s
+      (makeif (ecomp test "not")
+              (makegoto label))])))
