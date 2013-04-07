@@ -33,7 +33,9 @@ type conversion hierarchy."
 (defn ^:dynamic transformer-name
   "A rebindable function which computes "
   ([x y]
-     (str (name x) "->" (name y))))
+     (if y
+       (str (name x) "->" (name y))
+       (name x))))
 
 ;;------------------------------------------------------------------------------
 ;; traversal & computation functions
@@ -59,16 +61,27 @@ resolve-conversion for \"character\" and \"boolean\" should yield
                             (fn [p1 p2] (<= (apply + (map count p1))
                                             (apply + (map count p2)))))
                        candidates))]
-           (map rest shortest))))
+           shortest)))
 
 (defn path->transformer
   "Transforms a conversion-path into a function f being a macro style functions
 taking expressions as arguments and returning the appropriate type converted
 expression. Depends on the type conversion resolution operations."
   ([path]
-     (let [steps (map vector path (rest path))]
+     (let [steps (map vector path
+                             (rest path))]
        #(apply e-> %1 (map (partial apply transformer-name)
-                           steps)))))
+                     steps)))))
+
+(defn convert [typed-expr from to]
+  ((path->transformer (first (conversion-path from to)))
+   typed-expr))
+
+(defn level [e0 t0 e1 t1]
+  (let [[c0 c1] (conversion-path t0 t1)]
+    (println c0 c1)
+    [((path->transformer c0) e0)
+     ((path->transformer c1) e1)]))
 
 ;;------------------------------------------------------------------------------
 ;; Type matrix manipulation expressions
