@@ -2,7 +2,7 @@
   (:require [clojure.set :as set]
 
             [me.arrdem.pascal.symtab :refer [search install!]]
-            [me.arrdem.pascal.ast :refer [e->]]
+            [me.arrdem.pascal.ast :refer [e-> makefuncall]]
 
             [loom.graph  :as graph]
             [loom.alg    :as traversals]))
@@ -32,8 +32,8 @@ type conversion hierarchy."
 ;; Utilities
 (defn ^:dynamic transformer-name
   "A rebindable function which computes "
-  [x y]
-  (str (name x) "->" (name y)))
+  ([x y]
+     (str (name x) "->" (name y))))
 
 ;;------------------------------------------------------------------------------
 ;; traversal & computation functions
@@ -72,11 +72,13 @@ expression. Depends on the type conversion resolution operations."
 
 ;;------------------------------------------------------------------------------
 ;; Type matrix manipulation expressions
-(defmacro with-types [binding & forms]
-  `(binding [*type-graph* ~binding]
-     ~@forms))
+(defmacro with-types
+  ([binding & forms]
+     `(binding [*type-graph* ~binding]
+        ~@forms)))
 
-(defn install-transformer! [from to entry]
-  (swap! *type-graph* graph/add-edges [from to])
-  (install! (assoc entry
-              :name (transformer-name from to))))
+(defn install-transformer!
+  ([from to entry]
+     (swap! *type-graph* graph/add-edges [from to])
+     (install! (assoc entry
+                 :name (transformer-name from to)))))
