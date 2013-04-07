@@ -1,39 +1,11 @@
 (ns me.arrdem.pascal.semantics
   (:require [clojure.pprint :refer [pprint]]
+
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns]]
+            [me.arrdem.pascal.ast :refer :all]
+
             [name.choi.joshua.fnparse :as fnp]))
-
-;;------------------------------------------------------------------------------
-;; OLD generation code..
-(defn binop [args]
-  (let [[e0 op e1] args]
-    `(~op ~e0 ~e1)))
-
-(defn makeif [[_0 test _1 s elsepart]]
-  (let [else (if elsepart (second elsepart))]
-    `(~'if ~test ~s ~else)))
-
-(defn makewhile [[_0 test _1 s]]
-  (let [label (genlabel!)]
-    `((~'label ~label)
-      (~'if ~test
-          (~'do ~s
-              (~'goto ~label))))))
-
-(defn makerepeat [[_0 s _1 test]]
-  (let [label (genlabel!)]
-    `((~'label ~label)
-      ~s
-      (~'if (~'not ~test)
-            (~'goto ~label)))))
-
-(defn makederef [sym]
-  `(~'deref ~(symbol (:qname (search sym)))))
-
-(defn makefuncall [[sym _ args]]
-  `(funcall ~(symbol sym) ~@args))
-
 
 ;;------------------------------------------------------------------------------
 ;; TODO: reduce this out, need to eliminate calls to the other three from the
@@ -46,21 +18,6 @@
 (def cons-ht tail-cons)
 (def variableid-list tail-cons)
 (def vardecls tail-cons)
-
-;;------------------------------------------------------------------------------
-;; some supporting functions...
-
-(defn abs-name
-  [sym]
-  (println "; searching for symbol" sym)
-  (or (:qname sym)
-      (:qname (search sym))))
-
-(defn dbg-install
-  ([v]
-     (println "; declared var " v)
-     (install! v)
-     (abs-name (:name v))))
 
 ;;------------------------------------------------------------------------------
 ;; NEW generation code..
@@ -79,7 +36,7 @@
 
 (defn variable-declaration
   [[_ decls]]
-  `(~'comment "defined variables" ~@(reduce concat decls)))
+  (apply makecomment "defined variables" (reduce concat decls)))
 
 (defn const-assign
   [[id _ v]]
@@ -95,8 +52,8 @@
 (defn constant-declaration
   [[_ c0 cs]]
   (let [cs (map second cs)]
-    `(~'comment "got constant decl group:"
-                ~@(cons c0 cs))))
+    (makecomment "got constant decl group:"
+                 (cons c0 cs))))
 
 (defn string
   [s]
@@ -125,7 +82,7 @@
 (defn label-declaration
   [[_l l0 ls]]
   (let [ls (map second ls)]
-    `(~'comment "found label declarations" ~@(cons l0 ls))))
+    (makecomment "found label declarations" (cons l0 ls))))
 
 (defn variable
   [[id postfixes]]
@@ -133,26 +90,25 @@
     (assert id)
     (if (empty? postfixes)
       id
-      `(~'-> ~id
-             ~@postfixes))))
+      (e-> id postfixes))))
 
 (defn additive-expression
   [[me tail]]
   (if-let [[op adxpr] tail]
-    `(~op ~me ~adxpr)
+    (binop op me adxpr)
     me))
 
 (defn assignment
   [[target assignop expr]]
-  `(~assignop ~target ~expr))
+  (binop ":=" target expr))
 
 (defn pascal-program
   [[[_0 id] heading _1 block _2]]
-  `(~'program ~id ~@heading ~@block))
+  `("program" ~id ~@heading ~@block))
 
 (defn program-heading
   [[_l ids _r]]
-  (map (fn [i] `(~'progn ~i))
+  (map makeprogn
        ids))
 
 (defn block
@@ -161,58 +117,55 @@
 
 (defn block2progn
   [[_0 exprs _1]]
-  `(~'progn ~@(remove nil? exprs)))
+  (apply makeprogn (remove nil? exprs)))
 
 (defn for-downto
   [[s0 _ sf]]
-  [s0 `(~'- 1) '>= sf])
+  [s0 `("-" 1) ">=" sf])
 
 (defn for-to
   [[s0 _ sf]]
-  [s0 `(~'+ 1) '<= sf])
+  [s0 `("+" 1) "<=" sf])
 
 (defn for-stmnt [[_0 id _1 flist _3 stmnt]]
   (let [[Vi update comp end] flist
         lstart (genlabel!)
         id     (abs-name (search id))]
-    `(~'progn
-      (~'label ~lstart)
-      (~':= ~id ~Vi)
-      (~'if (~comp ~id ~end)
-        (~'progn ~stmnt
-                 (~':=  ~id (~@update ~id))
-                 (~'goto ~lstart))))))
+    (makeprogn
+      [(makelabel lstart)
+       (binop ':= id Vi)
+       (makeif `(~comp ~id ~end)
+               (makeprogn [stmnt
+                           (binop ':=  id (concat update '(id)))
+                           (makegoto lstart)]))
+       ])))
 
 (defn repeat-stmnt
   [[_rep stmnts _unt expr]]
   (let [lbl (genlabel!)]
-    `(~'progn (~'label ~lbl)
-            ~@stmnts
-            (~'if (~'not ~expr)
-              (~'goto ~lbl)))
-    ))
+    (makeprogn
+     [(makelabel lbl)
+      stmnts
+      (makeif `("not" ~expr)
+              (makegoto lbl))
+      ])))
 
 (defn procinvoke
   [[id [_0 params _1]]]
-  (if-not (empty? params)
-    `(~'funcall ~id ~@params)
-    `(~'funcall ~id)))
+  (makefuncall id params))
 
 (defn identifier
-  ([id] (abs-name (search id))))
+  ([id] (abs-name id)))
 
 (defn unary-expression
   [[op expr]]
   (let [form (case op
                (+) nil
-               (-) `(~'* -1)
-               (not) `(~'not)
-               (nil) nil)
-        ]
-    (if form
-    `(~@form ~expr)
-    expr)))
+               (-) `("*" -1)
+               (not) `("not")
+               (nil) nil)]
+    (concat form (list expr))))
 
 (defn statements
   [[_0 stmnts _1]]
-  (cons 'progn stmnts))
+  (makeprogn stmnts))

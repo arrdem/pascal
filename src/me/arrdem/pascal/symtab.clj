@@ -20,6 +20,10 @@
   "Duplicate me.arrdem.compiler.symtab/descend! into this namespace"
   me.arrdem.compiler.symtab/descend!)
 
+(def genlabel!
+  "Duplicate me.arrdem.compiler.symtab/genlabel! into this namespace"
+  me.arrdem.compiler.symtab/genlabel!)
+
 (defn init!
   "Installs the basic Pascal symbols and type conversions to the symbol table.
 May or may not handle types and macros as well, may or may not pass those off to
