@@ -45,12 +45,18 @@ expression. Depends on the type conversion resolution operations."
        #(apply e-> %1 (map (partial apply transformer-name)
                      steps)))))
 
-(defn convert [typed-expr from to]
-  ((path->transformer (first (conversion-path from to)))
-   typed-expr))
+(defn convert
+  "Special case of a type conversion for forcing an expression to a known type.
+Intended for use when assigning an int to a float variable and soforth."
+  ([typed-expr from to]
+     ((path->transformer (first (h/conversion-path from to)))
+      typed-expr)))
 
-(defn level [e0 t0 e1 t1]
-  (let [[c0 c1] (conversion-path t0 t1)]
-    (println c0 c1)
-    [((path->transformer c0) e0)
-     ((path->transformer c1) e1)]))
+(defn level
+  "Named because it computes the \"level\" representation type for the two
+expressions, this function transforms both expression arguments to the type of
+the minimum common representation according to the type graph."
+  ([e0 t0 e1 t1]
+     (let [[c0 c1] (h/conversion-path t0 t1)]
+       [((path->transformer c0) e0)
+        ((path->transformer c1) e1)])))
