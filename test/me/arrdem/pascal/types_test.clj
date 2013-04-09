@@ -6,15 +6,12 @@
 (deftest self-conversion
   (with-types (atom -type-graph)
     (doseq [t ["integer" "real" "character" "boolean"]]
-      (is (= (conversion-path t t) '(() ()) )))))
+      (is (= (conversion-path t t) [nil nil])))))
 
 (deftest int-conversion
   (with-types (atom -type-graph)
-    (is (= (first (conversion-path "character" "integer"))
-           '(("integer") ())
-           ))
+    (is (= (conversion-path "character" "integer")
+           ['("character" "integer") nil]))
 
-    (is (= (first (conversion-path "boolean" "integer"))
-           '(("integer") ())
-           ))
-    ))
+    (is (= (conversion-path "boolean" "integer")
+           ['("boolean" "integer") nil]))))
