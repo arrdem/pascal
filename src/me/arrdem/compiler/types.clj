@@ -1,4 +1,9 @@
-(ns me.arrdem.compiler.types)
+(ns ^{:doc "Defines various primitives for interacting with type records in the
+            symbol table, as well as for initializing them and computing
+            properties such as alignment."
+      :added "0.1.5"
+      :author "Reid McKenzie"}
+      me.arrdem.compiler.types)
 
 ;;------------------------------------------------------------------------------
 ;; Code for computing field alignments
