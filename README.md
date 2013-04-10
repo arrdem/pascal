@@ -21,31 +21,31 @@ Unfortunately, if the input is bad this parser/lexer pair will fail absolutely
 with horrific and utterly useless output.
 
 ## Output semantics
-(comment & vals)
+("comment" & vals)
     these groups are purely for debugging and are ignored
 
-(progn & forms)
+("progn" & forms)
     behaves as a control grouping operation, evaluates subsequent forms.
 
-(goto <integer>)
+("goto" <integer>)
     behaves as one would expect, a goto to a (label) statement elsewhere.
 
-(label <integer>)
+("label" <integer>)
     behaves as one would expect, may be the target of (goto)s elsewhere.
 
-(funcall identifier & args)
+("funcall" <identifier> <& args>)
     behaves as one would expect and invokes a function with a fully qualified
     name with the trailing arguments.
 
-(:= <identifier> <expr>)
-    assignment operator, +, -, *, / etc behave the same way.
+(":=" <identifier> <expr>)
+    assignment operator, "+", "-", "*", "/" etc behave the same way.
 
 ## Qualified names and the symbol table
 This symbol table is based on a hierarchy of nested tables which hide symbols
 from lower levels as the semantics of functions, procedures and programs demand.
 I present symbols for printing as fully-qualified paths, being a string
 <base ns>.<child ns>.<2nd child ns>. ... /<symbol>
-so for instance the constant d in graph1 is "toplevel.graph1/d" and soforth.
+so for instance the constant d in graph1 is "graph1/d" and soforth.
 These semantics are used to note not only variables, but also functions with
 functions such as "writeln" being special cases and declared _at_ the top
 level.
