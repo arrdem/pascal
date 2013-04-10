@@ -8,6 +8,17 @@
   [coll]
   (filter symbol? (tree-seq coll? seq coll)))
 
+(defmacro -<>
+  "A sequential evaluation & threading macro similar to -> but which allows
+for users to specify the position of the inserted value via the <> symbol."
+  ([expr form]
+     `(let [~'<> ~expr]
+          ~form))
+
+  ([expr f & forms]
+     `(-<> (-<> ~expr ~f)
+            ~@forms)))
+
 (defmacro -<n>
   "A sequential evaluation & threading macro not unlike ->. -<n> evaluates
 the first argument, binding it to the symbol <n>. It then creates bindings
