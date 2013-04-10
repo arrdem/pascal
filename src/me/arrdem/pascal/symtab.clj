@@ -1,5 +1,12 @@
-(ns me.arrdem.pascal.symtab
+(ns ^{:doc "A wrapper around me.arrdem.compiler which creates structures for
+            managing the compiler structure within fnparse via side-effects
+            due to the difficulty of properly passing around a state record
+            within the fnparse rules jumble."
+      :added "0.1.0"
+      :author "Reid McKenzie"}
+      me.arrdem.pascal.symtab
   (:require [clojure.pprint :as pp]
+            [me.arrdem.compiler :as compiler]
             [me.arrdem.compiler.symtab :as cst]
             [me.arrdem.pascal.symtab.stdlib :as stdl]
             [me.arrdem.pascal.symtab.stdmacros :as stdm]
@@ -14,16 +21,20 @@
   cst/search)
 
 (def ascend!
-  "Duplicate me.arrdem.compiler.symtab/ascend! into this namespace"
-  cst/ascend!)
+  "Duplicate me.arrdem.compiler/ascend! into this namespace"
+  compiler/ascend!)
 
 (def descend!
-  "Duplicate me.arrdem.compiler.symtab/descend! into this namespace"
-  cst/descend!)
+  "Duplicate me.arrdem.compiler/descend! into this namespace"
+  compiler/descend!)
 
 (def genlabel!
-  "Duplicate me.arrdem.compiler.symtab/genlabel! into this namespace"
-  cst/genlabel!)
+  "Duplicate me.arrdem.compiler/genlabel! into this namespace"
+  compiler/genlabel!)
+
+(def gensym!
+  "Duplicate me.arrdem.compiler/gensym! into this namespace"
+  compiler/gensym!)
 
 (defn init!
   "Installs the basic Pascal symbols and type conversions to the symbol table.
