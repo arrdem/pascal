@@ -108,15 +108,15 @@ of file names and rough descriptions.
     │           └── pascal.clj <- defines the main function and does some pretty
     │                             printing work for the sake of the TA and debugging
     └── test
-    └── me
-    └── arrdem
-    ├── compiler
-    │   └── symab_tests.clj
-    └── pascal
-    ├── core_test.clj
-    ├── lexer_test.clj
-    ├── test_text.clj
-    └── types_test.clj
+        └── me
+            └── arrdem
+                ├── compiler
+                │   └── symab_tests.clj
+                └── pascal
+                    ├── core_test.clj
+                    ├── lexer_test.clj
+                    ├── test_text.clj
+                    └── types_test.clj
 
 ## License
 
