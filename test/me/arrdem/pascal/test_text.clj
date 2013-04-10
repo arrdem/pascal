@@ -30,7 +30,7 @@
                          (progn (label 0)
                                 (:= "graph1/i" 0)
                                 (if (<= "graph1/i" "graph1/lim")
-                                  (progn (funcall "writeln" nil)
+                                  (progn (funcall "writeln" "graph1/str_0")
                                          (:= "graph1/i" (+ 1 "graph1/i"))
                                          (goto 0))))))
    :symbols [{:name "i" :type/data "integer" :qname "graph1/i" :type :symbol}
