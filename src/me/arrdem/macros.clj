@@ -21,14 +21,14 @@ for users to specify the position of the inserted value via the <> symbol."
 
 (defmacro -<n>
   "A sequential evaluation & threading macro not unlike ->. -<n> evaluates
-the first argument, binding it to the symbol <n>. It then creates bindings
+the first argument, binding it to the symbol <>. It then creates bindings
 of symbols named <[0-9]+>, so <1> or <2> and soforth _as they are used_ by
-the programmer. So if <n> is an infinite length sequence one could reference
+the programmer. So if <> is an infinite length sequence one could reference
 the 5th element via the symbol <5>. However this macro further allows for the
 sequential evaluation of expressions rebinding all the carrot symbols and the
 <n> value to the return value of the previous expression."
   ([expr form]
-       `(let [~'<n> ~expr
+       `(let [~'<> ~expr
               ~@(->> (symbols form)
                      (map (fn [sym]
                             (when (symbol? sym)
@@ -36,7 +36,7 @@ sequential evaluation of expressions rebinding all the carrot symbols and the
                                 (when v (Integer. v))))))
                      (remove nil?)
                      (map (juxt #(symbol (format "<%s>" %1))
-                                (fn [n] `(get ~'<n> ~n))))
+                                (fn [n] `(get ~'<> ~n))))
                      (reduce concat))]
           ~form))
 
