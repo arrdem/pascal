@@ -105,28 +105,24 @@ performs the appropriate update with respect to the namespacing stack."
   "Recursively searches the symbol table for a symbol with an argument name.
 Returns the symbol map if such a symbol exists. Failure behavior is undefined,
 but the returning a nil value and throwing an exception are both acceptable."
-  ([atom sym stack]
+  ([symtab sym stack]
      (let [qualified-sym (concat stack (list sym))
            rstack        (rest stack)]
-       (or (if-let [v (get-in @atom qualified-sym)]
+       (or (if-let [v (get-in symtab qualified-sym)]
              (assoc v :qname (render-ns qualified-sym))
              (if (empty? stack) nil))
            (if-not (empty? stack)
-             (recur atom sym rstack))))))
+             (recur symtab sym rstack))))))
 
 (defn m-search
   "A wrapper around stack-search wich provides the base case logic required to
 parse fully qualified names into a full stack path. Defaults to using
 stack-search before returning a failure result."
-  [atom name]
+  [compiler name]
   (let [stack (decomp-ns name)
         name  (last stack)
         stack (butlast stack)
-        stack (if (empty? stack) @*symns* stack)]
-    (stack-search atom name stack)))
-
-;;------------------------------------------------------------------------------
-;; The public symbol table searching routines
-
-(def search (partial m-search *symtab*))
-(def install! (partial m-install! *symtab*))
+        stack (if (empty? stack)
+                (:cur-ns compiler)
+                stack)]
+    (stack-search (:symtab compiler) name stack)))
