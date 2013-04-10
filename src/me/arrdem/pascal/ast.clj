@@ -12,8 +12,11 @@
 (defn abs-name
   ([sym]
      (println "; searching for symbol" sym)
-     (or (:qname sym)
-         (:qname (search sym)))))
+     (:qname
+      (cond
+       (map? sym)    (or (select-keys sym [:qname])
+                         (search (:name sym)))
+       (string? sym) (search sym)))))
 
 (defn dbg-install
   ([v]
@@ -32,31 +35,35 @@
 ;;------------------------------------------------------------------------------
 ;; Expression fragments
 (defn makecomment [& cmnts]
-  `("comment" ~@cmnts))
+  `(~'comment ~@cmnts))
 
 (defn makegoto [label]
-  `("goto" ~label))
+  `(~'goto ~label))
+
+(defn makeprogn-v [forms]
+  `(~'progn ~@forms))
 
 (defn makeprogn [forms]
   (if (< 1 (count forms))
-    `("progn" ~@forms)
+    (makeprogn-v forms)
     (first forms)))
 
 (defn binop [e0 op e1]
   `(~op ~e0 ~e1))
 
 (defn makelabel [v]
-  `("label" ~v))
+  `(~'label ~v))
 
 (defn makeif
-  ([test s] (makeif test s nil))
-  ([test s e] `("if" ~test ~s ~e)))
+  ([test s] `(~'if ~test ~s))
+  ([test s e] (if e `(~'if ~test ~s ~e)
+                  (makeif test s))))
 
 (defn makederef [sym]
   (:qname (search sym)))
 
 (defn makefuncall [sym args]
-  `("funcall" ~(symbol sym) ~@args))
+  `(~'funcall ~sym ~@args))
 
 ;;------------------------------------------------------------------------------
 ;; Common control structures
@@ -74,5 +81,5 @@
     (makeprogn
       [(makelabel label)
       s
-      (makeif (ecomp test "not")
+      (makeif (ecomp test 'not)
               (makegoto label))])))
