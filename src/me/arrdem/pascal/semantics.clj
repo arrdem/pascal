@@ -31,8 +31,7 @@
              :type :symbol
              :type/data type}]
       (dbg-install v)))
-  (map (comp abs-name search)
-       varseq))
+  (map abs-name varseq))
 
 (defn variable-declaration
   [[_ decls]]
@@ -95,12 +94,12 @@
 (defn additive-expression
   [[me tail]]
   (if-let [[op adxpr] tail]
-    (binop op me adxpr)
+    (binop me op adxpr)
     me))
 
 (defn assignment
   [[target assignop expr]]
-  (binop ":=" target expr))
+  (binop target ':= expr))
 
 (defn pascal-program
   [[[_0 id] heading _1 block _2]]
@@ -117,15 +116,15 @@
 
 (defn block2progn
   [[_0 exprs _1]]
-  (apply makeprogn (remove nil? exprs)))
+  (makeprogn (remove nil? exprs)))
 
 (defn for-downto
   [[s0 _ sf]]
-  [s0 `("-" 1) ">=" sf])
+  [s0 `("-" 1) '>= sf])
 
 (defn for-to
   [[s0 _ sf]]
-  [s0 `("+" 1) "<=" sf])
+  [s0 `("+" 1) '<= sf])
 
 (defn for-stmnt [[_0 id _1 flist _3 stmnt]]
   (let [[Vi update comp end] flist
@@ -133,10 +132,10 @@
         id     (abs-name (search id))]
     (makeprogn
       [(makelabel lstart)
-       (binop ':= id Vi)
+       (binop id ':= Vi)
        (makeif `(~comp ~id ~end)
                (makeprogn [stmnt
-                           (binop ':=  id (concat update '(id)))
+                           (binop id ':= (concat update '(id)))
                            (makegoto lstart)]))
        ])))
 
