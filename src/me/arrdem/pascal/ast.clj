@@ -11,16 +11,17 @@
 ;; Symbol table manipulation
 (defn abs-name
   ([sym]
-     (println "; searching for symbol" sym)
+;     (println "; searching for symbol" sym)
      (:qname
       (cond
-       (map? sym)    (or (select-keys sym [:qname])
-                         (search (:name sym)))
+       (map? sym)    (if (contains? sym :qname)
+                       (select-keys sym [:qname])
+                       (search (:name sym)))
        (string? sym) (search sym)))))
 
 (defn dbg-install
   ([v]
-     (println "; declared var " v)
+;     (println "; declared var " v)
      (install! v)
      (abs-name v)))
 
