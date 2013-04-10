@@ -144,7 +144,7 @@
   (let [lbl (genlabel!)]
     (makeprogn
      [(makelabel lbl)
-      stmnts
+      (makeprogn stmnts)
       (makeif `(~'not ~expr)
               (makegoto lbl))
       ])))
