@@ -3,22 +3,28 @@
             properties such as alignment."
       :added "0.1.5"
       :author "Reid McKenzie"}
-      me.arrdem.compiler.types)
+  me.arrdem.compiler.types)
+
+;;------------------------------------------------------------------------------
+;; API for interacting with types and type records
+(def sizeof :size)
+(def typeof :type)
+(def nameof :name)
+(def children :members)
 
 ;;------------------------------------------------------------------------------
 ;; Code for computing field alignments
 (defn aligned-offset [t o]
-  (let [s       (:size t)
-        off-mod (int (/ o s))]
-    (* s
-       (+ (if (= (* off-mod s) o) 0 1)
+  (let [off-mod (int (/ o (sizeof t)))]
+    (* (sizeof t)
+       (+ (if (= (* off-mod (sizeof t)) o) 0 1)
           off-mod))))
 
 (defn align-struct [members]
-  (loop [Ms   members
-         o    0
+  (loop [Ms members
+         o 0
          offs []]
-    (let [f  (first Ms)
+    (let [f (first Ms)
           To (aligned-offset f o)]
       (if (not (empty? (rest Ms)))
         (recur (rest Ms)
@@ -31,28 +37,20 @@
 ;;------------------------------------------------------------------------------
 ;; Type constructors
 (defn BasicType [name size]
-  (-> {:type :basic :members {}}
-      (assoc :name name)
-      (assoc :size size)))
+  {:type :basic
+   :members {}
+   :name name
+   :size size})
 
 (defn RecordType [name member-type-pairs]
-  (let [pairs      (map (fn [[x y]] (assoc y :name x)) member-type-pairs)
-        alignments (align-struct pairs)
-        size       (let [m (first (sort #(compare
-                                          (:offset %2)
-                                          (:offset %1))
-                                        alignments))]
-                     (+ (:offset m) (:size m)))]
-  (-> {:type :record
-       :name name}
-      (assoc :members (reduce (fn [m i]
-                                (assoc m (:name i) i))
-                              {} alignments))
-      (assoc :size size))))
-
-;;------------------------------------------------------------------------------
-;; API for interacting with types and type records
-(def sizeof   :size)
-(def typeof   :type)
-(def nameof   :name)
-(def children :members)
+  (let [alignments (-> member-type-pairs
+                       (map (fn [[x y]] (assoc y :name x)))
+                       align-struct)]
+    {:type :record
+     :name name
+     :members (reduce (fn [m i] (assoc m (:name i) i))
+                      {} alignments)
+     :size (-> alignments
+               ((partial sort #(apply compare (map :offset %))))
+               first
+               (#(apply + ((juxt :offset :size) %1))))}))
