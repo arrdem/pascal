@@ -7,23 +7,23 @@
 
 (def install!
   "Duplicate me.arrdem.compiler.symtab/install! into this namespace"
-  me.arrdem.compiler.symtab/install!)
+  cst/install!)
 
 (def search
   "Duplicate me.arrdem.compiler.symtab/search into this namespace"
-  me.arrdem.compiler.symtab/search)
+  cst/search)
 
 (def ascend!
   "Duplicate me.arrdem.compiler.symtab/ascend! into this namespace"
-  me.arrdem.compiler.symtab/ascend!)
+  cst/ascend!)
 
 (def descend!
   "Duplicate me.arrdem.compiler.symtab/descend! into this namespace"
-  me.arrdem.compiler.symtab/descend!)
+  cst/descend!)
 
 (def genlabel!
   "Duplicate me.arrdem.compiler.symtab/genlabel! into this namespace"
-  me.arrdem.compiler.symtab/genlabel!)
+  cst/genlabel!)
 
 (defn init!
   "Installs the basic Pascal symbols and type conversions to the symbol table.
@@ -41,17 +41,16 @@ type and macro specific initializers elsewhere."
      (init!)
      ~@forms))
 
-
 (defn clear!
   "Nukes the symbol table, replacing it with the Pascal basic table as defined
 above. Not sure why you would need this as the typical case is single program
 invocation per compile batch but here it is anyway."
   ([]
      (reset! cst/*symtab* {})
-     (reset! cst/*symns*  '())
+     (reset! cst/*symns* '())
      (init!)))
 
-(def fmnt "%-10s : %s")
+(def fmnt "%%-%ss : %%s")
 
 (defn pr-symtab
   "Pretty-prints the core symbol table. Indended for debugging, may be migrated
@@ -59,12 +58,14 @@ to compiler.symtab and linked here. Needs to be modified to print symbols in
 some sort of namespace derived order."
   ([] (pr-symtab @cst/*symtab* '()))
   ([tbl stack]
-     (for [[k v] tbl
-           :when (string? k)
-           :let  [indent 0
-                  stack  (concat stack (list k))]]
-       (let [vals (select-keys v [:value :type :type/data])]
-         (if-not (empty? vals)
-           (do (println (format fmnt (cst/render-ns stack)
-                                (str vals)))
-               (pr-symtab v stack)))))))
+     (doseq [[k v] tbl]
+       (when (string? k)
+         (let [indent (* 7 (inc (count stack)))
+               fmnt (format fmnt indent)
+               stack  (concat stack (list k))
+               vals (select-keys v [:value :type :type/data])]
+           (if-not (empty? vals)
+             (println (format fmnt (cst/render-ns stack)
+                              (pr-str vals))))
+           (when (map? v)
+             (pr-symtab v stack)))))))
