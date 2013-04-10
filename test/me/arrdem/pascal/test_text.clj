@@ -88,14 +88,15 @@
                                          (:= "graph1/i" (+ 1 "graph1/i"))
                                          (goto 1))))))
 
-   :symbols [{:name "d", :value 0.0625, :type :symbol, :type/data :reference :qname "graph1/d"}
-             {:name "s", :value 32, :type :symbol, :type/data :reference}
-             {:name "h", :value 34, :type :symbol, :type/data :reference}
-             {:name "c", :value 6.28318, :type :symbol, :type/data :reference}
-             {:name "lim", :value 32, :type :symbol, :type/data :reference}
+   :symbols [{:name "d", :value 0.0625, :type :symbol, :type/data "real" :qname "graph1/d"}
+             {:name "s", :value 32, :type :symbol, :type/data "integer" :qname "graph1/s"}
+             {:name "h", :value 34, :type :symbol, :type/data "integer" :qname "graph1/h"}
+             {:name "c", :value 6.28318, :type :symbol, :type/data "real" :qname "graph1/c"}
+             {:name "lim", :value 32, :type :symbol, :type/data "integer" :qname "graph1/lim"}
 
-             {:name "x", :type :symbol, :type/data "real"}
-             {:name "y", :type :symbol, :type/data "real"}
-             {:name "i", :type :symbol, :type/data "integer"}
-             {:name "n", :type :symbol, :type/data "integer"}
+             {:name "x", :type :symbol, :type/data "real" :qname "graph1/x"}
+             {:name "y", :type :symbol, :type/data "real" :qname "graph1/y"}
+
+             {:name "i", :type :symbol, :type/data "integer" :qname "graph1/i"}
+             {:name "n", :type :symbol, :type/data "integer" :qname "graph1/n"}
              ]})
