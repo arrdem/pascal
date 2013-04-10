@@ -1,5 +1,6 @@
 (ns me.arrdem.pascal.symtab
-  (:require [me.arrdem.compiler.symtab :as cst]
+  (:require [clojure.pprint :as pp]
+            [me.arrdem.compiler.symtab :as cst]
             [me.arrdem.pascal.symtab.stdlib :as stdl]
             [me.arrdem.pascal.symtab.stdmacros :as stdm]
             [me.arrdem.pascal.symtab.stdtypes :as stdt]))
@@ -46,16 +47,24 @@ type and macro specific initializers elsewhere."
 above. Not sure why you would need this as the typical case is single program
 invocation per compile batch but here it is anyway."
   ([]
-     (reset! me.arrdem.compiler.symtab/*symtab* {})
-     (reset! me.arrdem.compiler.symtab/*symns*  '())
+     (reset! cst/*symtab* {})
+     (reset! cst/*symns*  '())
      (init!)))
 
-(def fmnt "%-25s : %s")
+(def fmnt "%-10s : %s")
 
 (defn pr-symtab
   "Pretty-prints the core symbol table. Indended for debugging, may be migrated
 to compiler.symtab and linked here. Needs to be modified to print symbols in
 some sort of namespace derived order."
-  ([]
-     (doseq [[k v] @me.arrdem.compiler.symtab/*symtab*]
-       (println (format fmnt (str k) (str v))))))
+  ([] (pr-symtab @cst/*symtab* '()))
+  ([tbl stack]
+     (for [[k v] tbl
+           :when (string? k)
+           :let  [indent 0
+                  stack  (concat stack (list k))]]
+       (let [vals (select-keys v [:value :type :type/data])]
+         (if-not (empty? vals)
+           (do (println (format fmnt (cst/render-ns stack)
+                                (str vals)))
+               (pr-symtab v stack)))))))
