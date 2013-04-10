@@ -67,38 +67,56 @@ these generated variables rather than hold the value in and of themselves.
 The source for this project is located under src/, the following is a quick list
 of file names and rough descriptions.
 
-### src/me/arrdem/pascal.clj
-Contains the main method & formatting code
-
-### src/me/arrdem/pascal/grammar.clj
-Defines the grammar of pascal in terms of tokens, I'm proud to say that this
-grammar was programaticly generated using the latest build of the sad toolkit
- which I posted on the piazza page some time ago.
-
-### src/me/arrdem/pascal/semantics.clj
-Defines a large number of semantic transformations on the grammar which the
-grammar file defines, used to generate the IR which is pretty-printed and
-to incur side-effects such as symbol table manipulation.
-
-### src/me/arrdem/pascal/lexer.clj
-Defines the lexer in terms of some transforms atop the tokens defined in
-
-### src/me/arrdem/pascal/tokens.clj
-Defines the basic tokens for the pascal lexer. Via a macro in util, also
-defines rules used by the grammar for matching these tokens.
-
-### src/me/arrdem/pascal/util.clj
-Holding pen for code with no better home as of yet
-
-### src/me/arrdem/pascal/symtab.clj
-Defines the symbol table and the various legal operations therupon such as
-install! and search. As of 0.2.0 backed largely by code in
-me.arrdem.compiler.
-
-### src/me/arrdem/compiler/*
-Various elements of the compiler largely related to the symbol table, type
-and macro systems which I am deliberately over-engineering with the intent
-of building a serious Lisp compiler after the end of this course.
+.
+├── TODO.md     <- my todo list
+├── lein        <- leiningen binary
+├── project.clj <- leiningen project metadata
+├── README.md   <- you are here
+├── src
+│   └── me
+│       └── arrdem
+│           ├── compiler <- over architected code which is intended for use in
+│           │   │           my own compiler project at a later point in time.
+│           │   ├── macros.clj <- implements a full macro system
+│           │   ├── symtab.clj <- implements a symbol table
+│           │   └── types.clj  <- implements parts of a type hierarchy
+│           ├── pascal   <- main class codebase
+│           │   ├── ast.clj       <- some generics for manipulating and building
+│           │   │                    my internal AST representation.
+│           │   ├── grammar.clj   <- defines the pascal grammar productions and
+│           │   │                    corresponding ast generators in
+│           │   │                    semantics.clj
+│           │   ├── semantics.clj <- defines token -> AST productions invoked by
+│           │   │                    grammar.clj in terms of ast.clj &
+│           │   │                    symtab.clj
+│           │   ├── tokens.clj    <- defines the tokens which comprise the Pascal
+│           │   │                    language, used to create the lexer in
+│           │   │                    lexer.clj
+│           │   ├── lexer.clj     <- uses util.clj and tokens.clj to build a
+│           │   │                    pascal token lexer.
+│           │   ├── types.clj     <- wrapper around compiler/types.clj which
+│           │   │                    adds the type matrix and some other
+│           │   │                    pascal-specific functionality.
+│           │   ├── symtab.clj    <- wrapper around compiler/symtab.clj, which
+│           │   │                    among other things builds the standard
+│           │   │                    symbol table using the files in symtab/
+│           │   ├── symtab        <- contains various
+│           │   │   ├── stdlib.clj    <- std lib function defs.
+│           │   │   ├── stdmacros.clj <- std lib macro defs.
+│           │   │   └── stdtypes.clj  <- std lib type defs.
+│           │   └── util.clj      <- junk that didn't go somewhere else
+│           └── pascal.clj <- defines the main function and does some pretty
+│                             printing work for the sake of the TA and debugging
+└── test
+    └── me
+        └── arrdem
+            ├── compiler
+            │   └── symab_tests.clj
+            └── pascal
+                ├── core_test.clj
+                ├── lexer_test.clj
+                ├── test_text.clj
+                └── types_test.clj
 
 ## License
 
