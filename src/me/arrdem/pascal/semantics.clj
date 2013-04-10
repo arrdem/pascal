@@ -103,12 +103,12 @@
 
 (defn pascal-program
   [[[_0 id] heading _1 block _2]]
-  `("program" ~id ~@heading ~@block))
+  `(~'program ~id ~@heading ~@block))
 
 (defn program-heading
   [[_l ids _r]]
-  (map makeprogn
-       ids))
+  (map makeprogn-v
+       (map list ids)))
 
 (defn block
   [[comments progn]]
@@ -116,15 +116,15 @@
 
 (defn block2progn
   [[_0 exprs _1]]
-  (makeprogn (remove nil? exprs)))
+  (makeprogn-v (remove nil? exprs)))
 
 (defn for-downto
   [[s0 _ sf]]
-  [s0 `("-" 1) '>= sf])
+  [s0 `(~'- 1) '>= sf])
 
 (defn for-to
   [[s0 _ sf]]
-  [s0 `("+" 1) '<= sf])
+  [s0 `(~'+ 1) '<= sf])
 
 (defn for-stmnt [[_0 id _1 flist _3 stmnt]]
   (let [[Vi update comp end] flist
@@ -135,7 +135,7 @@
        (binop id ':= Vi)
        (makeif `(~comp ~id ~end)
                (makeprogn [stmnt
-                           (binop id ':= (concat update '(id)))
+                           (binop id ':= (concat update (list id)))
                            (makegoto lstart)]))
        ])))
 
@@ -145,7 +145,7 @@
     (makeprogn
      [(makelabel lbl)
       stmnts
-      (makeif `("not" ~expr)
+      (makeif `(~'not ~expr)
               (makegoto lbl))
       ])))
 
@@ -160,10 +160,12 @@
   [[op expr]]
   (let [form (case op
                (+) nil
-               (-) `("*" -1)
-               (not) `("not")
+               (-) `(~'* -1)
+               (not) `(~'not)
                (nil) nil)]
-    (concat form (list expr))))
+    (if form
+      (concat form (list expr))
+      expr)))
 
 (defn statements
   [[_0 stmnts _1]]
