@@ -53,7 +53,10 @@
   [x]
   (if x (inc x) 0))
 
-(defn key-inc-update [k m]
+(defn key-inc-update
+  "Increments the value of a keyed counter in the map, returning a pair being the
+   unicremented counter value and the updated state map."
+  [k m]
   [(get m key) (update-in m [key] ninc)])
 
 ;;------------------------------------------------------------------------------
