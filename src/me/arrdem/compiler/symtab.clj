@@ -1,4 +1,10 @@
-(ns me.arrdem.compiler.symtab
+(ns ^{:doc "The symbol table manipulation fragment of the compiler data
+            structure. Defines utility functions for installing symbols
+            and searching for symbols within the current scope as
+            tracked by the namespace stack."
+      :added "0.1.5"
+      :author "Reid McKenzie"}
+  me.arrdem.compiler.symtab
   (:require [clojure.string :refer [split]]
             [me.arrdem.compiler :refer [get-symtab get-ns]]
             [me.arrdem.macros :refer [-<n>]]))
