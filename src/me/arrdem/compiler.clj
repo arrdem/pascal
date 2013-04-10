@@ -1,22 +1,24 @@
 (ns ^{:doc "Defines the Compiler structure and some operations thereon which are
             used to backend the other structures in me.arrdem.compiler.*"
-      :added "0.2.0"
+      :added "0.3.0"
       :author "Reid McKenzie"}
       me.arrdem.compiler
       (:require [me.arrdem.macros :refer [-<n>]]))
 ;;------------------------------------------------------------------------------
 ;; Define the Compiler record structure
 ;;
-;; {:gensym   <gensym counter>
-;;  :label    <label counter>
-;;  :symtab   <symbol table map>
-;;  :cur-ns   <the namespace list>
-;;  :ast      <ast strucure>
+;; {:gensym    <gensym counter>
+;;  :label     <label counter>
+;;  :symtab    <symbol table map>
+;;  :typegraph <tree of type conversions>
+;;  :cur-ns    <the namespace list>
+;;  :ast       <ast strucure>
 ;; }
 
 (def get-ns :cur-ns)
 (def get-symtab :symtab)
 (def get-ast :ast)
+(def get-typematrix :typegraph)
 (def -get-gensym :gensym)
 (def -get-label :label)
 
