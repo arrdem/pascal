@@ -46,13 +46,15 @@
                        (string? v) "string"
                        (float? v) "real"
                        (integer? v) "integer")}]
-    (dbg-install v)))
+    (println "; [const-assign] " id ":" v)
+    (let [r (dbg-install v)]
+      (println "; [const-assign] yielding " r)
+      r)))
 
 (defn constant-declaration
   [[_ c0 cs]]
-  (let [cs (map second cs)]
-    (makecomment "got constant decl group:"
-                 (cons c0 cs))))
+  (let [cs (map second cs)] ;; cs is pairs tok_semi, const
+    (apply makecomment "got constant decl group:" (cons c0 cs))))
 
 (defn string
   [s]
