@@ -1,60 +1,40 @@
 (ns me.arrdem.compiler.symtab
-  (:require [clojure.string :refer [split]]))
-
-(def base_st
-  {
-;;------------------------------------------------------------------------------
-;; Values
-;; These are "magic" values which various parts of the compiler rely on.
-
-   :label  0 ;; counter used for label generation
-   :gensym 0 ;; counter shared by all symbol generation
-
-   })
+  (:require [clojure.string :refer [split]]
+            [me.arrdem.macros :refer [-<n>]]))
 
 ;;------------------------------------------------------------------------------
 ;; The namespace stack
-
-(def *symns*
-  "Used to track the namespace levels above the current point of evaluation.
-An empty list signifies that we are operating at the \"top\" level where program
-forms and other such values live. It is here that the \"standard library\" lives.
-When decending to another namespace the decend! function is called and a value is
-pushed onto the head of this list. When returning from a nested namespace, the
-rise! function is called which pops the top element off of this stack.
-
-Symbol resolution is performed by iteratively prefixing the symbol to be resolved
-with the concatonation of the stack, searching and poping until either the symbol
-is resolved, or the stack is empty."
-  (atom '()))
 
 (defn descend!
   "Pushes the argument namespace onto the *symns* stack, altering how symbols are
 resolved until the *symns* stack is poped. Used for recuring into function
 and program definitions which may have local bindings."
-  [ns] (swap! *symns* concat (list ns)))
+  [compiler ns]
+  (update-in compiler [:cur-ns] concat (list ns)))
 
 (defn ascend!
-  "Pops the *synms* stack, taking any symbols defined in a nested ns out of
-scope. Invoked when returning from function and program definitions as they may
-contain symbol bindings."
-  [] (swap! *symns* butlast))
+  "Pops the stack, taking any symbols defined in a nested ns out of scope.
+Invoked when returning from function and program definitions as they may contain
+ symbol bindings."
+  [compiler]
+  (update-in compiler [:cur-ns] butlast))
 
 (defn reset-symns!
-  "Nukes the *symns* value restoring it to its base state. Usefull for testing,
-multiple compile runs without restart."
-  ([] (reset! *symns* (list))))
+  "Nukes the stack value restoring it to its base state. Usefull for testing and
+for multiple compile runs without restart."
+  [compiler]
+  (assoc :cur-ns (list)))
 
 ;;------------------------------------------------------------------------------
 ;; The symbol table
 
-(def *symtab*
-  "Used to track all symbols."
-  (atom {}))
-
 (defn ninc
   "An inc which doesn't friggin die on nil."
-  [x] (if x (inc x) 0))
+  [x]
+  (if x (inc x) 0))
+
+(defn key-inc-update [k m]
+  [(get m key) (update-in m [key] ninc)])
 
 (defn gensym!
   "Generates a symbol name (string) which is guranteed by use of an incrementing
@@ -62,41 +42,47 @@ counter to be unique to the current compile session. Optionally takes a string
 prefix for the generated name which does not effect the numeric part of the
 name. Returns a string being the prefix argument or \"G__\" followed by the
 string render of the gensym counter before it was incremented."
-  ([] (gensym! "G__"))
-  ([s] (str s
-            (:gensym
-             (swap! *symtab*
-                    update-in [:gensym] ninc)))))
+  ([compiler]
+     (gensym! compiler "G__"))
+  ([compiler prefix]
+     (-<n> compiler
+           (key-inc-update :gensym <>)
+           [(str prefix <1>) <2>])))
 
 (defn reset-gensym!
-  "Nukes the *symtab* gensym counter restoring it to its base state. Usefull for
-testing, multiple compile runs without restart."
-  ([] (swap! *symtab* assoc :gensym 0)))
-
+  "Nukes the gensym counter restoring it to its base state. Usefull for testing,
+ multiple compile runs without restart."
+  [compiler]
+  (assoc compiler :gensym 0))
 
 (defn genlabel!
-  "Generates and returns an integer label, side-effecting the :label count of the
-*symtab* registry."
-  ([] (:label
-       (swap! *symtab*
-              update-in [:label] ninc))))
+  "Generates and returns an integer label, side-effecting the :label count of
+compiler state pseudo-object."
+  [compiler]
+  (-<n> compiler
+        (key-inc-update :label <>)
+        [(str prefix <1>) <2>]))
 
 (defn reset-genlabel!
-  "Nukes the *symtab* genlabel counter restoring it to its base state. Usefull for
-testing, multiple compile runs without restart."
-  ([] (swap! *symtab* assoc :label 0)))
+  "Nukes the *symtab* genlabel counter restoring it to its base state. Usefull
+for testing, multiple compile runs without restart."
+  [compiler]
+  (assoc compiler :label 0))
 
 ;;------------------------------------------------------------------------------
 ;; Namespace stringification and destringification
 
-(defn render-ns
-  "Renders the *symns* stack to a prefix string for symbols."
-  ([] (render-ns @*symns*))
+(defn- -render-ns
+  "Renders the ns stack to a prefix string for symbols."
   ([stack]
      (if (< 1 (count stack))
        (str (apply str (interpose \. (butlast stack)))
             "/" (last stack))
        (first stack))))
+
+(defn render-ns
+  [compiler]
+  (-render-ns (:cur-ns compiler)))
 
 (defn decomp-ns
   "Unrenders a namespace"
@@ -109,11 +95,11 @@ testing, multiple compile runs without restart."
 ;; then used to manipulate the macro system, the type system and soforth.
 
 (defn m-install!
-  "Meta symbol installer. Takes a namespace structure and a record as arguments,
-and performs the appropriate swap! respecting the namespacing stack."
-  [atom sym]
-  (let [path (concat @*symns* (list (:name sym)))]
-    (swap! atom assoc-in path sym)))
+  "Symbol installer. Takes a compiler structure and a record as arguments, and
+performs the appropriate update with respect to the namespacing stack."
+  [compiler sym]
+  (let [path (conj :symtab (:cur-ns compiler))]
+    (update-in compiler path assoc (:name sym) sym)))
 
 (defn- stack-search
   "Recursively searches the symbol table for a symbol with an argument name.
