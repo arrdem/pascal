@@ -1,10 +1,8 @@
 (ns me.arrdem.pascal.semantics
   (:require [clojure.pprint :refer [pprint]]
-
-            [me.arrdem.compiler.symtab :refer [genlabel! install!
-                                               search gensym! render-ns]]
+            [me.arrdem.pascal.compiler :refer [genlabel! gensym! install!
+                                               search render-ns]]
             [me.arrdem.pascal.ast :refer :all]
-
             [name.choi.joshua.fnparse :as fnp]))
 
 ;;------------------------------------------------------------------------------
