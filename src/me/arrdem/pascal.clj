@@ -2,7 +2,8 @@
   (:require [clojure.pprint :refer :all]
             [me.arrdem.pascal.grammar :refer [pascal-program]]
             [me.arrdem.pascal.lexer :refer [pascal]]
-            [me.arrdem.pascal.symtab :refer [pr-symtab]]
+            [me.arrdem.pascal.symtab :refer [pr-symtab init!]]
+            [me.arrdem.compiler.symtab]
             [name.choi.joshua.fnparse :as fnp])
   (:gen-class :main true))
 
@@ -35,6 +36,7 @@ token sequence at the grammar stack easy."
   "The only valid arguments are targeted files. If there are no targeted files
 then decomp will target stdin as its token source."
   ([& args]
+     (init!)
      (if-not (empty? args)
        (doseq [f args]
          (println "attempting to read file" f)
@@ -42,6 +44,7 @@ then decomp will target stdin as its token source."
              slurp
              process-string
              pr-code)
+         (pr-line)
          (pr-symtab)
          nil)
 
@@ -49,5 +52,6 @@ then decomp will target stdin as its token source."
                slurp
                process-string
                pr-code)
+           (pr-line)
            (pr-symtab)
            nil))))
