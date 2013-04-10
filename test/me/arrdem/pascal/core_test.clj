@@ -9,14 +9,14 @@
 (defmacro full-test-case [sym val]
   `(deftest ~sym
      (testing
+         (clear!)
          (let [result# (process-string (:text ~val))]
            ;; check AST result...
            (is (= result# (:ast ~val)))
            ;; check symbol table contents...
            (doseq [s# (:symbols ~val)]
              (is (= (search (:name s#)) s#)
-                 (str "symbol " (:qname s#) " was not defined!")))))
-     (clear!)))
+                 (str "symbol " (:qname s#) " was not defined!")))))))
 
 ;;------------------------------------------------------------------------------
 ;; the big test cases over assignment inputs...
