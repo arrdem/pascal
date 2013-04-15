@@ -179,7 +179,7 @@
            structured-type
            (fnp/semantics
             (fnp/conc op_point typeid)
-            s/point-type))
+            s/point-type)))
 
 (def simple-type
   (fnp/alt
