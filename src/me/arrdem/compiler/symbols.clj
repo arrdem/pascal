@@ -51,19 +51,24 @@
   (reftype [_] "Enumerates the type of the value to which it points")
   (follow [_] "Enumerates the targeted value as a full ISymbol"))
 
+(defprotocol IValued
+  (valueof [_] "Enumerates the value of the symbol, or an expression therefor"))
+
 ;;------------------------------------------------------------------------------
 ;; record types for type records
 (defrecord PrimitiveType [name size-field]
   ISymbol
     (typeof [self] (.name self))
-    (nameof [self] (.nams self))
+    (nameof [self] (.name self))
     (sizeof [self] (.size-field self))
-    (addrof [self] nil))
+    (addrof [self] nil)
+    (toString [self] (.name self)))
 
 (defrecord PointerType [name size-field reftype]
   ISymbol
     (typeof [self] (.name self))
     (nameof [self] (.nams self))
+    (toString [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
   IPointer
@@ -74,6 +79,7 @@
   ISymbol
     (typeof [self] (.name self))
     (nameof [self] (.nams self))
+    (toString [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
   IIndexable
@@ -82,8 +88,31 @@
     (fields [self] (.children self)))
 
 ;;------------------------------------------------------------------------------
-;;Function representation
+;; Variable representation
+(defrecord VariableType [qname type val]
+  ISymbol
+    (typeof [self] (.type self))
+    (nameof [self] (.name self))
+    (toString [self] (.name self))
+    (sizeof [self] (sizeof (.type self)))
+    (addrof [self] nil)
+  IValued
+    (valueof [self] (.val self)))
 
+(defrecord RecordType [name members]
+  ISymbol
+    (typeof [self] (.name self))
+    (toString [self] (.name self))
+    (nameof [self] (.name self))
+    (sizeof [self] (apply + (map (vals (.members self)))))
+    (addrof [self] nil)
+  IIndexable
+  (field-offset [self name]
+      (get (.members self) name))
+    (fields [self] (.members self)))
+
+;;------------------------------------------------------------------------------
+;;Function representation
 (defprotocol IInvokable
   (arity [self] "Returns the arity of the callable record")
   (valid-invokation? [self arg-type-list]
@@ -94,6 +123,7 @@
   ISymbol
     (typeof [self] (.name self))
     (nameof [self] (.nams self))
+    (toString [self] (.name self))
     (sizeof [self] nil)
     (addrof [self] nil)
   IInvokable
@@ -102,3 +132,26 @@
       (contains? (.arity-and-type-set self)
                  (map typeof args)))
     (return-type [self] (.ret-type self)))
+
+;;------------------------------------------------------------------------------
+;; Extensions for Clojure "primitives"
+(extend String
+  ISymbol
+    {:typeof (fn [self] (str "char-" (count self)))
+     :nameof (fn [self] self)
+     :sizeof (fn [self] nil)
+     :addrof (fn [self] nil)})
+
+(extend Long
+  ISymbol
+    {:typeof (fn [self] "real")
+     :nameof (fn [self] nil)
+     :sizeof (fn [self] 8)
+     :addrof (fn [self] nil)})
+
+(extend Integer
+  ISymbol
+    {:typeof (fn [self] "integer")
+     :nameof (fn [self] nil)
+     :sizeof (fn [self] 4)
+     :addrof (fn [self] nil)})
