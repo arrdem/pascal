@@ -45,10 +45,10 @@ with the standard 'primitive' types which Pascal supports."
      (doseq [t [
                 ;;--------------------------------------------------------------
                 ;; Basic types
-                {:name "integer"  :type :primitive :size 4}
-                {:name "char"     :type :primitive :size 1}
-                {:name "boolean"  :type :primitive :size 4}
-                {:name "real"     :type :primitive :size 8}
+                {:name "integer" :type :primitive :size 4}
+                {:name "char" :type :primitive :size 1}
+                {:name "boolean" :type :primitive :size 4}
+                {:name "real":type :primitive :size 8}
 
                 ;;--------------------------------------------------------------
                 ;; Pointer types
