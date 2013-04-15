@@ -5,26 +5,6 @@
             [me.arrdem.pascal.symtab.stdmacros :as stdm]
             [me.arrdem.pascal.symtab.stdtypes :as stdt]))
 
-(def install!
-  "Duplicate me.arrdem.compiler.symtab/install! into this namespace"
-  cst/install!)
-
-(def search
-  "Duplicate me.arrdem.compiler.symtab/search into this namespace"
-  cst/search)
-
-(def ascend!
-  "Duplicate me.arrdem.compiler.symtab/ascend! into this namespace"
-  cst/ascend!)
-
-(def descend!
-  "Duplicate me.arrdem.compiler.symtab/descend! into this namespace"
-  cst/descend!)
-
-(def genlabel!
-  "Duplicate me.arrdem.compiler.symtab/genlabel! into this namespace"
-  cst/genlabel!)
-
 (defn init!
   "Installs the basic Pascal symbols and type conversions to the symbol table.
 May or may not handle types and macros as well, may or may not pass those off to
