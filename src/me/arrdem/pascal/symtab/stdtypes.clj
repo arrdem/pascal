@@ -9,8 +9,7 @@
 ;;   Pointers are easy
 ;;   :name <name> - note that this will be "^<pointed type>"
 ;;   :type :reference
-;;   :type/data :reference
-;;   :type/reference <type of pointed value>
+;;   :reference <type of pointed value>
 ;;   :size 4
 ;;
 ;; Records
@@ -55,26 +54,22 @@ with the standard 'primitive' types which Pascal supports."
                 ;; Pointer types
                 {:name "^integer"
                  :type :reference
-                 :type/data :reference
-                 :type/reference "integer"
+                 :reference "integer"
                  :size 4}
 
                 {:name "^char"
                  :type :reference
-                 :type/data :reference
-                 :type/reference "char"
+                 :reference "char"
                  :size 4}
 
                 {:name "^boolean"
                  :type :reference
-                 :type/data :reference
-                 :type/reference "boolean"
+                 :reference "boolean"
                  :size 4}
 
                 {:name "^real"
                  :type :reference
-                 :type/data :reference
-                 :type/reference "real"
+                 :reference "real"
                  :size 4}
                 ]]
        (install! t))))
