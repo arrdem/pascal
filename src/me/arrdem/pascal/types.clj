@@ -23,6 +23,21 @@ to be exact"
       (graph/add-edges ["boolean"   "integer"])
       (graph/add-edges ["character" "integer"])))
 
+(def *type-graph* (atom -type-graph))
+
+;;------------------------------------------------------------------------------
+;; Type matrix manipulation expressions
+(defmacro with-types
+  ([binding & forms]
+     `(binding [*type-graph* ~binding]
+        ~@forms)))
+
+(defn install-transformer!
+  ([from to entry]
+     (swap! *type-graph* graph/add-edges [from to])
+     (install! (assoc entry
+                 :name (transformer-name from to)))))
+
 ;;------------------------------------------------------------------------------
 ;; Public api for computing the minimum representation of types and type casts.
 ;; Note that it's pretty tied up in my symbol table architecture and naming
