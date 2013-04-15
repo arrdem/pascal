@@ -26,9 +26,9 @@
                                     (set t2))
 
            candidates (map (juxt (partial traversals/shortest-path
-                                          @*type-graph* type1)
+                                          graph type1)
                                  (partial traversals/shortest-path
-                                          @*type-graph* type2))
+                                          graph type2))
                             common)
            shortest (first (sort (comparator
                             (fn [p1 p2] (<= (apply + (map count p1))
