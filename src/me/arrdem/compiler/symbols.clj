@@ -67,7 +67,7 @@
 (defrecord PointerType [name size-field reftype]
   ISymbol
     (typeof [self] (.name self))
-    (nameof [self] (.nams self))
+    (nameof [self] (.name self))
     (toString [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
@@ -78,7 +78,7 @@
 (defrecord ArrayType [name size-field children]
   ISymbol
     (typeof [self] (.name self))
-    (nameof [self] (.nams self))
+    (nameof [self] (.name self))
     (toString [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
@@ -92,8 +92,8 @@
 (defrecord VariableType [qname type val]
   ISymbol
     (typeof [self] (.type self))
-    (nameof [self] (.name self))
-    (toString [self] (.name self))
+    (nameof [self] (.qname self))
+    (toString [self] (.qname self))
     (sizeof [self] (sizeof (.type self)))
     (addrof [self] nil)
   IValued
@@ -122,7 +122,7 @@
 (defrecord FunctionType [name arity-and-type-set ret-type]
   ISymbol
     (typeof [self] (.name self))
-    (nameof [self] (.nams self))
+    (nameof [self] (.name self))
     (toString [self] (.name self))
     (sizeof [self] nil)
     (addrof [self] nil)
@@ -155,3 +155,10 @@
      :nameof (fn [self] nil)
      :sizeof (fn [self] 4)
      :addrof (fn [self] nil)})
+
+(extend clojure.lang.PersistentArrayMap
+  ISymbol
+  {:typeof :type
+   :nameof :name
+   :sizeof :size
+   :addrof :address})
