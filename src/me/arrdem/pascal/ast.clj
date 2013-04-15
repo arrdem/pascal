@@ -5,13 +5,14 @@
       :author "Reid McKenzie"
       :added  "0.2.0"}
   me.arrdem.pascal.ast
-  (:require [me.arrdem.pascal.symtab :refer [search install! genlabel!]]))
+  (:require [me.arrdem.compiler.symtab :refer [search install! genlabel!]]))
 
 ;;------------------------------------------------------------------------------
 ;; Symbol table manipulation
 (defn abs-name
   ([sym]
-;     (println "; searching for symbol" sym)
+     ;; (println @me.arrdem.compiler.symtab/*symtab*)
+    ;; (println "; searching for symbol" sym)
      (:qname
       (cond
        (map? sym)    (if (contains? sym :qname)
@@ -21,9 +22,8 @@
 
 (defn dbg-install
   ([v]
-;     (println "; declared var " v)
-     (install! v)
-     (abs-name v)))
+    ;; (println "; declared var " v)
+     (:qname (install! v))))
 
 ;;------------------------------------------------------------------------------
 ;; Expression manipulators
