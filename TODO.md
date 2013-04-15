@@ -1,4 +1,16 @@
 # TODO list
+## due today
+1. parse an enum declaration and create the appropriate type entry with values
+   - register the enum as a type
+   - register the enum's values as vars in their own right with integer values
+   - register those values with type equal to that of the enum parent
+2. parse a pointer op and be able to generate the appropriate (^ <foo>) deref group
+3. parse an array and be able to construct the appropriate type table entry
+   for it. This still needs some thought but I think that the idea of
+   describing the type by actually declaring gensym types for each sub-array
+   makes a lot of sense and could make life really easy.
+
+## back burner
 - Figure out _when_ to invoke macros, and make it so. Last thing done before the
   AST is yielded by the AST generation pipeline perhaps?
 
@@ -47,7 +59,7 @@
 
 - Implement a debug library with selectable printing ala debug.h.
 
-- Take grfrederik's advice and rework the entire symbol table system using the 
-  old fasioned "pass a map around like nobody's buisness" approach as noted in 
-  the git log at some point. This will be a major rework and may be difficult 
+- Take grfrederik's advice and rework the entire symbol table system using the
+  old fasioned "pass a map around like nobody's buisness" approach as noted in
+  the git log at some point. This will be a major rework and may be difficult
   due to fnparse but it should be done.
