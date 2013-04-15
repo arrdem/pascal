@@ -1,6 +1,7 @@
 (ns me.arrdem.pascal.core-test
   (:require [clojure.test :refer :all]
             [me.arrdem.compiler.symtab :refer [search]]
+            [me.arrdem.compiler.symbols :refer [nameof typeof sizeof]]
             [me.arrdem.pascal.test-text :as data]
             [me.arrdem.pascal :refer [process-string build-ast]]
             [me.arrdem.pascal.symtab :refer [init! with-p-symtab clear!]]))
@@ -14,8 +15,18 @@
            (is (= result# (:ast ~val)))
            ;; check symbol table contents...
            (doseq [s# (:symbols ~val)]
-             (is (= (search (:name s#)) s#)
-                 (str "symbol " (:qname s#) " was not defined!")))))))
+             (let [entered-sym# (search (nameof s#))]
+               (println s#)
+               (println entered-sym#)
+               (is (= (nameof entered-sym#)
+                      (nameof s#))
+                   "No such symbol table entry")
+               (is (= (nameof (typeof entered-sym#))
+                      (nameof (typeof s#)))
+                   "The entered sym did not match types")
+               (is (= (sizeof entered-sym#)
+                      (sizeof s#))
+                   "Entered size doesn't match")))))))
 
 ;;------------------------------------------------------------------------------
 ;; the big test cases over assignment inputs...
