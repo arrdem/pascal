@@ -4,7 +4,6 @@
       :author "Reid McKenzie"}
   me.arrdem.compiler.type-hierarchy
   (:require [clojure.set :as set]
-            [loom.graph  :as graph]
             [loom.alg    :as traversals]))
 
 ;;------------------------------------------------------------------------------
