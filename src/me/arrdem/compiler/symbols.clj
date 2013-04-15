@@ -159,15 +159,15 @@
 (extend clojure.lang.PersistentArrayMap
   ISymbol
     {:typeof :type
-     :nameof (fn [self] (or (:name self)
-                            (:qname self)))
+     :nameof (fn [self] (or (:qname self)
+                            (:name self)))
      :sizeof :size
      :addrof :address})
 
 (extend clojure.lang.PersistentHashMap
   ISymbol
     {:typeof :type
-     :nameof (fn [self] (or (:name self)
-                            (:qname self)))
+     :nameof (fn [self] (or (:qname self)
+                            (:name self)))
      :sizeof :size
      :addrof :address})
