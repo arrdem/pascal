@@ -28,19 +28,6 @@ to be exact"
 (def *type-graph* (atom -type-graph))
 
 ;;------------------------------------------------------------------------------
-;; Type matrix manipulation expressions
-(defmacro with-types
-  ([binding & forms]
-     `(binding [*type-graph* ~binding]
-        ~@forms)))
-
-(defn install-transformer!
-  ([from to entry]
-     (swap! *type-graph* graph/add-edges [from to])
-     (install! (assoc entry
-                 :name (transformer-name from to)))))
-
-;;------------------------------------------------------------------------------
 ;; Public api for computing the minimum representation of types and type casts.
 ;; Note that it's pretty tied up in my symbol table architecture and naming
 ;; scheme, hence it's implementation in a pascal. namespace rather than in
@@ -77,3 +64,16 @@ the minimum common representation according to the type graph."
      (let [[c0 c1] (h/conversion-path @*type-graph* t0 t1)]
        [((path->transformer c0) e0)
         ((path->transformer c1) e1)])))
+
+;;------------------------------------------------------------------------------
+;; Type matrix manipulation expressions
+(defmacro with-types
+  ([binding & forms]
+     `(binding [*type-graph* ~binding]
+        ~@forms)))
+
+(defn install-transformer!
+  ([from to entry]
+     (swap! *type-graph* graph/add-edges [from to])
+     (install! (assoc entry
+                 :name (transformer-name from to)))))
