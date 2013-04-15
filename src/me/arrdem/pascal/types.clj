@@ -4,9 +4,11 @@
       :added "0.2.1"
       :author "Reid McKenzie"}
       me.arrdem.pascal.types
-  (:require [me.arrdem.compiler.type-hierarchy :as h :refer [*type-graph*]]
+  (:require [me.arrdem.compiler.type-hierarchy :as h]
             [me.arrdem.pascal.symtab :refer [search install!]]
-            [me.arrdem.pascal.ast :refer [e-> makefuncall]]))
+            [me.arrdem.pascal.ast :refer [e-> makefuncall]]
+
+            [loom.graph  :as graph]))
 
 
 (def -type-graph
@@ -64,7 +66,7 @@ expression. Depends on the type conversion resolution operations."
   "Special case of a type conversion for forcing an expression to a known type.
 Intended for use when assigning an int to a float variable and soforth."
   ([typed-expr from to]
-     ((path->transformer (first (h/conversion-path from to)))
+     ((path->transformer (first (h/conversion-path @*type-graph* from to)))
       typed-expr)))
 
 (defn level
@@ -72,6 +74,6 @@ Intended for use when assigning an int to a float variable and soforth."
 expressions, this function transforms both expression arguments to the type of
 the minimum common representation according to the type graph."
   ([e0 t0 e1 t1]
-     (let [[c0 c1] (h/conversion-path t0 t1)]
+     (let [[c0 c1] (h/conversion-path @*type-graph* t0 t1)]
        [((path->transformer c0) e0)
         ((path->transformer c1) e1)])))
