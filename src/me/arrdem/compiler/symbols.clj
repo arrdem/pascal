@@ -94,7 +94,7 @@
     (typeof [self] (.type self))
     (nameof [self] (.qname self))
     (toString [self] (.qname self))
-    (sizeof [self] (sizeof (.type self)))
+    (sizeof [self] (sizeof (typeof self)))
     (addrof [self] nil)
   IValued
     (valueof [self] (.val self)))
@@ -144,9 +144,9 @@
 
 (extend Long
   ISymbol
-    {:typeof (fn [self] "real")
+    {:typeof (fn [self] "integer")
      :nameof (fn [self] nil)
-     :sizeof (fn [self] 8)
+     :sizeof (fn [self] 4)
      :addrof (fn [self] nil)})
 
 (extend Integer
@@ -154,6 +154,20 @@
     {:typeof (fn [self] "integer")
      :nameof (fn [self] nil)
      :sizeof (fn [self] 4)
+     :addrof (fn [self] nil)})
+
+(extend Double
+  ISymbol
+    {:typeof (fn [self] "real")
+     :nameof (fn [self] nil)
+     :sizeof (fn [self] 8)
+     :addrof (fn [self] nil)})
+
+(extend Float
+  ISymbol
+    {:typeof (fn [self] "real")
+     :nameof (fn [self] nil)
+     :sizeof (fn [self] 8)
      :addrof (fn [self] nil)})
 
 (extend clojure.lang.PersistentArrayMap
