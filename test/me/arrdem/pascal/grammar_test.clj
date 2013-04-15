@@ -16,8 +16,6 @@
                    {:remainder (pascal "var i, j, k : ^ integer;
                                        l, m, n : ^ foo")})
                   rest rest)]
-      (println res)
       (doseq [i res]
-        (println i)
         (is (= i
                (:qname (search i))))))))
