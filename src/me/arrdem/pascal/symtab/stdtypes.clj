@@ -6,20 +6,20 @@
 ;; representation of vars, pointers and soforth in the symbol table.
 (defn init!
   "Function of no arguments which serves simply to populate the symbol table
-with the standard 'primitive' types which Pascal supports."
-  ([]
-     (doseq [t [;; Basic types
-                ["integer" 4]
-                ["char" 1]
-                ["boolean" 4]
-                ["real" 8]
-                ]]
-       (install! (apply ->PrimitiveType t)))
+   with the standard 'primitive' types which Pascal supports."
+  []
+  (doseq [t [;; Basic types
+             ["integer" 4]
+             ["char" 1]
+             ["boolean" 4]
+             ["real" 8]
+             ]]
+    (install! (apply ->PrimitiveType t)))
 
-     (doseq [t [;; Pointer types
-                ["^integer" 4 "integer"]
-                ["^char" 4 "char"]
-                ["^boolean" 4 "boolean"]
-                ["^real" 4 "real"]
-                ]]
-       (install! (apply ->PointerType t)))))
+  (doseq [t [;; Pointer types
+             ["^integer" 4 "integer"]
+             ["^char" 4 "char"]
+             ["^boolean" 4 "boolean"]
+             ["^real" 4 "real"]
+             ]]
+    (install! (apply ->PointerType t))))
