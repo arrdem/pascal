@@ -172,3 +172,7 @@
 (defn statements
   [[_0 stmnts _1]]
   (makeprogn stmnts))
+
+(defn point-type
+  [[_point type]]
+  (str "^" type))
