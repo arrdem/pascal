@@ -15,7 +15,7 @@
 ;;------------------------------------------------------------------------------
 ;; The namespace stack
 
-(def *symns*
+(def ^:dynamic *symns*
   "Used to track the namespace levels above the current point of evaluation.
 An empty list signifies that we are operating at the \"top\" level where program
 forms and other such values live. It is here that the \"standard library\" lives.
@@ -48,7 +48,7 @@ multiple compile runs without restart."
 ;;------------------------------------------------------------------------------
 ;; The symbol table
 
-(def *symtab*
+(def ^:dynamic *symtab*
   "Used to track all symbols."
   (atom {}))
 
@@ -112,8 +112,10 @@ testing, multiple compile runs without restart."
   "Meta symbol installer. Takes a namespace structure and a record as arguments,
 and performs the appropriate swap! respecting the namespacing stack."
   [atom sym]
-  (let [path (concat @*symns* (list (:name sym)))]
-    (swap! atom assoc-in path sym)))
+  (let [path (concat @*symns* (list (:name sym)))
+        sym (assoc sym :qname (render-ns path))]
+    (swap! atom assoc-in path sym)
+    sym))
 
 (defn- stack-search
   "Recursively searches the symbol table for a symbol with an argument name.
