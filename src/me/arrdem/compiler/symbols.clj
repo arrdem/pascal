@@ -80,3 +80,25 @@
     (field-offset [self name]
       (get (.children self) name))
     (fields [self] (.children self)))
+
+;;------------------------------------------------------------------------------
+;;Function representation
+
+(defprotocol IInvokable
+  (arity [self] "Returns the arity of the callable record")
+  (valid-invokation? [self arg-type-list]
+    "Tests an argument type sequence for arity and type")
+  (return-type [self] "Returns the return type of the callable record"))
+
+(defrecord FunctionType [name arity-and-type-set ret-type]
+  ISymbol
+    (typeof [self] (.name self))
+    (nameof [self] (.nams self))
+    (sizeof [self] nil)
+    (addrof [self] nil)
+  IInvokable
+    (arity [self] (map count (.arity-and-type-set self)))
+    (valid-invokation? [self args]
+      (contains? (.arity-and-type-set self)
+                 (map typeof args)))
+    (return-type [self] (.ret-type self)))
