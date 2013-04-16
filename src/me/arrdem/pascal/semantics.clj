@@ -2,7 +2,8 @@
   (:require [clojure.pprint :refer [pprint]]
 
             [me.arrdem.compiler.symbols :refer [->VariableType ->RecordType
-                                                nameof typeof]]
+                                                nameof typeof ->ArrayType
+                                                sizeof]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns]]
             [me.arrdem.pascal.ast :refer :all]
@@ -166,3 +167,24 @@
   (map partial-make-aref
        (if (seq? subscripts)
          subscripts  [subscripts])))
+
+(defn install-arrtype
+  [[_arr _0 index-list _1 _of type]]
+  (loop [t (reverse index-list)
+         child-type (search type)]
+
+    (let [my-inds (first t)
+          my-len  (count my-inds)
+          my-name (str (nameof child-type) "-" my-len)
+          self (->ArrayType
+                 (str (nameof child-type) "-" (count my-inds))
+                 (* (sizeof child-type) my-len)
+                 (reduce (fn [x [y z]] (assoc x y z))
+                         nil (map vector
+                                  (range my-len)
+                                  (repeat my-len child-type))))]
+      (println my-name (sizeof self))
+      (install! self)
+      (when-not (empty? (rest t))
+        (recur (rest t)
+               self)))))
