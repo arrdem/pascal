@@ -1,4 +1,8 @@
-(ns me.arrdem.pascal.test-text)
+(ns me.arrdem.pascal.test-text
+  (:require [me.arrdem.compiler.symbols]))
+
+(def pint {:name "integer" :size 4})
+(def preal {:name "real" :size 8})
 
 ;;------------------------------------------------------------------------------
 ;; working test cases (supposedly)
@@ -14,7 +18,7 @@
                   (progn "output")
                   (comment "defined variables" "graph1/i")
                   (progn (:= "graph1/i" 3)))
-   :symbols [{:name "i" :type/data "integer" :qname "graph1/i" :type :symbol}]})
+   :symbols [{:type pint :qname "graph1/i"}]})
 
 (def trivb-pas
   {:text "program graph1(output);
@@ -33,8 +37,8 @@
                                   (progn (funcall "writeln" "graph1/str_0")
                                          (:= "graph1/i" (+ 1 "graph1/i"))
                                          (goto 0))))))
-   :symbols [{:name "i" :type/data "integer" :qname "graph1/i" :type :symbol}
-             {:name "lim" :type/data "integer" :qname "graph1/lim" :type :symbol}]})
+   :symbols [{:type pint :qname "graph1/i"}
+             {:type pint :qname "graph1/lim"}]})
 
 ;;------------------------------------------------------------------------------
 ;; future test cases
@@ -88,15 +92,15 @@
                                          (:= "graph1/i" (+ 1 "graph1/i"))
                                          (goto 1))))))
 
-   :symbols [{:name "d", :value 0.0625, :type :symbol, :type/data "real" :qname "graph1/d"}
-             {:name "s", :value 32, :type :symbol, :type/data "integer" :qname "graph1/s"}
-             {:name "h", :value 34, :type :symbol, :type/data "integer" :qname "graph1/h"}
-             {:name "c", :value 6.28318, :type :symbol, :type/data "real" :qname "graph1/c"}
-             {:name "lim", :value 32, :type :symbol, :type/data "integer" :qname "graph1/lim"}
+   :symbols [{:value 0.0625, :type preal :qname "graph1/d"}
+             {:value 32, :type pint :qname "graph1/s"}
+             {:value 34, :type pint :qname "graph1/h"}
+             {:value 6.28318, :type preal :qname "graph1/c"}
+             {:value 32, :type pint :qname "graph1/lim"}
 
-             {:name "x", :type :symbol, :type/data "real" :qname "graph1/x"}
-             {:name "y", :type :symbol, :type/data "real" :qname "graph1/y"}
+             {:type preal :qname "graph1/x"}
+             {:type preal :qname "graph1/y"}
 
-             {:name "i", :type :symbol, :type/data "integer" :qname "graph1/i"}
-             {:name "n", :type :symbol, :type/data "integer" :qname "graph1/n"}
+             {:type pint :qname "graph1/i"}
+             {:type pint :qname "graph1/n"}
              ]})

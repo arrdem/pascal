@@ -43,7 +43,7 @@ some sort of namespace derived order."
          (let [indent (* 7 (inc (count stack)))
                fmnt (format fmnt indent)
                stack  (concat stack (list k))
-               vals (select-keys v [:value :type :type/data])]
+               vals (select-keys v [:value :type :value])]
            (if-not (empty? vals)
              (println (format fmnt (cst/render-ns stack)
                               (pr-str vals))))

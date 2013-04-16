@@ -1,5 +1,6 @@
 (ns me.arrdem.compiler.symtab
-  (:require [clojure.string :refer [split]]))
+  (:require [clojure.string :refer [split]]
+            [me.arrdem.compiler.symbols :refer [nameof]]))
 
 (def base_st
   {
@@ -112,7 +113,7 @@ testing, multiple compile runs without restart."
   "Meta symbol installer. Takes a namespace structure and a record as arguments,
 and performs the appropriate swap! respecting the namespacing stack."
   [atom sym]
-  (let [path (concat @*symns* (list (:name sym)))
+  (let [path (concat @*symns* (list (nameof sym)))
         sym (assoc sym :qname (render-ns path))]
     (swap! atom assoc-in path sym)
     sym))
