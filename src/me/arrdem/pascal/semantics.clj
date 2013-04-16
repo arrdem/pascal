@@ -170,7 +170,6 @@
 
 (defn install-arrtype
   [[_arr _0 index-list _1 _of type]]
-  (println index-list)
   (loop [t (reverse index-list)
          child-type (search type)]
     (let [my-ind (first t)
