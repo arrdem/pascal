@@ -173,16 +173,14 @@
   (println index-list)
   (loop [t (reverse index-list)
          child-type (search type)]
-
     (let [my-ind (first t)
           my-len  (count (fields my-ind))
           my-name (str (nameof child-type) "-" my-len)
           self (->ArrayType
                  (str (nameof child-type) "-" my-len)
                  (* (sizeof child-type) my-len)
-                 (zipmap (range my-len)
+                 (zipmap (keys (fields my-ind))
                          (repeat my-len child-type)))]
-      (println my-name (sizeof self))
       (install! self)
       (if-not (empty? (rest t))
         (recur (rest t)
@@ -191,7 +189,7 @@
 
 (defn install-range
   [[low _r high]]
-  (let [c (- high low)
+  (let [c (- (inc high) low)
         i (search "integer")
         t (->RecordType (gensym! (str "range-" low "->" high "_"))
                         (zipmap (range low (inc high))
