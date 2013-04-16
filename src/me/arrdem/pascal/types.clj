@@ -7,9 +7,7 @@
   (:require [me.arrdem.compiler.type-hierarchy :as h]
             [me.arrdem.compiler.symtab :refer [search install!]]
             [me.arrdem.pascal.ast :refer [e-> makefuncall]]
-
             [loom.graph  :as graph]))
-
 
 (def -type-graph
   "A directed graph representing the basic state of Pascal's almost nonexistent

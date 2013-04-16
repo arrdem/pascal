@@ -1,6 +1,8 @@
 (ns me.arrdem.pascal.semantics
   (:require [clojure.pprint :refer [pprint]]
 
+            [me.arrdem.compiler.symbols :refer [->VariableType ->RecordType
+                                                nameof typeof]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns]]
             [me.arrdem.pascal.ast :refer :all]
@@ -27,9 +29,7 @@
    Enters vars with their types in the symbol table."
   [[varseq _ type]]
   (doseq [v varseq]
-    (let [v {:name v
-             :type :symbol
-             :type/data type}]
+    (let [v (->VariableType v (search type) nil)]
       (dbg-install v)))
   (map abs-name varseq))
 
@@ -39,17 +39,8 @@
 
 (defn const-assign
   [[id _ v]]
-  (let [v {:name      id
-           :value     v
-           :type      :symbol
-           :type/data (cond
-                       (string? v) "string"
-                       (float? v) "real"
-                       (integer? v) "integer")}]
-    (println "; [const-assign] " id ":" v)
-    (let [r (dbg-install v)]
-      (println "; [const-assign] yielding " r)
-      r)))
+  (let [v (->VariableType id (search (typeof v)) v)]
+    (dbg-install v)))
 
 (defn constant-declaration
   [[_ c0 cs]]
@@ -58,12 +49,8 @@
 
 (defn string
   [s]
-  (let [sym (gensym! "str_")
-        val {:name sym
-             :value s
-             :type :symbol
-             :type/data "string"}]
-    (dbg-install val)))
+  (let [sym (->VariableType (gensym! "str_") "string" s)]
+    (dbg-install sym)))
 
 (defn snum
   [prefix [sign? rval]]
@@ -71,10 +58,7 @@
                  (+ nil) 1
                  (-) -1)
         sym (gensym! (str prefix "_"))
-        val {:name sym
-             :value (* factor rval)
-             :type :symbol
-             :type/data prefix}]
+        val (->VariableType sym (typeof rval) (* factor rval))]
     (dbg-install val)))
 
 (def integer (partial snum "integer"))

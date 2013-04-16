@@ -16,14 +16,15 @@
            ;; check symbol table contents...
            (doseq [s# (:symbols ~val)]
              (let [entered-sym# (search (nameof s#))]
-               (println s#)
-               (println entered-sym#)
+
                (is (= (nameof entered-sym#)
                       (nameof s#))
                    "No such symbol table entry")
+
                (is (= (nameof (typeof entered-sym#))
                       (nameof (typeof s#)))
-                   "The entered sym did not match types")
+                   "The entered symbol did not match types")
+
                (is (= (sizeof entered-sym#)
                       (sizeof s#))
                    "Entered size doesn't match")))))))
