@@ -181,29 +181,43 @@
             (fnp/conc op_point typeid)
             s/point-type)))
 
+(def prange
+  (fnp/semantics
+   (fnp/conc constant
+             delim_dotdot
+             constant)
+   s/install-range))
+
+
 (def simple-type
   (fnp/alt
    (fnp/conc delim_lparen
              identifier-list
              delim_rparen)
-   (fnp/conc constant
-             delim_dotdot
-             constant)
+   prange
    typeid))
+
+(def array-type
+  (fnp/semantics
+   (fnp/conc tok_array delim_lbrack index-list delim_rbrack tok_of ptype)
+   s/install-arrtype))
 
 (def structured-type
   (fnp/alt
-   (fnp/conc tok_array delim_lbrack index-list delim_rbrack tok_of ptype)
+   array-type
    (fnp/conc tok_record field-list tok_end)
    (fnp/conc tok_set tok_of simple-type)
    (fnp/conc tok_file tok_of ptype)
    (fnp/conc tok_packed structured-type)))
 
 (def index-list
-  (fnp/alt (fnp/conc simple-type
-                     delim_comma
-                     index-list)
-           simple-type))
+  (fnp/semantics
+   (fnp/conc simple-type
+             (fnp/rep*
+              (fnp/conc
+               delim_comma
+               index-list)))
+   s/tail-cons))
 
 (def field-list
   (fnp/alt
