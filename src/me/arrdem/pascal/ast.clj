@@ -27,11 +27,12 @@
 
 ;;------------------------------------------------------------------------------
 ;; Expression manipulators
-(defn ecomp [fx fn]
-  `(~fn ~fx))
-
-(defn e-> [v & fns]
-  (reduce ecomp v fns))
+(defn e->
+  ([x] x)
+  ([x form] (if (seq? form)
+              `(~(first form) ~x ~@(next form))
+              (list form x)))
+  ([x form & more] (apply e-> (e-> x form) more)))
 
 ;;------------------------------------------------------------------------------
 ;; Expression fragments
