@@ -139,34 +139,34 @@
   ISymbol
     {:typeof (fn [self] (str "char-" (count self)))
      :nameof (fn [self] self)
-     :sizeof (fn [self] nil)
+     :sizeof (fn [self] (count self))
      :addrof (fn [self] nil)})
 
 (extend Long
   ISymbol
     {:typeof (fn [self] "integer")
-     :nameof (fn [self] nil)
+     :nameof (fn [self] "integer")
      :sizeof (fn [self] 4)
      :addrof (fn [self] nil)})
 
 (extend Integer
   ISymbol
     {:typeof (fn [self] "integer")
-     :nameof (fn [self] nil)
+     :nameof (fn [self] "integer")
      :sizeof (fn [self] 4)
      :addrof (fn [self] nil)})
 
 (extend Double
   ISymbol
     {:typeof (fn [self] "real")
-     :nameof (fn [self] nil)
+     :nameof (fn [self] "real")
      :sizeof (fn [self] 8)
      :addrof (fn [self] nil)})
 
 (extend Float
   ISymbol
     {:typeof (fn [self] "real")
-     :nameof (fn [self] nil)
+     :nameof (fn [self] "real")
      :sizeof (fn [self] 8)
      :addrof (fn [self] nil)})
 
@@ -175,13 +175,14 @@
     {:typeof :type
      :nameof (fn [self] (or (:qname self)
                             (:name self)))
-     :sizeof :size
+     :sizeof (fn [self] (or (:size self)
+                            (:size (typeof self))))
      :addrof :address})
 
 (extend clojure.lang.PersistentHashMap
   ISymbol
     {:typeof :type
-     :nameof (fn [self] (or (:qname self)
-                            (:name self)))
-     :sizeof :size
+     :nameof (fn [self] (or (:name self)
+                            (nameof (typeof self))))
+     :sizeof (fn [self] (:size (typeof self)))
      :addrof :address})
