@@ -185,6 +185,7 @@
                                   (repeat my-len child-type))))]
       (println my-name (sizeof self))
       (install! self)
-      (when-not (empty? (rest t))
+      (if-not (empty? (rest t))
         (recur (rest t)
-               self)))))
+               self)
+        self))))
