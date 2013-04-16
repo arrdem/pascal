@@ -202,14 +202,32 @@
   (let [c (count idlist)
         i (search "integer")
         t (->EnumType (gensym! (str "enum-0->" c "_"))
-                      (zipmap idlist
-                              (map #(assoc %1 :value %2)
-                                   (repeat c i)
-                                   (range c))))
+                      (->> [(repeat c i) (range c)]
+                           (apply (partial map #(assoc %1 :value %2)))
+                           (zipmap idlist)))
         t (install! t)]
     (doseq [[i j] (map list idlist (range c))]
       (install! (->VariableType i t j)))
     t))
 
+(defn- apply-type [[syms type]]
+  (let [t (if (instance? me.arrdem.compiler.symbols.RecordType type)
+           type (search type))]
+    (reverse
+     (map vector
+          syms
+          (repeat type)))))
+
 (defn install-record
-  [[_tr field-list _tend]])
+  [[_tr field-list _tend]]
+  (let [members (->> field-list
+                     (map apply-type)
+                     reverse
+                     (reduce concat)
+                     (reduce #(assoc %1 (first %2) (second %2)) nil))]
+    (->RecordType (gensym! "record__")
+                  members)))
+
+(defn record-field
+  [[idlist _ type]]
+  (list idlist type))
