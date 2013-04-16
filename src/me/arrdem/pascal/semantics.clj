@@ -173,6 +173,8 @@
   (loop [t (reverse index-list)
          child-type (search type)]
     (let [my-ind (first t)
+          my-ind (if (instance? me.arrdem.compiler.symbols.RecordType  my-ind)
+                   my-ind (search my-ind))
           my-len  (count (fields my-ind))
           my-name (str (nameof child-type) "-" my-len)
           self (->ArrayType
