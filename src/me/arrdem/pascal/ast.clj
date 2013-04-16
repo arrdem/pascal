@@ -27,6 +27,9 @@
 
 ;;------------------------------------------------------------------------------
 ;; Expression manipulators
+(defn ecomp [fx fn]
+  `(~fn ~fx))
+
 (defn e->
   ([x] x)
   ([x form] (if (seq? form)
