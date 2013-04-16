@@ -30,12 +30,20 @@
 (defn ecomp [fx fn]
   `(~fn ~fx))
 
+(defn er-> [val & forms]
+  (reduce (fn [e form]
+            (if (list? form)
+             (concat (list (first form) e)
+                     (rest form))
+             (list form e)))
+          val forms))
+
 (defn e->
   ([x] x)
   ([x form] (if (seq? form)
               `(~(first form) ~x ~@(next form))
               (list form x)))
-  ([x form & more] (apply e-> (e-> x form) more)))
+  ([x form & more] (apply (partial e-> (e-> x form)) more)))
 
 ;;------------------------------------------------------------------------------
 ;; Expression fragments
@@ -69,6 +77,9 @@
 
 (defn makefuncall [sym args]
   `(~'funcall ~sym ~@args))
+
+(defn partial-make-aref [index]
+  `(~'aref ~index))
 
 ;;------------------------------------------------------------------------------
 ;; Common control structures

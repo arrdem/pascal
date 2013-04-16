@@ -10,7 +10,7 @@
 (deftest pointer-def-case
   (binding [me.arrdem.compiler.symtab/*symtab* (atom {})]
     (clear!)
-    (install! {:name "^foo" :type :reference :reference "integer"})
+    (install! {:name "^foo" :type "integer"})
     (let [res (-> (fnp/rule-match
                    me.arrdem.pascal.grammar/variable-declaration
                    #(println "FAILED: " %)

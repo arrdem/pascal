@@ -84,7 +84,7 @@
     (addrof [self] nil)
   IIndexable
     (field-offset [self name]
-      (get (.children self) name))
+      (.indexOf (apply list (keys (.children self))) name))
     (fields [self] (.children self)))
 
 ;;------------------------------------------------------------------------------
@@ -104,11 +104,11 @@
     (typeof [self] (.name self))
     (toString [self] (.name self))
     (nameof [self] (.name self))
-    (sizeof [self] (apply + (map (vals (.members self)))))
+    (sizeof [self] (apply + (map sizeof (vals (.members self)))))
     (addrof [self] nil)
   IIndexable
-  (field-offset [self name]
-      (get (.members self) name))
+    (field-offset [self name]
+      (.indexOf (apply list (keys (.children self))) name))
     (fields [self] (.members self)))
 
 ;;------------------------------------------------------------------------------

@@ -2,7 +2,8 @@
   (:require [clojure.pprint :refer [pprint]]
 
             [me.arrdem.compiler.symbols :refer [->VariableType ->RecordType
-                                                nameof typeof]]
+                                                nameof typeof ->ArrayType
+                                                sizeof fields]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns]]
             [me.arrdem.pascal.ast :refer :all]
@@ -29,7 +30,7 @@
    Enters vars with their types in the symbol table."
   [[varseq _ type]]
   (doseq [v varseq]
-    (let [v (->VariableType v (search type) nil)]
+    (let [v (->VariableType v (search (nameof type)) nil)]
       (dbg-install v)))
   (map abs-name varseq))
 
@@ -160,3 +161,38 @@
 (defn point-type
   [[_point type]]
   (str "^" type))
+
+(defn var-index
+  [[_lb subscripts _rb]]
+  (map partial-make-aref
+       (if (seq? subscripts)
+         subscripts [subscripts])))
+
+(defn install-arrtype
+  [[_arr _0 index-list _1 _of type]]
+  (loop [t (reverse index-list)
+         child-type (search type)]
+    (let [my-ind (first t)
+          my-ind (if (instance? me.arrdem.compiler.symbols.RecordType  my-ind)
+                   my-ind (typeof (search my-ind)))
+          my-len  (count (fields my-ind))
+          my-name (str (nameof child-type) "-" my-len)
+          self (->ArrayType
+                 (str (nameof child-type) "-" my-len)
+                 (* (sizeof child-type) my-len)
+                 (zipmap (keys (fields my-ind))
+                         (repeat my-len child-type)))]
+      (install! self)
+      (if-not (empty? (rest t))
+        (recur (rest t)
+               self)
+        self))))
+
+(defn install-range
+  [[low _r high]]
+  (let [c (- (inc high) low)
+        i (search "integer")
+        t (->RecordType (gensym! (str "range-" low "->" high "_"))
+                        (zipmap (range low (inc high))
+                                (repeat c i)))]
+    (install! t)))

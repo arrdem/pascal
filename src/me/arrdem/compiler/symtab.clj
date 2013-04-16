@@ -126,9 +126,8 @@ but the returning a nil value and throwing an exception are both acceptable."
      (let [qualified-sym (concat stack (list sym))
            rstack        (rest stack)]
        (or (if-let [v (get-in @atom qualified-sym)]
-             (assoc v :qname (render-ns qualified-sym))
-             (if (empty? stack) nil))
-           (if-not (empty? stack)
+             v (when (empty? stack) nil))
+           (when-not (empty? stack)
              (recur atom sym rstack))))))
 
 (defn m-search
