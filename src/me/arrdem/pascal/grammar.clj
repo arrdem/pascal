@@ -188,12 +188,16 @@
              constant)
    s/install-range))
 
-
-(def simple-type
-  (fnp/alt
+(def penum
+  (fnp/semantics
    (fnp/conc delim_lparen
              identifier-list
              delim_rparen)
+   s/install-enum))
+
+(def simple-type
+  (fnp/alt
+   penum
    prange
    typeid))
 

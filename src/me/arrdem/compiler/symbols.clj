@@ -111,6 +111,18 @@
       (.indexOf (apply list (keys (.children self))) name))
     (fields [self] (.members self)))
 
+(defrecord EnumType [name members]
+  ISymbol
+    (typeof [self] (.name self))
+    (toString [self] (.name self))
+    (nameof [self] (.name self))
+    (sizeof [self] (apply + (map sizeof (vals (.members self)))))
+    (addrof [self] nil)
+  IIndexable
+    (field-offset [self name]
+      (.indexOf (apply list (keys (.children self))) name))
+    (fields [self] (.members self)))
+
 ;;------------------------------------------------------------------------------
 ;;Function representation
 (defprotocol IInvokable

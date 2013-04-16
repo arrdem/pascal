@@ -3,7 +3,7 @@
 
             [me.arrdem.compiler.symbols :refer [->VariableType ->RecordType
                                                 nameof typeof ->ArrayType
-                                                sizeof fields]]
+                                                sizeof fields ->EnumType]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns]]
             [me.arrdem.pascal.ast :refer :all]
@@ -196,3 +196,17 @@
                         (zipmap (range low (inc high))
                                 (repeat c i)))]
     (install! t)))
+
+(defn install-enum
+  [[_0 idlist _1]]
+  (let [c (count idlist)
+        i (search "integer")
+        t (->EnumType (gensym! (str "enum-0->" c "_"))
+                      (zipmap idlist
+                              (map #(assoc %1 :value %2)
+                                   (repeat c i)
+                                   (range c))))
+        t (install! t)]
+    (doseq [[i j] (map list idlist (range c))]
+      (install! (->VariableType i t j)))
+    t))
