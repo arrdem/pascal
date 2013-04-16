@@ -213,7 +213,7 @@
 (def index-list
   (fnp/semantics
    (fnp/conc simple-type
-             (fnp/rep*
+             (fnp/opt
               (fnp/conc
                delim_comma
                index-list)))

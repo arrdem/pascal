@@ -166,7 +166,7 @@
   [[_lb subscripts _rb]]
   (map partial-make-aref
        (if (seq? subscripts)
-         subscripts  [subscripts])))
+         subscripts [subscripts])))
 
 (defn install-arrtype
   [[_arr _0 index-list _1 _of type]]
