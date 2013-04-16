@@ -73,9 +73,9 @@
   [[id postfixes]]
   (let [id (abs-name id)]
     (assert id)
-    (if (empty? postfixes)
-      id
-      (e-> id postfixes))))
+    (if-not (empty? postfixes)
+      (apply (partial e-> id) postfixes)
+      id)))
 
 (defn additive-expression
   [[me tail]]
