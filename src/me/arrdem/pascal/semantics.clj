@@ -160,3 +160,9 @@
 (defn point-type
   [[_point type]]
   (str "^" type))
+
+(defn var-index
+  [[_lb subscripts _rb]]
+  (map partial-make-aref
+       (if (seq? subscripts)
+         subscripts  [subscripts])))

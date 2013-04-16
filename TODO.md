@@ -1,10 +1,14 @@
 # TODO list
+## active
+2. parse a pointer op [OKAY] 
+   and be able to generate the appropriate (^ <foo>) deref group
+
 ## due today
 1. parse an enum declaration and create the appropriate type entry with values
    - register the enum as a type
    - register the enum's values as vars in their own right with integer values
    - register those values with type equal to that of the enum parent
-2. parse a pointer op and be able to generate the appropriate (^ <foo>) deref group
+
 3. parse an array and be able to construct the appropriate type table entry
    for it. This still needs some thought but I think that the idea of
    describing the type by actually declaring gensym types for each sub-array

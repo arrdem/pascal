@@ -428,19 +428,26 @@
 
 (def var-postfix
   (fnp/alt
-   (fnp/conc delim_lbrack subscript-list delim_rbrack)
+   (fnp/semantics
+    (fnp/conc delim_lbrack subscript-list delim_rbrack)
+    s/var-index)
    (fnp/conc op_dot fieldid)
    (fnp/conc op_point)))
 
 (def variable
   (fnp/semantics
    (fnp/conc identifier
-             (fnp/rep* var-postfix))
+             (fnp/semantics
+              (fnp/rep* var-postfix)
+              (partial reduce concat)))
    s/variable))
 
 (def subscript-list
-  (fnp/alt (fnp/conc expression delim_comma subscript-list)
-           expression))
+  (fnp/semantics
+   (fnp/conc expression
+            (fnp/opt
+             (fnp/conc delim_comma subscript-list)))
+   s/tail-cons))
 
 (def case-list
   (fnp/alt

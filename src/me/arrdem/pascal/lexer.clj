@@ -36,6 +36,6 @@
       (generate-for :op_le      :val (constantly '<=))
       (generate-for :op_ge      :val (constantly '>=))
       (generate-for :op_gt      :val (constantly '>))
-      (generate-for :op_point   :val (constantly  (symbol "^")))
+      (generate-for :op_point   :val (constantly  (list (symbol "^"))))
       (generate-for :op_dot     :val (constantly '.))
       ))
