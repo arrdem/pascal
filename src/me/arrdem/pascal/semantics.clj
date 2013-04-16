@@ -210,3 +210,6 @@
     (doseq [[i j] (map list idlist (range c))]
       (install! (->VariableType i t j)))
     t))
+
+(defn install-record
+  [[_tr field-list _tend]])

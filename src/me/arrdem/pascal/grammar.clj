@@ -195,6 +195,11 @@
              delim_rparen)
    s/install-enum))
 
+(def precord
+  (fnp/semantics
+   (fnp/conc tok_record field-list tok_end)
+   s/install-record))
+
 (def simple-type
   (fnp/alt
    penum
@@ -209,7 +214,7 @@
 (def structured-type
   (fnp/alt
    array-type
-   (fnp/conc tok_record field-list tok_end)
+   precord
    (fnp/conc tok_set tok_of simple-type)
    (fnp/conc tok_file tok_of ptype)
    (fnp/conc tok_packed structured-type)))
