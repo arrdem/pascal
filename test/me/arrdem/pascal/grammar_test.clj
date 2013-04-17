@@ -72,3 +72,21 @@
           (is (= true
                  (instance? me.arrdem.compiler.symbols.EnumType (typeof m)))
               "Is the installed value clearly part of the enum structure?"))))))
+
+(deftest thintype-invisibility-test
+  (binding [me.arrdem.compiler.symtab/*symtab* (atom {})]
+    (let [res1 (do (clear!)
+                   (fnp/rule-match
+                    me.arrdem.pascal.grammar/ptype
+                    #(println "FAILED: " %)
+                    #(println "LEFTOVER: " %2)
+                    {:remainder (pascal "(red, white, blue)")}))
+          res2 (do (clear!)
+                   (fnp/rule-match
+                    me.arrdem.pascal.grammar/typedecl
+                    #(println "FAILED: " %)
+                    #(println "LEFTOVER: " %2)
+                    {:remainder (pascal "a = (red, white, blue)")}))]
+          (is (= (typeof res1)
+                 (typeof res2))
+              "Is the ThinType wrapper referring (typeof) correctly?"))))
