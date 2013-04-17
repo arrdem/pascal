@@ -66,7 +66,7 @@
 
 (defrecord PointerType [name size-field reftype]
   ISymbol
-    (typeof [self] (.name self))
+    (typeof [self] self)
     (nameof [self] (.name self))
     (toString [self] (.name self))
     (sizeof [self] (.size-field self))
@@ -77,7 +77,7 @@
 
 (defrecord ArrayType [name size-field children]
   ISymbol
-    (typeof [self] (.name self))
+    (typeof [self] self)
     (nameof [self] (.name self))
     (toString [self] (.name self))
     (sizeof [self] (.size-field self))
@@ -101,7 +101,7 @@
 
 (defrecord RecordType [name members]
   ISymbol
-    (typeof [self] (.name self))
+    (typeof [self] self)
     (toString [self] (.name self))
     (nameof [self] (.name self))
     (sizeof [self] (apply + (map sizeof (vals (.members self)))))
@@ -125,7 +125,7 @@
 
 (defrecord EnumType [name members]
   ISymbol
-    (typeof [self] (.name self))
+    (typeof [self] self)
     (toString [self] (.name self))
     (nameof [self] (.name self))
     (sizeof [self] (apply + (map sizeof (vals (.members self)))))
@@ -135,6 +135,13 @@
       (.indexOf (apply list (keys (.children self))) name))
     (fields [self] (.members self)))
 
+(defrecord ThinType [qname type]
+  ISymbol
+    (typeof [self] (.type self))
+    (nameof [self] (.qname self))
+    (toString [self] (.qname self))
+    (sizeof [self] (sizeof (typeof self)))
+    (addrof [self] nil))
 ;;------------------------------------------------------------------------------
 ;;Function representation
 (defprotocol IInvokable
