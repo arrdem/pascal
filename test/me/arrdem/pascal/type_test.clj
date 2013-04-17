@@ -1,4 +1,4 @@
-(ns me.arrdem.pascal.grammar-test
+(ns me.arrdem.pascal.type-test
   (:require [clojure.test :refer :all]
             [me.arrdem.compiler.symtab :refer [search install!]]
             [me.arrdem.compiler.symbols :refer [nameof typeof fields]]
