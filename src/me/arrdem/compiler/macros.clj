@@ -26,8 +26,9 @@ generation time so that I'm not writing two macro systems when one will do."
            (not (map? expr)))
     (let [expander (pmacroexpand (first expr))
           expander (cond
+                    (macro? expander) expander
                     (string? expander) (search expander)
-                    true               nil)
+                    true nil)
           expander (when (macro? expander)
                      (.expander expander))
           res (if (fn? expander)
