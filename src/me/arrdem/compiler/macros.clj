@@ -10,7 +10,9 @@
     (addrof [self] nil))
 
 (defn macro? [obj]
-  (extends? MacroType obj))
+  (try
+    (= "macro" (typeof obj))
+    (catch Exception e false)))
 
 (defn pmacroexpand
   "An \"outermost first\" macro implementation. Looks up macros from the symbol
@@ -20,21 +22,21 @@ symbol table entries. This exists so that the macro system can be employed first
  at AST generation time to do type conversion and soforth, and later at code
 generation time so that I'm not writing two macro systems when one will do."
   [expr]
-  (if (seq? expr)
-    (let [expander (pmacroexpand (first expr) key)
-          expander (if (symbol? expander)
-                     (name expander)
-                     (str expander))
-          expander (search expander)
-          expander (if (macro? expander)
-                     (.expander expander)
-                     identity)
-          res      (if expander
-                     (apply expander (rest partial))
-                     (cons (first expr) (next partial)))
-          res      (cons (first res) (map #(pmacroexpand %1 key)
-                                          (rest res)))]
-      (if expander
-        (pmacroexpand res key)
+  (if (and (seq? expr)
+           (not (map? expr)))
+    (let [expander (pmacroexpand (first expr))
+          expander (cond
+                    (string? expander) (search expander)
+                    true               nil)
+          expander (when (macro? expander)
+                     (.expander expander))
+          res (if (fn? expander)
+                (expander (rest expr))
+                expr)
+          res (cons (first res)
+                    (map pmacroexpand
+                         (next res)))]
+      (if (fn? expander)
+        (pmacroexpand res)
         res))
     expr))
