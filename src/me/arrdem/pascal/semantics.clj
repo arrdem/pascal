@@ -76,7 +76,6 @@
 
 (defn variable
   [[id postfixes]]
-  (println id)
   (let [id (abs-name id)]
     (assert id)
     (if-not (empty? postfixes)
@@ -145,9 +144,8 @@
   [[id [_0 params _1]]]
   (let [f (search id)]
     (if (macro? f)
-      (do (println "[procinvoke] f is a macro! expanding...")
-          (pmacroexpand (concat (list f)
-                                params)))
+      (pmacroexpand (concat (list f)
+                            params))
       (makefuncall id params))))
 
 (defn identifier
