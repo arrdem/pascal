@@ -1,7 +1,8 @@
 (ns me.arrdem.pascal.symtab.stdmacros
   (:require [me.arrdem.compiler.symtab :refer [install! search]]
-            [me.arrdem.compiler.symbols :refer [sizeof]]
-            [me.arrdem.compiler.macros :refer [->MacroType]]))
+            [me.arrdem.compiler.symbols :refer [sizeof nameof]]
+            [me.arrdem.compiler.macros :refer [->MacroType]]
+            [me.arrdem.pascal.ast :refer [makefuncall]]))
 
 ;;------------------------------------------------------------------------------
 
@@ -9,11 +10,12 @@
   "A macro function which serves to boostrap the equivalent of a malloc call.
 Takes on argument: a type, and expands to a call to the trnew function which
 actually allocates memory at runtime."
-  ([[t]]
-     (let [T (search t)]
-       (assert (not (nil? T))
-               (str "Failed to find type " t " in the symbol tbl"))
-       `(~'funcall "trnew" ~(sizeof t)))))
+  [[t]]
+  (let [T (search t)]
+    (println "[p-new-macro] found type T:" (nameof T))
+    (assert (not (nil? T))
+            (str "Failed to find type " t " in the symbol tbl"))
+    (makefuncall "trnew" (list (sizeof T)))))
 
 ;;------------------------------------------------------------------------------
 
