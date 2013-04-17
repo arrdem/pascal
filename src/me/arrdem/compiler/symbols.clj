@@ -137,7 +137,7 @@
 
 (defrecord ThinType [qname type]
   ISymbol
-    (typeof [self] (.type self))
+    (typeof [self] (typeof (.type self)))
     (nameof [self] (.qname self))
     (toString [self] (.qname self))
     (sizeof [self] (sizeof (typeof self)))
