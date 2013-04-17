@@ -141,9 +141,11 @@
    s/tail-cons))
 
 (def type-declaration
-  (fnp/conc tok_type
-            typedecls
-            tok_end))
+  (fnp/semantics
+   (fnp/conc tok_type
+             typedecls
+             tok_end)
+   s/type-declaration))
 
 (def vardecl
   (fnp/semantics

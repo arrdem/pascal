@@ -54,6 +54,8 @@
 (defprotocol IValued
   (valueof [_] "Enumerates the value of the symbol, or an expression therefor"))
 
+(defprotocol IPPrinted
+  (toString [_] "Pretty printing for the TA's beinifit"))
 ;;------------------------------------------------------------------------------
 ;; record types for type records
 (defrecord PrimitiveType [name size-field]
@@ -62,15 +64,17 @@
     (nameof [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
+  IPPrinted
     (toString [self] (.name self)))
 
 (defrecord PointerType [name size-field reftype]
   ISymbol
     (typeof [self] self)
     (nameof [self] (.name self))
-    (toString [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
+  IPPrinted
+    (toString [self] (.name self))
   IPointer
     (reftype [self] (.reftype self))
     (follow [_] nil))
@@ -79,9 +83,10 @@
   ISymbol
     (typeof [self] self)
     (nameof [self] (.name self))
-    (toString [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
+  IPPrinted
+    (toString [self] (.name self))
   IIndexable
     (field-offset [self name]
       (.indexOf (apply list (keys (.children self))) name))
@@ -93,19 +98,21 @@
   ISymbol
     (typeof [self] (.type self))
     (nameof [self] (.qname self))
-    (toString [self] (.qname self))
     (sizeof [self] (sizeof (typeof self)))
     (addrof [self] nil)
+  IPPrinted
+    (toString [self] (.qname self))
   IValued
     (valueof [self] (.val self)))
 
 (defrecord RecordType [name members]
   ISymbol
     (typeof [self] self)
-    (toString [self] (.name self))
     (nameof [self] (.name self))
     (sizeof [self] (apply + (map sizeof (vals (.members self)))))
     (addrof [self] nil)
+  IPPrinted
+    (toString [self] (.name self))
   IIndexable
     (field-offset [self name]
       (.offset (get (.children self) name)))
@@ -126,10 +133,11 @@
 (defrecord EnumType [name members]
   ISymbol
     (typeof [self] self)
-    (toString [self] (.name self))
     (nameof [self] (.name self))
     (sizeof [self] (apply + (map sizeof (vals (.members self)))))
     (addrof [self] nil)
+  IPPrinted
+    (toString [self] (.name self))
   IIndexable
     (field-offset [self name]
       (.indexOf (apply list (keys (.children self))) name))
@@ -139,9 +147,10 @@
   ISymbol
     (typeof [self] (typeof (.type self)))
     (nameof [self] (.qname self))
-    (toString [self] (.qname self))
     (sizeof [self] (sizeof (typeof self)))
-    (addrof [self] nil))
+    (addrof [self] nil)
+  IPPrinted
+    (toString [self] (.qname self)))
 ;;------------------------------------------------------------------------------
 ;;Function representation
 (defprotocol IInvokable
@@ -154,9 +163,10 @@
   ISymbol
     (typeof [self] (.name self))
     (nameof [self] (.name self))
-    (toString [self] (.name self))
     (sizeof [self] nil)
     (addrof [self] nil)
+  IPPrinted
+    (toString [self] (.name self))
   IInvokable
     (arity [self] (map count (.arity-and-type-set self)))
     (valid-invokation? [self args]

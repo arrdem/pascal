@@ -224,8 +224,9 @@
 
 (defn apply-type
   [syms type]
-  (let [t (if (string? type)
-            (search type)  type)]
+  (let [t (typeof
+           (if (string? type)
+             (search type) type))]
      (map #(->RecordEntry %1 t nil)
           syms)))
 
@@ -242,3 +243,7 @@
 (defn install-type
   [[id _ type]]
   (install! (->ThinType id (search (nameof type)))))
+
+(defn type-declaration
+  [[_t decls _e]]
+  (apply makecomment "got type definitions:" (map #(. %1 nameof) decls)))

@@ -16,10 +16,10 @@
   (->> members
       (reduce
        (fn [state-map entry]
-         (let [o (aligned-offset entry (:offset state-map))
+         (let [o (aligned-offset (typeof entry) (:offset state-map))
                n (->RecordEntry (nameof entry) (typeof entry) o)]
            (-> state-map
-               (assoc :offset (+ o (sizeof entry)))
+               (assoc :offset (+ o (sizeof (typeof entry))))
                (assoc (nameof entry) n))))
        {:offset 0})
       ((fn [x] (dissoc x :offset)))))
