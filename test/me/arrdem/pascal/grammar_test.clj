@@ -1,7 +1,7 @@
 (ns me.arrdem.pascal.grammar-test
   (:require [clojure.test :refer :all]
             [me.arrdem.compiler.symtab :refer [search install!]]
-            [me.arrdem.compiler.symbols :refer [nameof typeof]]
+            [me.arrdem.compiler.symbols :refer [nameof typeof fields]]
             [me.arrdem.pascal :refer [process-string build-ast]]
             [me.arrdem.pascal.symtab :refer [init! clear!]]
             [me.arrdem.pascal.lexer :refer [pascal]]
@@ -20,7 +20,36 @@
                   rest rest)]
       (doseq [i res]
         (let [r (search i)]
-
           (is (= i
                  (nameof r))
               "Is the installed really installed?"))))))
+
+(deftest simple-record-def-case
+  (binding [me.arrdem.compiler.symtab/*symtab* (atom {})]
+    (clear!)
+    (install! {:name "^foo" :type "integer"})
+    (let [int (search "integer")
+          res (name.choi.joshua.fnparse/rule-match
+                   me.arrdem.pascal.grammar/variable-declaration
+                   prn prn
+                   {:remainder (me.arrdem.pascal.lexer/pascal
+                                "var i, j, k : integer;
+                                     l : record h, y : real end")})]
+      (doseq [i ["i" "j" "k"]]
+        (let [r (search i)]
+          (is (= i
+                 (nameof r))
+              "Normal var did not install correctly")
+          (is (= int
+                 (typeof r))
+              "Normal var did not register its type correctly")))
+      (let [r (search "l")]
+        (is (= true
+               (instance? me.arrdem.compiler.symbols.VariableType r))
+            "Did the record install at all?")
+        (is (= "record__0"
+               (nameof (typeof r)))
+            "Did the record install as a gensym named record?")
+        (is (= #{"y" "h"}
+               (set (keys (fields (typeof r)))))
+            "Did the record get the correct fields?")))))
