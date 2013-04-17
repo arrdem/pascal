@@ -4,7 +4,8 @@
             [me.arrdem.compiler.symbols :refer [->VariableType ->RecordType
                                                 nameof typeof ->ArrayType
                                                 sizeof fields ->EnumType
-                                                ->RecordEntry]]
+                                                ->RecordEntry ->PointerType
+                                                ->ThinType]]
             [me.arrdem.compiler.types :refer [align-struct]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns]]
@@ -231,3 +232,13 @@
 (defn record-field
   [[idlist _ type]]
   (apply-type idlist type))
+
+(defn install-reftype
+  [[_opt id]]
+  (let [name (str "^" id)
+        entry (->PointerType name 8 (search id))]
+    (install! entry)))
+
+(defn install-type
+  [[id _ type]]
+  (install! (->ThinType id (search (nameof type)))))

@@ -124,17 +124,26 @@
                const-assign)))
    s/constant-declaration))
 
-(def type-declaration
-  (fnp/alt
+(def typedecl
+  (fnp/semantics
    (fnp/conc identifier
              op_eq
-             ptype
-             delim_semi
-             type-declaration)
-   (fnp/conc tok_type
-             identifier
-             op_eq
-             ptype)))
+             ptype)
+   s/install-type))
+
+(def typedecls
+  (fnp/semantics
+   (fnp/conc typedecl
+             (fnp/opt
+              (fnp/conc
+               delim_semi
+               typedecls)))
+   s/tail-cons))
+
+(def type-declaration
+  (fnp/conc tok_type
+            typedecls
+            tok_end))
 
 (def vardecl
   (fnp/semantics
@@ -200,6 +209,11 @@
    (fnp/conc tok_record field-list tok_end)
    s/install-record))
 
+(def pref
+  (fnp/semantics
+   (fnp/conc op_point identifier)
+   s/install-reftype))
+
 (def simple-type
   (fnp/alt
    penum
@@ -215,6 +229,7 @@
   (fnp/alt
    array-type
    precord
+   pref
    (fnp/conc tok_set tok_of simple-type)
    (fnp/conc tok_file tok_of ptype)
    (fnp/conc tok_packed structured-type)))
