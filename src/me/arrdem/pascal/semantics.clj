@@ -3,7 +3,9 @@
 
             [me.arrdem.compiler.symbols :refer [->VariableType ->RecordType
                                                 nameof typeof ->ArrayType
-                                                sizeof fields ->EnumType]]
+                                                sizeof fields ->EnumType
+                                                ->RecordEntry]]
+            [me.arrdem.compiler.types :refer [align-struct]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns]]
             [me.arrdem.pascal.ast :refer :all]
@@ -202,11 +204,30 @@
   (let [c (count idlist)
         i (search "integer")
         t (->EnumType (gensym! (str "enum-0->" c "_"))
-                      (zipmap idlist
-                              (map #(assoc %1 :value %2)
-                                   (repeat c i)
-                                   (range c))))
+                      (->> [(repeat c i) (range c)]
+                           (apply (partial map #(assoc %1 :value %2)))
+                           (zipmap idlist)))
         t (install! t)]
     (doseq [[i j] (map list idlist (range c))]
       (install! (->VariableType i t j)))
     t))
+
+(defn install-record
+  [[_tr field-list _tend]]
+  (let [members (->> field-list
+                     ((partial reduce concat))
+                     align-struct)
+        t (->RecordType (gensym! "record__")
+                        members)]
+    (install! t)))
+
+(defn apply-type
+  [syms type]
+  (let [t (if (string? type)
+            (search type)  type)]
+     (map #(->RecordEntry %1 t nil)
+          syms)))
+
+(defn record-field
+  [[idlist _ type]]
+  (apply-type idlist type))

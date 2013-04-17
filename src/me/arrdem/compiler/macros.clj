@@ -1,5 +1,5 @@
 (ns me.arrdem.compiler.macros
-  (:require [me.arrdem.compiler.types :refer [typeof]]
+  (:require [me.arrdem.compiler.symbols :refer [typeof]]
             [me.arrdem.compiler.symtab :refer [search]]))
 
 ;;------------------------------------------------------------------------------

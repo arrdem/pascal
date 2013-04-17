@@ -58,7 +58,7 @@
 ;; record types for type records
 (defrecord PrimitiveType [name size-field]
   ISymbol
-    (typeof [self] (.name self))
+    (typeof [self] self)
     (nameof [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
@@ -108,8 +108,20 @@
     (addrof [self] nil)
   IIndexable
     (field-offset [self name]
-      (.indexOf (apply list (keys (.children self))) name))
+      (.offset (get (.children self) name)))
     (fields [self] (.members self)))
+
+(defrecord RecordEntry [name type offset]
+  ISymbol
+    (typeof [self] (.type self))
+    (toString [self] (.name self))
+    (nameof [self] (.name self))
+    (sizeof [self] (.size-field (.type self)))
+    (addrof [self] (.offset self))
+  IIndexable
+    (field-offset [self name]
+      (field-offset (.type self) name))
+    (fields [self] (fields (.type self))))
 
 (defrecord EnumType [name members]
   ISymbol

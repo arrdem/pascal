@@ -195,6 +195,11 @@
              delim_rparen)
    s/install-enum))
 
+(def precord
+  (fnp/semantics
+   (fnp/conc tok_record field-list tok_end)
+   s/install-record))
+
 (def simple-type
   (fnp/alt
    penum
@@ -209,7 +214,7 @@
 (def structured-type
   (fnp/alt
    array-type
-   (fnp/conc tok_record field-list tok_end)
+   precord
    (fnp/conc tok_set tok_of simple-type)
    (fnp/conc tok_file tok_of ptype)
    (fnp/conc tok_packed structured-type)))
@@ -230,20 +235,29 @@
    variant-part))
 
 (def fixed-part
-  (fnp/alt record-field
-           (fnp/conc fixed-part
-                     delim_semi
-                     record-field)))
+  (fnp/semantics
+   (fnp/conc record-field
+             (fnp/opt
+              (fnp/conc
+               delim_semi
+               fixed-part)))
+   s/tail-cons))
 
 (def record-field
-  (fnp/alt (fnp/conc fieldid-list
-                     delim_colon
-                     ptype)
-           fnp/emptiness))
+  (fnp/semantics
+   (fnp/conc fieldid-list
+             delim_colon
+             ptype)
+   s/record-field))
 
 (def fieldid-list
-  (fnp/alt (fnp/conc identifier delim_comma fieldid-list)
-           identifier))
+  (fnp/semantics
+   (fnp/conc identifier
+             (fnp/opt
+              (fnp/conc
+               delim_comma
+               fieldid-list)))
+   s/tail-cons))
 
 (def variant-part
   (fnp/conc tok_case
@@ -252,10 +266,13 @@
             variant-list))
 
 (def tag-field
-  (fnp/alt typeid
-           (fnp/conc identifier
-                     delim_colon
-                     typeid)))
+  (fnp/semantics
+   (fnp/conc identifier
+             (fnp/opt
+              (fnp/conc
+               delim_colon
+               typeid)))
+   s/tail-cons))
 
 (def variant-list
   (fnp/alt variant
