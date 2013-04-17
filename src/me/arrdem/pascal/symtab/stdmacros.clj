@@ -1,7 +1,7 @@
 (ns me.arrdem.pascal.symtab.stdmacros
   (:require [me.arrdem.compiler.symtab :refer [install! search]]
             [me.arrdem.compiler.symbols :refer [sizeof]]
-            [me.arrdem.compiler.macros :refer [Macro]]))
+            [me.arrdem.compiler.macros :refer [->MacroType]]))
 
 ;;------------------------------------------------------------------------------
 
@@ -21,7 +21,7 @@ actually allocates memory at runtime."
   "Function of no arguments, its sole purpose is to side-effect the symbol
 table and install the standard macros used for pre-code generation type
 ensuring and soforth."
-  ([]
-     (doseq [m [(Macro "new" p-new-macro)
-                ]]
-       (install! m))))
+  []
+  (doseq [m [["new" p-new-macro]
+             ]]
+    (install! (apply ->MacroType m))))
