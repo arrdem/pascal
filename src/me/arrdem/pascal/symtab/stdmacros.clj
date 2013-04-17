@@ -12,9 +12,8 @@ Takes on argument: a type, and expands to a call to the trnew function which
 actually allocates memory at runtime."
   [[t]]
   (let [T (search t)]
-    (println "[p-new-macro] found type T:" (nameof T))
-    (assert (not (nil? T))
-            (str "Failed to find type " t " in the symbol tbl"))
+    (assert (not (nil? T)) (str "Failed to find type " t " in the symbol tbl"))
+    (assert (not (string? T)) (str "got a string for " t " in the symbol tbl"))
     (makefuncall "trnew" (list (sizeof T)))))
 
 ;;------------------------------------------------------------------------------
