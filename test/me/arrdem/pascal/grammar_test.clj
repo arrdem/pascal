@@ -27,7 +27,6 @@
 (deftest simple-record-def-case
   (binding [me.arrdem.compiler.symtab/*symtab* (atom {})]
     (clear!)
-    (install! {:name "^foo" :type "integer"})
     (let [int (search "integer")
           res (name.choi.joshua.fnparse/rule-match
                    me.arrdem.pascal.grammar/variable-declaration
@@ -53,3 +52,23 @@
         (is (= #{"y" "h"}
                (set (keys (fields (typeof r)))))
             "Did the record get the correct fields?")))))
+
+(deftest enum-def-case
+  (binding [me.arrdem.compiler.symtab/*symtab* (atom {})]
+    (clear!)
+    (let [res (fnp/rule-match
+               me.arrdem.pascal.grammar/ptype
+               #(println "FAILED: " %)
+               #(println "LEFTOVER: " %2)
+               {:remainder (pascal "(red, white, blue)")})]
+      (is (= true
+             (instance? me.arrdem.compiler.symbols.EnumType res))
+          "Is the result an enum?")
+      (doseq [m (keys (fields res))]
+        (let [m (search m)]
+          (is (= true
+                 (instance? me.arrdem.compiler.symbols.VariableType m))
+              "Is the enum value installed as its own symbol?")
+          (is (= true
+                 (instance? me.arrdem.compiler.symbols.EnumType (typeof m)))
+              "Is the installed value clearly part of the enum structure?"))))))
