@@ -16,11 +16,7 @@
 
 (defn pmacroexpand
   "An \"outermost first\" macro implementation. Looks up macros from the symbol
-table, and applies them if possible. Note that in the two arguments case, the
-second argument is the key used for pulling transformation functions out of
-symbol table entries. This exists so that the macro system can be employed first
- at AST generation time to do type conversion and soforth, and later at code
-generation time so that I'm not writing two macro systems when one will do."
+   table, and applies them if possible."
   [expr]
   (if (and (seq? expr)
            (not (map? expr)))
@@ -37,7 +33,7 @@ generation time so that I'm not writing two macro systems when one will do."
           res (cons (first res)
                     (map pmacroexpand
                          (next res)))]
-      (if (fn? expander)
+      (if (fn? expander) ;; possibility of recursive macro
         (pmacroexpand res)
         res))
     expr))
