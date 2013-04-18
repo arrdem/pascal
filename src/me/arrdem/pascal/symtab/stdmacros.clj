@@ -35,8 +35,7 @@ actually allocates memory at runtime."
    https://github.com/valeryz/MacroPHP/blob/master/special-forms.lisp#L20"
   [body]
   (if (list? body)
-    (cons 'progn
-          (_progn-inliner body))
+    (cons 'progn (_progn-inliner body))
     body))
 
 ;;------------------------------------------------------------------------------
@@ -46,7 +45,9 @@ actually allocates memory at runtime."
 table and install the standard macros used for pre-code generation type
 ensuring and soforth."
   []
+  (println "; installing standard macros...")
   (doseq [m [["new" p-new-macro]
              ["progn" progn-inliner]
              ]]
-    (install! (apply ->MacroType m))))
+    (install! (apply ->MacroType m)))
+  (println "; standard macros installed!"))
