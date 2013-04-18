@@ -105,11 +105,11 @@
   IValued
     (valueof [self] (.val self)))
 
-(defrecord RecordType [name members]
+(defrecord RecordType [name members size-field]
   ISymbol
     (typeof [self] self)
     (nameof [self] (.name self))
-    (sizeof [self] (apply + (map sizeof (vals (.members self)))))
+    (sizeof [self] (.size-field self))
     (addrof [self] nil)
   IPPrinted
     (toString [self] (.name self))
