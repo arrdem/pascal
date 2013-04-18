@@ -7,6 +7,7 @@
   "Function of no arguments, its sole purpose is to side-effect the symbol
 table to install the basic Pascal functions."
   []
+  (println "; installing standard library...")
   ;; create a nil type and a nil variable
   (let [niltype (->PrimitiveType "niltype" 0)]
     (install! niltype)
@@ -37,4 +38,5 @@ table to install the basic Pascal functions."
              ["btoi" #{"boolean"} "integer"]
              ["itof" #{"integer"} "real"]
              ]]
-    (install! (apply ->FunctionType f))))
+    (install! (apply ->FunctionType f)))
+  (println "; standard library installed!"))

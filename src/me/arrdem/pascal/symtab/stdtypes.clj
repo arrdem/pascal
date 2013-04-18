@@ -8,6 +8,7 @@
   "Function of no arguments which serves simply to populate the symbol table
    with the standard 'primitive' types which Pascal supports."
   []
+  (println "; installing standard types...")
   (doseq [t [;; Basic types
              ["integer" 4]
              ["char" 1]
@@ -22,4 +23,5 @@
              ["^boolean" 4 "boolean"]
              ["^real" 4 "real"]
              ]]
-    (install! (apply ->PointerType t))))
+    (install! (apply ->PointerType t)))
+  (println "; standard types installed!"))
