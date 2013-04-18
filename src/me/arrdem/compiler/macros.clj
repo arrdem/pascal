@@ -14,15 +14,13 @@
     (= "macro" (typeof obj))
     (catch Exception e false)))
 
-(declare pmacroexpand)
-
-(defn _pmacroexpand
+(defn pmacroexpand
   "An \"outermost first\" macro implementation. Looks up macros from the symbol
    table, and applies them if possible."
   [expr]
-  (println "; macroexpand got param of type " (type expr))
+  ;; (println "; macroexpand got param of type " (type expr))
   (if (seq? expr)
-    (do (println "; macroexpanding " expr)
+    (do ;; (println "; macroexpanding " expr)
         (let [expander (pmacroexpand (first expr))
               expandfn (cond
                         (macro? expander) expander
@@ -34,13 +32,12 @@
               res (if (fn? expandfn)
                     (expandfn (apply list (rest expr)))
                     expr)]
-          (println "; macroexpanding intermediate state " res)
-          (let [res (cons (first res)
-                          (doall (map pmacroexpand (apply list (rest res)))))]
+          ;; (println "; macroexpanding intermediate state " res)
+          (let [res (apply list
+                           (cons (first res)
+                                 (doall (map pmacroexpand (apply list (rest res))))))]
             (if (and (fn? expandfn) ;; possibility of recursive macro
                      (not (= res expr))) ;; prevent non-transforming recursion
               (pmacroexpand res)
               res))))
     expr))
-
-(def pmacroexpand (memoize _pmacroexpand))
