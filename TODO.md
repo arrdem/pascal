@@ -5,19 +5,17 @@
 - improve the output of the symbol table printer so as to be... reasonable
   -- make sure that for records it shows the offsets, sizes & fields
 - make search work on records via (nameof)
+- Rework the way that +, -, * and / generate in the IR, replacing them with
+  -- M+, M-, M* and M/, being macros which do type checking and argument type conversion before expanding to
+  -- float+ float- float* float/ int%
+  -- int+ int- int* int/ int%
+  -- This will be done at macro expansion time as part of type resolution. We
+     aren't there yet, don't stress this bit but keep in mind.
 - add type metadata to all arithmetic expressions
-- make binop and the other such operations compute type conversions
 - move the "standard" type graph into the standard library symbol table code
 
 ## back burner
-- Figure out _when_ to invoke macros, and make it so. Last thing done before the
-  AST is yielded by the AST generation pipeline perhaps?
-
 - Add tests for the macro system
-
-- Note the convention that all AST expression heads are assumed to be macros, so
-  even funcall which is really just a special case macro expanding into an
-  argument pushing and popping function call.
 
 - Add a way to determine whether a type conversion is required and perform it if so
   -- it seems to me that the easiest thing to do would be to recur from the left, taking
@@ -33,13 +31,6 @@
         give it a similar (typeof). Do type resolution at expression building
         time, which shouldn't be hard as I've already finished all the type
         resolving code.
-
-- Rework the way that +, -, * and / generate in the IR, replacing them with
-  -- M+, M-, M* and M/, being macros which do type checking and argument type conversion before expanding to
-  -- float+ float- float* float/ int%
-  -- int+ int- int* int/ int%
-  -- This will be done at macro expansion time as part of type resolution. We
-     aren't there yet, don't stress this bit but keep in mind.
 
 - Add an "inlining" progn macro which attempts to eliminate nested progn groups
   by inserting their contents inline. Will probably just be a reduce over the
