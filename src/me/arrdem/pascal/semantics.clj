@@ -252,3 +252,10 @@
 (defn type-declaration
   [[_t decls _e]]
   (apply makecomment "got type definitions:" (map #(. %1 nameof) decls)))
+
+(defn label-stmnt
+  [[lbl _colon]]
+  (-> lbl
+      str
+      search
+      makelabel))
