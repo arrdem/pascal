@@ -12,13 +12,13 @@
 
 (def -type-graph
   "A directed graph representing the basic state of Pascal's almost nonexistent
-type conversion hierarchy. The graph is of the form
-        Real
-         ^
-      integer
-      ^     ^
-character  Boolean
-to be exact"
+   type conversion hierarchy. The graph is of the form
+           Real
+            ^
+         integer
+         ^     ^
+   character  Boolean
+   to be exact"
   (-> (graph/digraph)
       (graph/add-edges ["integer"   "real"])
       (graph/add-edges ["boolean"   "integer"])
@@ -37,50 +37,55 @@ to be exact"
 
 (defn ^:dynamic transformer-name
   "A way to look up the macro which computes a given type transform."
-  ([x y]
-     (symbol
-      (if y
-        (str (name x) "->" (name y))
-        (name x)))))
+  [x y]
+  (-> (if y (str (name x) "->" (name y))
+            (name x))
+      (symbol)))
 
 (defn- path->transformer
   "Transforms a conversion-path into a function f being a macro style functions
-taking expressions as arguments and returning the appropriate type converted
-expression. Depends on the type conversion resolution operations."
-  ([path]
-     (let [transforms (map (partial apply transformer-name)
-                           (map vector path
-                                (rest path)))]
-       #(apply e-> %1
-               transforms))))
+   taking expressions as arguments and returning the appropriate type converted
+   expression. Depends on the type conversion resolution operations."
+  [path]
+  #(with-meta
+     (apply e-> %1
+            (map (partial apply transformer-name)
+                 (map vector path
+                      (rest path))))
+     {:exprtype (last path)}))
 
 (defn convert
   "Special case of a type conversion for forcing an expression to a known type.
-Intended for use when assigning an int to a float variable and soforth."
-  ([typed-expr from to]
-     ((path->transformer (first (h/conversion-path @*type-graph* from to)))
-      typed-expr)))
+   Intended for use when assigning an int to a float variable and so forth.
+   returns a new expression being typed-expr"
+  [typed-expr from to]
+  (-> @*type-graph*
+      (h/conversion-path from to)
+      first
+      path->transformer
+      (apply typed-expr '())))
 
 (defn level
   "Named because it computes the \"level\" representation type for the two
-expressions, this function transforms both expression arguments to the type of
-the minimum common representation according to the type graph."
+   expressions, this function transforms both expression arguments to the type
+   of the minimum common representation according to the type graph."
   [& exprs]
-  (let [types (map expr-typeof exprs)
-        paths (apply h/conversion-path @*type-graph* types)]
-    (map (fn [x y]
-           ((path->transformer x) y))
-         paths exprs)))
+  (map (fn [x y]
+         ((path->transformer x) y))
+       (->> exprs
+            (map expr-typeof)
+            (apply h/conversion-path @*type-graph*))
+       exprs))
 
 ;;------------------------------------------------------------------------------
 ;; Type matrix manipulation expressions
 (defmacro with-types
-  ([binding & forms]
-     `(binding [*type-graph* ~binding]
-        ~@forms)))
+  [binding & forms]
+  `(binding [*type-graph* ~binding]
+     ~@forms))
 
 (defn install-transformer!
-  ([from to entry]
-     (swap! *type-graph* graph/add-edges [from to])
-     (install! (assoc entry
-                 :name (transformer-name from to)))))
+  [from to entry]
+  (swap! *type-graph* graph/add-edges [from to])
+  (install! (assoc entry
+              :name (transformer-name from to))))
