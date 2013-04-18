@@ -55,7 +55,7 @@
   (valueof [_] "Enumerates the value of the symbol, or an expression therefor"))
 
 (defprotocol IPPrinted
-  (toString [_] "Pretty printing for the TA's beinifit"))
+  (toString [_] "Pretty printing for the TA's benefit"))
 ;;------------------------------------------------------------------------------
 ;; record types for type records
 (defrecord PrimitiveType [name size-field]
