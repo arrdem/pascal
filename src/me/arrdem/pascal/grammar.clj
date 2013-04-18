@@ -25,11 +25,6 @@
 ;;------------------------------------------------------------------------------
 ;; Grammar terminals & nonterminals which were not defined in the grammar
 
-;; (def identifier
-;;   (fnp/semantics
-;;    me.arrdem.pascal.tokens/identifier
-;;    s/identifier))
-
 (def unsigned-integer intnum)
 (def unsigned-real floatnum)
 
@@ -158,7 +153,7 @@
    (fnp/conc vardecl
              (fnp/opt
               (fnp/conc delim_semi vardecls)))
-   s/vardecls))
+   s/tail-cons))
 
 (def variable-declaration
   (fnp/semantics
@@ -371,7 +366,7 @@
    (fnp/conc statement
              (fnp/opt
               (fnp/conc delim_semi statement-list)))
-   s/cons-ht))
+   s/tail-cons))
 
 (def assignment
   (fnp/semantics
