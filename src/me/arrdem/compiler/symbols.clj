@@ -98,7 +98,7 @@
   ISymbol
     (typeof [self] (.type self))
     (nameof [self] (.qname self))
-    (sizeof [self] (sizeof (typeof self)))
+    (sizeof [self] (sizeof (.type self)))
     (addrof [self] nil)
   IPPrinted
     (toString [self] (.qname self))
@@ -130,11 +130,11 @@
       (field-offset (.type self) name))
     (fields [self] (fields (.type self))))
 
-(defrecord EnumType [name members]
+(defrecord EnumType [name members val-type]
   ISymbol
     (typeof [self] self)
     (nameof [self] (.name self))
-    (sizeof [self] (apply + (map sizeof (vals (.members self)))))
+    (sizeof [self] (sizeof (.val-type self)))
     (addrof [self] nil)
   IPPrinted
     (toString [self] (.name self))

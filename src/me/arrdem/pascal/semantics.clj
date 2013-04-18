@@ -215,7 +215,8 @@
         t (->EnumType (gensym! (str "enum-0->" c "_"))
                       (->> [(repeat c i) (range c)]
                            (apply (partial map #(assoc %1 :value %2)))
-                           (zipmap idlist)))
+                           (zipmap idlist))
+                      i)
         t (install! t)]
     (doseq [[i j] (map list idlist (range c))]
       (install! (->VariableType i t j)))
