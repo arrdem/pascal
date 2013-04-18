@@ -9,6 +9,7 @@
             [me.arrdem.compiler.types :refer [align-struct]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns]]
+            [me.arrdem.compiler.macros :refer [pmacroexpand macro?]]
             [me.arrdem.pascal.ast :refer :all]
 
             [name.choi.joshua.fnparse :as fnp]))
@@ -141,7 +142,11 @@
 
 (defn procinvoke
   [[id [_0 params _1]]]
-  (makefuncall id params))
+  (let [f (search id)]
+    (if (macro? f)
+      (pmacroexpand (concat (list f)
+                            params))
+      (makefuncall id params))))
 
 (defn identifier
   ([id] (abs-name id)))
