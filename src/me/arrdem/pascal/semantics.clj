@@ -1,12 +1,12 @@
 (ns me.arrdem.pascal.semantics
   (:require [clojure.pprint :refer [pprint]]
 
-            [me.arrdem.compiler.symbols :refer [->VariableType ->RecordType
-                                                nameof typeof ->ArrayType
-                                                sizeof fields ->EnumType
-                                                ->RecordEntry ->PointerType
-                                                ->ThinType valueof]]
-            [me.arrdem.compiler.types :refer [align-struct]]
+            [me.arrdem.compiler.symbols :refer [->VariableType nameof typeof
+                                                ->ArrayType sizeof fields
+                                                ->EnumType ->RecordEntry
+                                                ->PointerType ->ThinType
+                                                valueof]]
+            [me.arrdem.compiler.types :refer [->RecordType]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns]]
             [me.arrdem.compiler.macros :refer [pmacroexpand macro?]]
@@ -226,15 +226,6 @@
       (install! (->VariableType i t j)))
     t))
 
-(defn install-record
-  [[_tr field-list _tend]]
-  (let [members (->> field-list
-                     ((partial reduce concat))
-                     align-struct)
-        t (->RecordType (gensym! "record__")
-                        members)]
-    (install! t)))
-
 (defn apply-type
   [syms type]
   (let [t (typeof
@@ -246,6 +237,13 @@
 (defn record-field
   [[idlist _ type]]
   (apply-type idlist type))
+
+(defn install-record
+  [[_tr field-list _tend]]
+  (let [members (reduce concat field-list)
+        t (->RecordType (gensym! "record__")
+                        members)]
+    (install! t)))
 
 (defn install-reftype
   [[_opt id]]
