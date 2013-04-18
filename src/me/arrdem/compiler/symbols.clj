@@ -67,7 +67,7 @@
   IPPrinted
     (toString [self] (.name self)))
 
-(defrecord PointerType [name size-field reftype]
+(defrecord PointerType [name size-field ref]
   ISymbol
     (typeof [self] self)
     (nameof [self] (.name self))
@@ -76,8 +76,8 @@
   IPPrinted
     (toString [self] (.name self))
   IPointer
-    (reftype [self] (.reftype self))
-    (follow [_] nil))
+    (reftype [self] (typeof (.ref self)))
+    (follow [self] (.ref self)))
 
 (defrecord ArrayType [name size-field children]
   ISymbol
@@ -88,8 +88,12 @@
   IPPrinted
     (toString [self] (.name self))
   IIndexable
-    (field-offset [self name]
-      (.indexOf (apply list (keys (.children self))) name))
+    (field-offset [self path]
+      (->> path
+           (map #(get (fields %1) %2)
+                (.children self))
+           (map addrof)
+           (reduce + 0)))
     (fields [self] (.children self)))
 
 ;;------------------------------------------------------------------------------
@@ -149,6 +153,11 @@
     (nameof [self] (.qname self))
     (sizeof [self] (sizeof (typeof self)))
     (addrof [self] nil)
+  IIndexable
+    (field-offset [self name]
+      (field-offset (.type self) name))
+    (fields [self]
+      (fields (.type self)))
   IPPrinted
     (toString [self] (.qname self)))
 ;;------------------------------------------------------------------------------
