@@ -1,11 +1,13 @@
 # TODO list
 ## todo & buggy
 - compute numeric values for aref operations _in byte terms_
-- verify the size of structs
-- verify that the (new) macro correctly allocates structs, it doesn't seem to
 - add nested aref reduction where possible
 - improve the output of the symbol table printer so as to be... reasonable
   -- make sure that for records it shows the offsets, sizes & fields
+- make search work on records via (nameof)
+- add type metadata to all arithmetic expressions
+- make binop and the other such operations compute type conversions
+- move the "standard" type graph into the standard library symbol table code
 
 ## back burner
 - Figure out _when_ to invoke macros, and make it so. Last thing done before the
