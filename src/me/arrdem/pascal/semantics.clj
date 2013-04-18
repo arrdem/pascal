@@ -110,7 +110,11 @@
 
 (defn block2progn
   [[_0 exprs _1]]
-  (makeprogn-v (remove nil? exprs)))
+  (println "; in block2progn..")
+  (->> exprs
+      (remove nil?)
+      (makeprogn-v)
+      (pmacroexpand)))
 
 (defn for-downto
   [[s0 _ sf]]
@@ -147,8 +151,8 @@
   [[id [_0 params _1]]]
   (let [f (search id)]
     (if (macro? f)
-      (pmacroexpand (concat (list f)
-                            params))
+      (concat (list (nameof f))
+              params)
       (makefuncall id params))))
 
 (defn identifier
