@@ -1,6 +1,7 @@
 (ns me.arrdem.compiler.types
   (:require [me.arrdem.compiler.symbols :refer [sizeof typeof nameof
-                                                ->RecordEntry]]))
+                                                ->RecordEntry
+                                                map->RecordType]]))
 
 ;;------------------------------------------------------------------------------
 ;; Code for computing field alignments
@@ -13,27 +14,18 @@
           off-mod))))
 
 (defn align-struct [members]
-  (->> members
-      (reduce
-       (fn [state-map entry]
-         (let [o (aligned-offset (typeof entry) (:offset state-map))
-               n (->RecordEntry (nameof entry) (typeof entry) o)]
-           (-> state-map
-               (assoc :offset (+ o (sizeof (typeof entry))))
-               (assoc (nameof entry) n))))
-       {:offset 0})
-      ((fn [x] (dissoc x :offset)))))
+  (reduce
+   (fn [state-map entry]
+     (let [o (aligned-offset (typeof entry)
+                             (:size-field state-map))
+           n (->RecordEntry (nameof entry) (typeof entry) o)]
+       (-> state-map
+           (assoc :size-field (+ o (sizeof (typeof entry))))
+           (assoc-in [:members (nameof entry)] n))))
+   {:size-field 0} members))
 
-(defn old-align-struct [members]
-  (loop [Ms   members
-         o    0
-         offs []]
-    (let [f  (first Ms)
-          To (aligned-offset f o)]
-      (if (not (empty? (rest Ms)))
-        (recur (rest Ms)
-               (+ To (sizeof f))
-               (cons To offs))
-        (map #(assoc %1 :offset %2)
-             members
-             (cons To offs))))))
+(defn ->RecordType [name members]
+  (-> members
+      align-struct
+      (assoc :name name)
+      map->RecordType))
