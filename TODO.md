@@ -1,18 +1,11 @@
 # TODO list
-## active
-2. parse a pointer op [OKAY] 
-   and be able to generate the appropriate (^ <foo>) deref group
-
-## due today
-1. parse an enum declaration and create the appropriate type entry with values
-   - register the enum as a type
-   - register the enum's values as vars in their own right with integer values
-   - register those values with type equal to that of the enum parent
-
-3. parse an array and be able to construct the appropriate type table entry
-   for it. This still needs some thought but I think that the idea of
-   describing the type by actually declaring gensym types for each sub-array
-   makes a lot of sense and could make life really easy.
+## todo & buggy
+- compute numeric values for aref operations _in byte terms_
+- verify the size of structs
+- verify that the (new) macro correctly allocates structs, it doesn't seem to
+- add nested aref reduction where possible
+- improve the output of the symbol table printer so as to be... reasonable
+  -- make sure that for records it shows the offsets, sizes & fields
 
 ## back burner
 - Figure out _when_ to invoke macros, and make it so. Last thing done before the
