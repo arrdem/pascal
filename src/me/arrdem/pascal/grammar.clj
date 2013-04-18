@@ -446,7 +446,9 @@
   (fnp/conc tok_with record-variable-list tok_do statement))
 
 (def label-stmnt
-  (fnp/conc label delim_colon statement))
+  (fnp/semantics
+   (fnp/conc label delim_colon)
+   s/label-stmnt))
 
 ;;------------------------------------------------------------------------------
 ;; Statement v2.0
