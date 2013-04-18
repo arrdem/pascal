@@ -98,7 +98,7 @@
   ISymbol
     (typeof [self] (.type self))
     (nameof [self] (.qname self))
-    (sizeof [self] (sizeof (.type self)))
+    (sizeof [self] (sizeof (typeof self)))
     (addrof [self] nil)
   IPPrinted
     (toString [self] (.qname self))
@@ -123,7 +123,7 @@
     (typeof [self] (.type self))
     (toString [self] (.name self))
     (nameof [self] (.name self))
-    (sizeof [self] (.size-field (.type self)))
+    (sizeof [self] (sizeof (typeof self)))
     (addrof [self] (.offset self))
   IIndexable
     (field-offset [self name]
