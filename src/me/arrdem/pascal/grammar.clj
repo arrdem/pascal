@@ -454,9 +454,8 @@
 
 (def label-stmnt
   (fnp/semantics
-   (fnp/conc label delim_colon)
+   (fnp/conc label delim_colon statement)
    s/label-stmnt))
-
 ;;------------------------------------------------------------------------------
 ;; Statement v2.0
 
