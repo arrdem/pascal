@@ -2,7 +2,7 @@
   (:require [me.arrdem.compiler.symtab :refer [install! search]]
             [me.arrdem.compiler.symbols :refer [sizeof nameof]]
             [me.arrdem.compiler.macros :refer [->MacroType]]
-            [me.arrdem.pascal.ast :refer [makefuncall]]))
+            [me.arrdem.pascal.ast :refer [makefuncall binop]]))
 
 ;;------------------------------------------------------------------------------
 
@@ -14,7 +14,7 @@ actually allocates memory at runtime."
   (let [T (search t)]
     (assert (not (nil? T)) (str "Failed to find type " t " in the symbol tbl"))
     (assert (not (string? T)) (str "got a string for " t " in the symbol tbl"))
-    (makefuncall "trnew" (list (sizeof T)))))
+    (binop t ':= (makefuncall "trnew" (list (sizeof T))))))
 
 ;;------------------------------------------------------------------------------
 
