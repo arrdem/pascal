@@ -279,3 +279,7 @@
 (defn ifte
   [[_if expr _then stmnt _else stmnt2]]
   (makeif expr stmnt stmnt2))
+
+(defn while-stmnt
+  [[_while e _do stmnt]]
+  (makewhile e stmnt))
