@@ -55,14 +55,16 @@ multiple compile runs without restart."
 
 (defn ninc
   "An inc which doesn't friggin die on nil."
-  [x] (if x (inc x) 0))
+  [x]
+  (if x (inc x) 0))
 
 (defn gensym!
-  "Generates a symbol name (string) which is guranteed by use of an incrementing
-counter to be unique to the current compile session. Optionally takes a string
-prefix for the generated name which does not effect the numeric part of the
-name. Returns a string being the prefix argument or \"G__\" followed by the
-string render of the gensym counter before it was incremented."
+  "Generates a symbol name (string) which is guranteed by use of an
+   incriminating counter to be unique to the current compile session. Optionally
+   takes a string prefix for the generated name which does not effect the
+   numeric part of the name. Returns a string being the prefix argument or
+   \"G__\" followed by the string render of the gensym counter before it was
+   incremented."
   ([] (gensym! "G__"))
   ([s] (str s
             (:gensym
@@ -71,21 +73,24 @@ string render of the gensym counter before it was incremented."
 
 (defn reset-gensym!
   "Nukes the *symtab* gensym counter restoring it to its base state. Usefull for
-testing, multiple compile runs without restart."
-  ([] (swap! *symtab* assoc :gensym 0)))
+   testing, multiple compile runs without restart."
+  []
+  (swap! *symtab* assoc :gensym 0))
 
 
 (defn genlabel!
   "Generates and returns an integer label, side-effecting the :label count of the
-*symtab* registry."
-  ([] (:label
-       (swap! *symtab*
-              update-in [:label] ninc))))
+   *symtab* registry."
+  []
+  (:label
+   (swap! *symtab*
+          update-in [:label] ninc)))
 
 (defn reset-genlabel!
   "Nukes the *symtab* genlabel counter restoring it to its base state. Usefull for
-testing, multiple compile runs without restart."
-  ([] (swap! *symtab* assoc :label 0)))
+   testing, multiple compile runs without restart."
+  []
+  (swap! *symtab* assoc :label 0))
 
 ;;------------------------------------------------------------------------------
 ;; Namespace stringification and destringification
@@ -111,7 +116,7 @@ testing, multiple compile runs without restart."
 
 (defn m-install!
   "Meta symbol installer. Takes a namespace structure and a record as arguments,
-and performs the appropriate swap! respecting the namespacing stack."
+   and performs the appropriate swap! respecting the namespacing stack."
   [atom sym]
   (let [path (concat @*symns* (list (nameof sym)))
         sym (assoc sym :qname (render-ns path))]
@@ -120,20 +125,21 @@ and performs the appropriate swap! respecting the namespacing stack."
 
 (defn- stack-search
   "Recursively searches the symbol table for a symbol with an argument name.
-Returns the symbol map if such a symbol exists. Failure behavior is undefined,
-but the returning a nil value and throwing an exception are both acceptable."
-  ([atom sym stack]
-     (let [qualified-sym (concat stack (list sym))
-           rstack        (rest stack)]
-       (or (if-let [v (get-in @atom qualified-sym)]
-             v (when (empty? stack) nil))
-           (when-not (empty? stack)
-             (recur atom sym rstack))))))
+   Returns the symbol map if such a symbol exists. Failure behavior is
+   undefined, but the returning a nil value and throwing an exception are both
+   acceptable."
+  [atom sym stack]
+  (let [qualified-sym (concat stack (list sym))
+        rstack (rest stack)]
+    (or (if-let [v (get-in @atom qualified-sym)]
+          v (when (empty? stack) nil))
+        (when-not (empty? stack)
+          (recur atom sym rstack)))))
 
 (defn m-search
   "A wrapper around stack-search wich provides the base case logic required to
-parse fully qualified names into a full stack path. Defaults to using
-stack-search before returning a failure result."
+   parse fully qualified names into a full stack path. Defaults to using
+   stack-search before returning a failure result."
   [atom name]
   (let [stack (decomp-ns name)
         name  (last stack)
@@ -143,6 +149,9 @@ stack-search before returning a failure result."
 
 ;;------------------------------------------------------------------------------
 ;; The public symbol table searching routines
+(defn search [obj]
+  (cond
+   (string? obj) (m-search *symtab* obj)
+   (map? obj) (m-search *symtab* (nameof obj))))
 
-(def search (partial m-search *symtab*))
 (def install! (partial m-install! *symtab*))
