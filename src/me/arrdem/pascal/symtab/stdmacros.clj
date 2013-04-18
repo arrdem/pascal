@@ -20,18 +20,23 @@ actually allocates memory at runtime."
   (and (list? form)
        (= (first form) 'progn)))
 
+(defn- _progn-inliner
+  [body]
+  (reduce (fn [prev form]
+            (concat prev
+                    (if (progn? form)
+                      (_progn-inliner (rest form))
+                      (list form))))
+          nil body))
+
 (defn progn-inliner
-  "A macro function which serves to try and inline out nested Mprogn groups.
+  "A macro function which serves to try and inline out nested progn groups.
    Derived from
    https://github.com/valeryz/MacroPHP/blob/master/special-forms.lisp#L20"
   [body]
   (if (list? body)
-    (reduce (fn [prev form]
-              (concat prev
-                      (if (progn? form)
-                        (progn-inliner (rest form))
-                        (list form))))
-            nil body)
+    (cons 'progn
+          (_progn-inliner body))
     body))
 
 ;;------------------------------------------------------------------------------
