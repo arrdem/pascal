@@ -587,7 +587,6 @@
 (def primary-expression
   (fnp/alt procinvoke
            string
-           tok_nil
            (fnp/conc delim_lbrack element-list delim_rbrack)
            (fnp/conc delim_lparen expression delim_rparen)
            variable

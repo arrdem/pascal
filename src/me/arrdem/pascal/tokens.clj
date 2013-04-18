@@ -39,7 +39,6 @@
   (deftoken tok_with      "with")
   (deftoken tok_do        "do")
   (deftoken tok_for       "for")
-  (deftoken tok_nil       "nil")
   (deftoken tok_record    "record")
   (deftoken tok_type      "type")
   (deftoken tok_forward   "forward")
