@@ -16,6 +16,24 @@ actually allocates memory at runtime."
     (assert (not (string? T)) (str "got a string for " t " in the symbol tbl"))
     (binop t ':= (makefuncall "trnew" (list (sizeof T))))))
 
+(defn- progn? [form]
+  (and (list? form)
+       (= (first form) 'progn)))
+
+(defn progn-inliner
+  "A macro function which serves to try and inline out nested Mprogn groups.
+   Derived from
+   https://github.com/valeryz/MacroPHP/blob/master/special-forms.lisp#L20"
+  [body]
+  (if (list? body)
+    (reduce (fn [prev form]
+              (concat prev
+                      (if (progn? form)
+                        (progn-inliner (rest form))
+                        (list form))))
+            nil body)
+    body))
+
 ;;------------------------------------------------------------------------------
 
 (defn init!
@@ -24,5 +42,6 @@ table and install the standard macros used for pre-code generation type
 ensuring and soforth."
   []
   (doseq [m [["new" p-new-macro]
+             ["progn" progn-inliner]
              ]]
     (install! (apply ->MacroType m))))
