@@ -385,18 +385,22 @@
    s/statements))
 
 (def ifte
-  (fnp/conc tok_if
-            expression
-            tok_then
-            statement
-            tok_else
-            statement))
+  (fnp/semantics
+   (fnp/conc tok_if
+             expression
+             tok_then
+             statement
+             tok_else
+             statement)
+   s/ifte))
 
 (def ift
-  (fnp/conc tok_if
-            expression
-            tok_then
-            statement))
+  (fnp/semantics
+   (fnp/conc tok_if
+             expression
+             tok_then
+             statement)
+   s/ift))
 
 (def case-stmnt
   (fnp/conc tok_case expression tok_of case-list tok_end))

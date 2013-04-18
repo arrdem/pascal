@@ -271,3 +271,11 @@
       search
       valueof
       makegoto))
+
+(defn ift
+  [[_if expr _then stmnt]]
+  (makeif expr stmnt))
+
+(defn ifte
+  [[_if expr _then stmnt _else stmnt2]]
+  (makeif expr stmnt stmnt2))
