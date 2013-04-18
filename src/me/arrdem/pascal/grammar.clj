@@ -143,8 +143,7 @@
 (def type-declaration
   (fnp/semantics
    (fnp/conc tok_type
-             typedecls
-             tok_end)
+             typedecls)
    s/type-declaration))
 
 (def vardecl
@@ -406,7 +405,9 @@
   (fnp/conc tok_case expression tok_of case-list tok_end))
 
 (def while-stmnt
-  (fnp/conc tok_while expression tok_do statement))
+  (fnp/semantics
+   (fnp/conc tok_while expression tok_do statement)
+   s/while-stmnt))
 
 (def repeat-stmnt
   (fnp/semantics
