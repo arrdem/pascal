@@ -5,7 +5,7 @@
                                                 nameof typeof ->ArrayType
                                                 sizeof fields ->EnumType
                                                 ->RecordEntry ->PointerType
-                                                ->ThinType]]
+                                                ->ThinType valueof]]
             [me.arrdem.compiler.types :refer [align-struct]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns]]
@@ -71,8 +71,11 @@
 
 (defn label-declaration
   [[_l l0 ls]]
-  (let [ls (map second ls)]
-    (makecomment "found label declarations" (cons l0 ls))))
+  (let [ls (map second ls)
+        labels (map str (cons l0 ls))]
+    (doseq [l labels]
+      (install! (->VariableType l (search "integer") (genlabel!))))
+    (apply makecomment "found label declarations" labels)))
 
 (defn variable
   [[id postfixes]]
@@ -258,4 +261,5 @@
   (-> lbl
       str
       search
+      valueof
       makelabel))
