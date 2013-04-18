@@ -440,7 +440,9 @@
    s/procinvoke))
 
 (def goto-stmnt
-  (fnp/conc tok_goto label))
+  (fnp/semantics
+   (fnp/conc tok_goto label)
+   s/goto-label))
 
 (def with-stmnt
   (fnp/conc tok_with record-variable-list tok_do statement))

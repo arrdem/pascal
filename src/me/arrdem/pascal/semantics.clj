@@ -263,3 +263,11 @@
       search
       valueof
       makelabel))
+
+(defn goto-label
+  [[_gt lbl]]
+  (-> lbl
+      str
+      search
+      valueof
+      makegoto))
