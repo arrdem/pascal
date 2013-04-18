@@ -258,12 +258,15 @@
   (apply makecomment "got type definitions:" (map #(. %1 nameof) decls)))
 
 (defn label-stmnt
-  [[lbl _colon]]
-  (-> lbl
-      str
-      search
-      valueof
-      makelabel))
+  [[lbl _colon stmnt]]
+  (makeprogn
+   (list
+    (-> lbl
+        str
+        search
+        valueof
+        makelabel)
+    stmnt)))
 
 (defn goto-label
   [[_gt lbl]]

@@ -89,7 +89,7 @@
      [(makelabel label)
       (makeif test
               (makeprogn [s
-                          (makegoto ~label)]))
+                          (makegoto label)]))
       ])))
 
 (defn makerepeat [s test]
