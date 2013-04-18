@@ -18,9 +18,7 @@
   "An \"outermost first\" macro implementation. Looks up macros from the symbol
    table, and applies them if possible."
   [expr]
-  (println "[pmacroexpand]" expr)
-  (if (and (seq? expr)
-           (not (map? expr)))
+  (if (list? expr)
     (let [expander (pmacroexpand (first expr))
           expandfn (cond
                     (macro? expander) expander
@@ -29,11 +27,11 @@
                     true nil)
           expandfn (when (macro? expandfn)
                      (.expander expandfn))
-          res (cons expander
-                    (doall (map pmacroexpand
-                                (if (fn? expandfn)
-                                  (expandfn (rest expr))
-                                  (rest expr)))))]
+          res (if (fn? expandfn)
+                (expandfn (rest expr))
+                expr)
+          res (cons (first res)
+                    (doall (map pmacroexpand (rest res))))]
       (if (and (fn? expandfn) ;; possibility of recursive macro
                (not (= res expr))) ;; prevent non-transforming recursion
         (pmacroexpand res)
