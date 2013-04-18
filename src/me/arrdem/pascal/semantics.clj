@@ -208,8 +208,9 @@
   (let [c (- (inc high) low)
         i (search "integer")
         t (->RecordType (gensym! (str "range-" low "->" high "_"))
-                        (zipmap (range low (inc high))
-                                (repeat c i)))]
+                        (map (fn [x y] {:value x :name x :type y})
+                             (range low (inc high))
+                             (repeat c i)))]
     (install! t)))
 
 (defn install-enum
