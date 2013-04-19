@@ -126,11 +126,12 @@
   [[_arr _0 index-list _1 _of type]]
   ;; (println "[install-arrtype] index-list: " index-list)
   ;; (println "[install-arrtype] type: " type)
-  (let [subarray-seq (build-array index-list type)]
-    ;; (println "[install-arrtype] build-array returned OK")
-    (install! (->ArrayType (gensym! "array_")
-                           (sizeof (first subarray-seq))
-                           subarray-seq))))
+  (->> (build-array index-list type)
+       (#(->ArrayType (gensym! "array_")
+                    (sizeof (first %1))
+                    %1))
+       (install!)
+       (nameof)))
 
 (defn record-field
   [[idlist _ type]]
@@ -141,21 +142,23 @@
   (let [members (reduce concat field-list)
         t (->RecordType (gensym! "record__")
                         members)]
-    (install! t)))
+    (nameof (install! t))))
 
 (defn install-reftype
   [[_opt id]]
   (let [name (str "^" id)
         entry (->PointerType name 8 id)]
-    (install! entry)))
+    (nameof (install! entry))))
 
 (defn install-type
   [[id _ type]]
-  (install! (->ThinType id type)))
+  (nameof (install! (->ThinType id type))))
 
 (defn type-declaration
   [[_t decls _e]]
-  (apply makecomment "got type definitions:" (map #(. %1 nameof) decls)))
+  (apply makecomment
+         "got type definitions:"
+         (map #(. %1 nameof) decls)))
 
 ;;------------------------------------------------------------------------------
 ;; Variables....
@@ -166,27 +169,32 @@
   (doseq [v varseq]
     (let [v (->VariableType v (nameof type) nil)]
       (dbg-install v)))
-  (map abs-name varseq))
+  (map nameof varseq))
 
 (defn variable-declaration
   "Invoked to generate the comment group for variable declaration parts"
   [[_ decls]]
-  (apply makecomment "defined variables" (reduce concat decls)))
+  (apply makecomment
+         "defined variables"
+         (reduce concat decls)))
 
 (defn var-dot [[_dot id]]
-  (fn [x]
+  (fn [obj]
+    (assert (satisfies? me.arrdem.compiler/IIndexable obj))
     (list (list '. id)
-          (get (fields x) id))))
+          (get (fields obj) id))))
 
 (defn var-point [_]
   (fn [obj]
-    (println "; [var-point] " (nameof obj) " is " (nameof (follow obj) ))
+    ;; (println "; [var-point] " (nameof obj) " is " (nameof (follow obj)))
+    (assert (satisfies? me.arrdem.compiler/IPointer obj))
     (list (list (symbol "^"))
           (follow obj))))
 
 (defn var-index
   [[_lb subscripts _rb]]
   (fn [obj]
+    (assert (satisfies? me.arrdem.compiler/IIndexable obj))
     (list (partial-make-aref
            (field-offset
             obj (seq subscripts)))
@@ -228,14 +236,13 @@
 
 (defn unary-expression
   [[op expr]]
-  (let [form (case op
-               (+) nil
-               (-) `(~'* -1)
-               (not) `(~'not)
-               (nil) nil)]
-    (if form
+  (if-let [form (case op
+                  (+) nil
+                  (-) `(~'* -1)
+                  (not) `(~'not)
+                  (nil) nil)]
       (concat form (list expr))
-      expr)))
+      expr))
 
 ;;------------------------------------------------------------------------------
 ;; Basic program control structure transforms
@@ -315,11 +322,10 @@
 ;;;; Other statement parts...
 (defn procinvoke
   [[id [_0 params _1]]]
-  (let [f (search id)]
-    (if (macro? f)
-      (concat (list (nameof f))
-              params)
-      (makefuncall id params))))
+  (if (macro? id)
+    (concat (list (nameof id))
+            params)
+    (makefuncall id params)))
 
 (defn statements
   [[_0 stmnts _1]]
