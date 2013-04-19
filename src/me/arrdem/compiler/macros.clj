@@ -1,9 +1,9 @@
 (ns me.arrdem.compiler.macros
-  (:require [me.arrdem.compiler.symbols :refer [typeof]]
+  (:require [me.arrdem.compiler :refer [typeof]]
             [me.arrdem.compiler.symtab :refer [search]]))
 
 (defrecord MacroType [name expander]
-  me.arrdem.compiler.symbols.ISymbol
+  me.arrdem.compiler.ISymbol
     (typeof [self] "macro")
     (nameof [self] (.name self))
     (sizeof [self] nil)

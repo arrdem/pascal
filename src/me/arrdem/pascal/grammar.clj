@@ -486,7 +486,9 @@
    (fnp/semantics
     (fnp/conc delim_lbrack subscript-list delim_rbrack)
     s/var-index)
-   (fnp/conc op_dot fieldid)
+   (fnp/semantics
+    (fnp/conc op_dot fieldid)
+    s/var-dot)
    (fnp/semantics
     op_point
     s/var-point)))

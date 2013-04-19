@@ -1,6 +1,6 @@
 (ns me.arrdem.compiler.symtab
   (:require [clojure.string :refer [split]]
-            [me.arrdem.compiler.symbols :refer [nameof]]))
+            [me.arrdem.compiler :refer [nameof]]))
 
 (def base_st
   {

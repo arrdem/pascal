@@ -1,15 +1,16 @@
 (ns me.arrdem.pascal.semantics
   (:require [clojure.pprint :refer [pprint]]
 
-            [me.arrdem.compiler.symbols :refer [->VariableType nameof typeof
-                                                ->ArrayType sizeof fields
-                                                ->EnumType ->RecordEntry
-                                                ->PointerType ->ThinType
-                                                valueof follow field-offset]]
+            [me.arrdem.compiler :refer [nameof typeof sizeof fields
+                                        valueof follow field-offset]]
             [me.arrdem.compiler.types :refer [->RecordType]]
+            [me.arrdem.compiler.macros :refer [pmacroexpand macro?]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns]]
-            [me.arrdem.compiler.macros :refer [pmacroexpand macro?]]
+            [me.arrdem.compiler.symbols :refer [->VariableType ->ArrayType
+                                                ->EnumType ->RecordEntry
+                                                ->PointerType ->ThinType]]
+            [me.arrdem.compiler.symbol-conversions]
             [me.arrdem.pascal.ast :refer :all]
             [name.choi.joshua.fnparse :as fnp]))
 
@@ -30,7 +31,7 @@
   "Creates & installs a typed (generated) variable to represent constants,
    returning a variable identifier which the constant's symbol will shadow."
   [[id _ v]]
-  (let [v (->VariableType id (search (typeof v)) v)]
+  (let [v (->VariableType id (nameof (typeof v)) v)]
     (dbg-install v)))
 
 (defn constant-declaration
@@ -54,7 +55,7 @@
   (let [ls (map second ls)
         labels (map str (cons l0 ls))]
     (doseq [l labels]
-      (install! (->VariableType l (search "integer") (genlabel!))))
+      (install! (->VariableType l "integer" (genlabel!))))
     (apply makecomment "found label declarations" labels)))
 
 (defn point-type
@@ -79,7 +80,7 @@
 (defn install-enum
   [[_0 idlist _1]]
   (let [c (count idlist)
-        i (search "integer")
+        i "integer"
         t (->EnumType (gensym! (str "enum-0->" c "_"))
                       (->> [(repeat c i) (range c)]
                            (apply (partial map #(assoc %1 :value %2)))
@@ -94,23 +95,23 @@
   [syms type]
   ;; (println "[apply-type] syms: " syms)
   ;; (println "[apply-type] type: " type)
-  (let [t (typeof (search type))]
+  (let [t (nameof (typeof type))]
      (map #(->RecordEntry %1 t nil)
           syms)))
 
 (defn build-array [index-range-list basictype]
-  (println "[build-array] " index-range-list)
+  ;; (println "[build-array] " index-range-list)
   (loop [index-range-list (->> index-range-list
                                reverse
                                (map search)
                                (map (fn [x] (range (count (fields x))))))
-         state (list (search basictype))]
-    (println "[build-array] - " index-range-list)
-    (println "[build-array] - " (count state))
+         state (list basictype)]
+    ;; (println "[build-array] - " index-range-list)
+    ;; (println "[build-array] - " (count state))
     (let [index-list (first index-range-list)
           index-range-list (rest index-range-list)
           type (first state)]
-      (println "[build-array] - type - " (nameof type))
+      ;; (println "[build-array] - type - " (nameof type))
       (let [substruct (->RecordType (gensym! "__array_")
                                     (apply-type index-list type))]
         (install! substruct)
@@ -123,10 +124,10 @@
   "Computes and installs an array type, being a record with multi-integer
    addressed fields."
   [[_arr _0 index-list _1 _of type]]
-  (println "[install-arrtype] index-list: " index-list)
-  (println "[install-arrtype] type: " type)
+  ;; (println "[install-arrtype] index-list: " index-list)
+  ;; (println "[install-arrtype] type: " type)
   (let [subarray-seq (build-array index-list type)]
-    (println "[install-arrtype] build-array returned OK")
+    ;; (println "[install-arrtype] build-array returned OK")
     (install! (->ArrayType (gensym! "array_")
                            (sizeof (first subarray-seq))
                            subarray-seq))))
@@ -145,12 +146,12 @@
 (defn install-reftype
   [[_opt id]]
   (let [name (str "^" id)
-        entry (->PointerType name 8 (search id))]
+        entry (->PointerType name 8 id)]
     (install! entry)))
 
 (defn install-type
   [[id _ type]]
-  (install! (->ThinType id (search (nameof type)))))
+  (install! (->ThinType id type)))
 
 (defn type-declaration
   [[_t decls _e]]
@@ -163,7 +164,7 @@
    Enters vars with their types in the symbol table."
   [[varseq _ type]]
   (doseq [v varseq]
-    (let [v (->VariableType v (search (nameof type)) nil)]
+    (let [v (->VariableType v (nameof type) nil)]
       (dbg-install v)))
   (map abs-name varseq))
 
@@ -198,20 +199,20 @@
    their only argument and which expand into index operations such as aref and
    the deference operator."
   [[id postfixes]]
-  (let [self (search id)
-        res (reduce (fn [state f]
-                      (println "; [variable-fn] f:" f)
-                      (let [[expr new-state] (f (:sym state))]
-                        (-> state
-                            (assoc :sym new-state)
-                            (update-in [:ops] conj expr))))
-                    {:sym self} postfixes)]
-    (assert search)
-    (println "; [variable] " id)
-    (println "; [variable] " (:ops res))
-    (if-not (empty? postfixes)
-      (apply e-> (nameof self) (reverse (:ops res)))
-      id)))
+  (if-let [self (search id)]
+    (let [res (reduce (fn [state f]
+                        (println "; [variable-fn] f:" f)
+                        (let [[expr new-state] (f (:sym state))]
+                          (-> state
+                              (assoc :sym new-state)
+                              (update-in [:ops] conj expr))))
+                      {:sym self} postfixes)]
+      (assert search)
+      ;; (println "; [variable] " id)
+      ;; (println "; [variable] " (:ops res))
+      (if-not (empty? postfixes)
+        (apply e-> id (reverse (:ops res)))
+        id))))
 
 ;;------------------------------------------------------------------------------
 ;; Arithmetic expressions...

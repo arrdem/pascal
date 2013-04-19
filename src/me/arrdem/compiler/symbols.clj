@@ -1,4 +1,7 @@
-(ns me.arrdem.compiler.symbols)
+(ns me.arrdem.compiler.symbols
+  (:require [me.arrdem.compiler :refer [nameof typeof sizeof addrof
+                                        field-offset fields reftype
+                                        follow valueof toString]]))
 
 ;; Primitives
 ;;    Primitives are dirt easy. They just resolve to themselves but they're
@@ -37,57 +40,38 @@
 ;;   and the record:
 ;;       {:name "a" :type :record :type/data "integer-15-10-5" ...}
 
-(defprotocol ISymbol
-  (typeof [_] "Returns the type of the symbol")
-  (nameof [_] "Returns the qualified name of the symbol")
-  (sizeof [_] "Returns the size in bytes of the symbol")
-  (addrof [_] "Returns an expression for the address of the symbol"))
-
-(defprotocol IIndexable
-  (field-offset [_ field] "Returns an expression for the address of the field")
-  (fields [_] "Enumerates all fields as full ISymbols"))
-
-(defprotocol IPointer
-  (reftype [_] "Enumerates the type of the value to which it points")
-  (follow [_] "Enumerates the targeted value as a full ISymbol"))
-
-(defprotocol IValued
-  (valueof [_] "Enumerates the value of the symbol, or an expression therefor"))
-
-(defprotocol IPPrinted
-  (toString [_] "Pretty printing for the TA's benefit"))
 ;;------------------------------------------------------------------------------
 ;; record types for type records
 (defrecord PrimitiveType [name size-field]
-  ISymbol
+  me.arrdem.compiler.ISymbol
     (typeof [self] self)
     (nameof [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
-  IPPrinted
+  me.arrdem.compiler.IPPrinted
     (toString [self] (.name self)))
 
 (defrecord PointerType [name size-field ref]
-  ISymbol
+  me.arrdem.compiler.ISymbol
     (typeof [self] self)
     (nameof [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
-  IPPrinted
+  me.arrdem.compiler.IPPrinted
     (toString [self] (.name self))
-  IPointer
+  me.arrdem.compiler.IPointer
     (reftype [self] (typeof (.ref self)))
     (follow [self] (.ref self)))
 
 (defrecord ArrayType [name size-field children]
-  ISymbol
+  me.arrdem.compiler.ISymbol
     (typeof [self] self)
     (nameof [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
-  IPPrinted
+  me.arrdem.compiler.IPPrinted
     (toString [self] (.name self))
-  IIndexable
+  me.arrdem.compiler.IIndexable
     (field-offset [self path]
       (->> path
            (map #(get (fields %1) %2)
@@ -99,67 +83,79 @@
 ;;------------------------------------------------------------------------------
 ;; Variable representation
 (defrecord VariableType [qname type val]
-  ISymbol
+  me.arrdem.compiler.ISymbol
     (typeof [self] (.type self))
     (nameof [self] (.qname self))
     (sizeof [self] (sizeof (typeof self)))
     (addrof [self] nil)
-  IPPrinted
+  me.arrdem.compiler.IIndexable
+    (field-offset [self name]
+      (field-offset (.type self) name))
+    (fields [self]
+      (fields (.type self)))
+  me.arrdem.compiler.IPointer
+    (reftype [self] (typeof (.type self)))
+    (follow [self] (follow (.type self)))
+  me.arrdem.compiler.IPPrinted
     (toString [self] (.qname self))
-  IValued
+  me.arrdem.compiler.IValued
     (valueof [self] (.val self)))
 
 (defrecord RecordType [name members size-field]
-  ISymbol
+  me.arrdem.compiler.ISymbol
     (typeof [self] self)
     (nameof [self] (.name self))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
-  IPPrinted
+  me.arrdem.compiler.IPPrinted
     (toString [self] (.name self))
-  IIndexable
+  me.arrdem.compiler.IIndexable
     (field-offset [self name]
       (.offset (get (.children self) name)))
     (fields [self] (.members self)))
 
 (defrecord RecordEntry [name type offset]
-  ISymbol
+  me.arrdem.compiler.ISymbol
     (typeof [self] (.type self))
     (toString [self] (.name self))
     (nameof [self] (.name self))
     (sizeof [self] (sizeof (typeof self)))
     (addrof [self] (.offset self))
-  IIndexable
+  me.arrdem.compiler.IIndexable
     (field-offset [self name]
       (field-offset (.type self) name))
     (fields [self] (fields (.type self))))
 
 (defrecord EnumType [name members val-type]
-  ISymbol
+  me.arrdem.compiler.ISymbol
     (typeof [self] self)
     (nameof [self] (.name self))
     (sizeof [self] (sizeof (.val-type self)))
     (addrof [self] nil)
-  IPPrinted
+  me.arrdem.compiler.IPPrinted
     (toString [self] (.name self))
-  IIndexable
+  me.arrdem.compiler.IIndexable
     (field-offset [self name]
       (.indexOf (apply list (keys (.children self))) name))
     (fields [self] (.members self)))
 
 (defrecord ThinType [qname type]
-  ISymbol
+  me.arrdem.compiler.ISymbol
     (typeof [self] (typeof (.type self)))
     (nameof [self] (.qname self))
     (sizeof [self] (sizeof (typeof self)))
     (addrof [self] nil)
-  IIndexable
+  me.arrdem.compiler.IIndexable
     (field-offset [self name]
       (field-offset (.type self) name))
     (fields [self]
       (fields (.type self)))
-  IPPrinted
+  me.arrdem.compiler.IPointer
+    (reftype [self] (typeof (.type self)))
+    (follow [self] (follow (.type self)))
+  me.arrdem.compiler.IPPrinted
     (toString [self] (.qname self)))
+
 ;;------------------------------------------------------------------------------
 ;;Function representation
 (defprotocol IInvokable
@@ -169,12 +165,12 @@
   (return-type [self] "Returns the return type of the callable record"))
 
 (defrecord FunctionType [name arity-and-type-set ret-type]
-  ISymbol
+  me.arrdem.compiler.ISymbol
     (typeof [self] (.name self))
     (nameof [self] (.name self))
     (sizeof [self] nil)
     (addrof [self] nil)
-  IPPrinted
+  me.arrdem.compiler.IPPrinted
     (toString [self] (.name self))
   IInvokable
     (arity [self] (map count (.arity-and-type-set self)))
@@ -182,57 +178,3 @@
       (contains? (.arity-and-type-set self)
                  (map typeof args)))
     (return-type [self] (.ret-type self)))
-
-;;------------------------------------------------------------------------------
-;; Extensions for Clojure "primitives"
-(extend String
-  ISymbol
-    {:typeof (fn [self] (str "char-" (count self)))
-     :nameof (fn [self] self)
-     :sizeof (fn [self] (count self))
-     :addrof (fn [self] nil)})
-
-(extend Long
-  ISymbol
-    {:typeof (fn [self] "integer")
-     :nameof (fn [self] "integer")
-     :sizeof (fn [self] 4)
-     :addrof (fn [self] nil)})
-
-(extend Integer
-  ISymbol
-    {:typeof (fn [self] "integer")
-     :nameof (fn [self] "integer")
-     :sizeof (fn [self] 4)
-     :addrof (fn [self] nil)})
-
-(extend Double
-  ISymbol
-    {:typeof (fn [self] "real")
-     :nameof (fn [self] "real")
-     :sizeof (fn [self] 8)
-     :addrof (fn [self] nil)})
-
-(extend Float
-  ISymbol
-    {:typeof (fn [self] "real")
-     :nameof (fn [self] "real")
-     :sizeof (fn [self] 8)
-     :addrof (fn [self] nil)})
-
-(extend clojure.lang.PersistentArrayMap
-  ISymbol
-    {:typeof :type
-     :nameof (fn [self] (or (:qname self)
-                            (:name self)))
-     :sizeof (fn [self] (or (:size self)
-                            (:size (typeof self))))
-     :addrof :address})
-
-(extend clojure.lang.PersistentHashMap
-  ISymbol
-    {:typeof :type
-     :nameof (fn [self] (or (:name self)
-                            (nameof (typeof self))))
-     :sizeof (fn [self] (:size (typeof self)))
-     :addrof :address})
