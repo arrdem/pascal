@@ -9,7 +9,8 @@
                                                search gensym! render-ns]]
             [me.arrdem.compiler.symbols :refer [->VariableType ->ArrayType
                                                 ->EnumType ->RecordEntry
-                                                ->PointerType ->ThinType]]
+                                                ->PointerType ->ThinType
+                                                ->RangeType]]
             [me.arrdem.compiler.symbol-conversions]
             [me.arrdem.pascal.ast :refer :all]
             [name.choi.joshua.fnparse :as fnp]))
@@ -71,11 +72,9 @@
   [[low _r high]]
   (let [c (- (inc high) low)
         i "integer"
-        t (->RecordType (gensym! (str "range-" low "->" high "_"))
-                        (map (fn [x y] {:value x :name x :type y})
-                             (range low (inc high))
-                             (repeat c i)))]
-    (install! t)))
+        t (->RangeType (gensym! (str "range-" low "->" high "_"))
+                       (range low (inc high)))]
+    (nameof (install! t))))
 
 (defn install-enum
   [[_0 idlist _1]]
