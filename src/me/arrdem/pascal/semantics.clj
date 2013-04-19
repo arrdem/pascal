@@ -1,7 +1,7 @@
 (ns me.arrdem.pascal.semantics
   (:require [clojure.pprint :refer [pprint]]
             [me.arrdem.compiler :refer [nameof typeof sizeof fields
-                                        valueof follow field-offset]]
+                                        valueof follow field-offset addrof]]
             [me.arrdem.compiler.types :refer [->RecordType]]
             [me.arrdem.compiler.macros :refer [pmacroexpand macro?]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
@@ -179,10 +179,11 @@
 (defn var-dot [[_dot id]]
   (fn [obj]
     (assert (satisfies? me.arrdem.compiler/IIndexable obj))
-    (let [res (nameof (typeof (get (fields obj) id)))]
+    (let [val (get (fields obj) id)
+          res (nameof (typeof val))]
       (println "; [var-dot] " (nameof obj)
                " is " res)
-      (list (list '. id)
+      (list (list 'aref (addrof val))
             res))))
 
 (defn var-point [_]
