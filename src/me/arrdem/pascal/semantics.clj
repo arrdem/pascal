@@ -188,6 +188,7 @@
   (fn [obj]
     ;; (println "; [var-point] " (nameof obj) " is " (nameof (follow obj)))
     (assert (satisfies? me.arrdem.compiler/IPointer obj))
+    (assert (not (nil? (follow obj))))
     (list (list (symbol "^"))
           (follow obj))))
 
@@ -299,8 +300,7 @@
      [(makelabel lbl)
       (makeprogn stmnts)
       (makeif `(~'not ~expr)
-              (makegoto lbl))
-      ])))
+              (makegoto lbl))])))
 
 ;;;;----------------------------------------------------------------------------
 ;;;; WHILE structure
@@ -337,7 +337,6 @@
    (list
     (-> lbl
         str
-        search
         valueof
         makelabel)
     stmnt)))
@@ -346,6 +345,5 @@
   [[_gt lbl]]
   (-> lbl
       str
-      search
       valueof
       makegoto))
