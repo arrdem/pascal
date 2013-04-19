@@ -101,6 +101,15 @@
   me.arrdem.compiler.IValued
     (valueof [self] (.val self)))
 
+(defrecord RangeType [name range]
+  me.arrdem.compiler.ISymbol
+    (typeof [self] (.type self))
+    (nameof [self] (.qname self))
+    (sizeof [self] (sizeof (typeof self)))
+    (addrof [self] nil)
+  me.arrdem.compiler.IValued
+    (valueof [self] (.range self)))
+
 (defrecord RecordType [name members size-field]
   me.arrdem.compiler.ISymbol
     (typeof [self] self)
