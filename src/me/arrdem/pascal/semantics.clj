@@ -83,7 +83,9 @@
         i "integer"
         t (->EnumType (gensym! (str "enum-0->" c "_"))
                       (->> [(repeat c i) (range c)]
-                           (apply (partial map #(assoc %1 :value %2)))
+                           (apply (partial map #(-> {}
+                                                    (assoc :name %1)
+                                                    (assoc :value %2))))
                            (zipmap idlist))
                       i)
         t (install! t)]
