@@ -36,20 +36,12 @@
         time, which shouldn't be hard as I've already finished all the type
         resolving code.
 
-- Add an "inlining" progn macro which attempts to eliminate nested progn groups
-  by inserting their contents inline. Will probably just be a reduce over the
-  body forms checking the first to see if it's 'progn and concat-ing rather
-  than cons-ing.
-
 - Add tests for the various grammar fragments
 
 - Add type table and structure alignment tests
 
 - Add a better pretty-printer now that it is possible to do a namespace based traversal of the symbol table.
 - Add a better pretty-printer for code in general.
-
-- Implement a way to dereference a pointer type
-- Implement the nested dereference operation required for struct and array access to work as expected.
 
 - Implement a debug library with selectable printing ala debug.h.
 
