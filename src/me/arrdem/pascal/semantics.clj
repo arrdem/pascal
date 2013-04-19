@@ -104,8 +104,7 @@
   ;; (println "[build-array] " index-range-list)
   (loop [index-range-list (->> index-range-list
                                reverse
-                               (map search)
-                               (map (fn [x] (range (count (fields x))))))
+                               (map valueof))
          state (list basictype)]
     ;; (println "[build-array] - " index-range-list)
     ;; (println "[build-array] - " (count state))
@@ -118,8 +117,8 @@
         (install! substruct)
         (if-not (empty? index-range-list)
           (recur index-range-list
-                 (cons substruct state))
-          (cons substruct state))))))
+                 (cons (nameof substruct) state))
+          (cons (nameof substruct) state))))))
 
 (defn install-arrtype
   "Computes and installs an array type, being a record with multi-integer
