@@ -55,7 +55,9 @@
 
 (extend-protocol me.arrdem.compiler/IPointer
   String
-    (reftype [self] (apply str (rest self)))
+    (reftype [self]
+      (assert (= \^ (first self)))
+      (apply str (rest self)))
     (follow [self] (search (reftype self))))
 
 (extend-protocol me.arrdem.compiler/IIndexable
