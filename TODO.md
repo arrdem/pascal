@@ -1,18 +1,22 @@
 # TODO list
 ## todo & buggy
-- compute numeric values for aref operations _in byte terms_
-- add nested aref reduction where possible
 - improve the output of the symbol table printer so as to be... reasonable
   -- make sure that for records it shows the offsets, sizes & fields
-- make search work on records via (nameof)
-- Rework the way that +, -, * and / generate in the IR, replacing them with
-  -- M+, M-, M* and M/, being macros which do type checking and argument type conversion before expanding to
-  -- float+ float- float* float/ int%
-  -- int+ int- int* int/ int%
-  -- This will be done at macro expansion time as part of type resolution. We
-     aren't there yet, don't stress this bit but keep in mind.
+- add type conversion via macros over arithmetic expressions
 - add type metadata to all arithmetic expressions
 - move the "standard" type graph into the standard library symbol table code
+- improve the type conversion code to transform into an arbitrary
+  representation rather than strict supersets as the current type transform is
+  designed to do what with being directed and all.
+- track down && manually inspect the current failure point, it seems to be
+  something to do with my type system resolving to a nil value incorrectly on
+  line 41 of "pasrec.pas". Not sure where this is coming from but looks to be
+  something screwy in the way that the type of an array entry is resolved. Fix
+  it so I can finish and submit.
+- take another look at the lexington toolkit, see if there's a way to
+  associate line & column metadata with tokens so that I can print information
+  about the failure point rather than the failure and a bunch of garbage.
+
 
 ## back burner
 - Add tests for the macro system
