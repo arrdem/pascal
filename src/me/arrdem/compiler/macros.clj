@@ -23,9 +23,9 @@
     (do ;; (println "; macroexpanding " expr)
         (let [expander (pmacroexpand (first expr))
               expandfn (cond
-                        (macro? expander) expander
                         (string? expander) (search expander)
                         (symbol? expander) (search (name expander))
+                        (macro? expander) expander
                         true nil)
               expandfn (when (macro? expandfn)
                          (.expander expandfn))
