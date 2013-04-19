@@ -202,11 +202,12 @@
     (assert (satisfies? me.arrdem.compiler/IIndexable obj))
     ;; (println "; [var-index] " (nameof obj) " is " (nameof (typeof (last (fields obj)))))
     (list (partial-make-aref
-           (map #(or (get (fields %1) %3)
-                     (binop (sizeof %2) '* %3))
-                (fields obj)
-                (next (fields obj))
-                subscripts))
+           (cons '+
+                 (map #(or (get (fields %1) %3)
+                           (binop (sizeof %2) '* %3))
+                      (fields obj)
+                      (next (fields obj))
+                      subscripts)))
           (last (fields obj)))))
 
 (defn variable
