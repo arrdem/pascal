@@ -103,8 +103,9 @@
 
 (defrecord RangeType [name range]
   me.arrdem.compiler.ISymbol
-    (typeof [self] (.type self))
-    (nameof [self] (.qname self))
+    (typeof [self] (nameof self))
+    (nameof [self] (or (:qname self)
+                       (.name self)))
     (sizeof [self] (sizeof (typeof self)))
     (addrof [self] nil)
   me.arrdem.compiler.IValued
