@@ -10,20 +10,21 @@
 ;;------------------------------------------------------------------------------
 ;; Symbol table manipulation
 (defn abs-name
-  ([sym]
-     ;; (println @me.arrdem.compiler.symtab/*symtab*)
-    ;; (println "; searching for symbol" sym)
-     (:qname
-      (cond
-       (map? sym)    (if (contains? sym :qname)
-                       (select-keys sym [:qname])
-                       (search (:name sym)))
-       (string? sym) (search sym)))))
+  [sym]
+  ;; (println @me.arrdem.compiler.symtab/*symtab*)
+  ;; (println "; searching for symbol" sym)
+  (:qname
+   (cond
+    (map? sym)
+    (if (contains? sym :qname)
+      (select-keys sym [:qname])
+      (search (:name sym)))
+    (string? sym)
+    (search sym))))
 
-(defn dbg-install
-  ([v]
-    ;; (println "; declared var " v)
-     (:qname (install! v))))
+(defn dbg-install [v]
+  ;; (println "; declared var " v)
+  (:qname (install! v)))
 
 ;;------------------------------------------------------------------------------
 ;; Expression manipulators
@@ -40,10 +41,12 @@
 
 (defn e->
   ([x] x)
-  ([x form] (if (seq? form)
-              `(~(first form) ~x ~@(next form))
-              (list form x)))
-  ([x form & more] (apply (partial e-> (e-> x form)) more)))
+  ([x form]
+     (if (seq? form)
+       `(~(first form) ~x ~@(next form))
+       (list form x)))
+  ([x form & more]
+     (apply (partial e-> (e-> x form)) more)))
 
 ;;------------------------------------------------------------------------------
 ;; Expression fragments
