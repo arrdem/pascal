@@ -246,13 +246,11 @@
 
 (defn unary-expression
   [[op expr]]
-  (if-let [form (case op
-                  (+) nil
-                  (-) `(~'* -1)
-                  (not) `(~'not)
-                  (nil) nil)]
-      (concat form (list expr))
-      expr))
+  ((case op
+     (-) (partial binop -1 '*)
+     (not) binnot
+     :else identity)
+   expr))
 
 ;;------------------------------------------------------------------------------
 ;; Basic program control structure transforms
@@ -281,11 +279,11 @@
 ;;;; the FOR control structure
 (defn for-downto
   [[s0 _ sf]]
-  [s0 `(~'- 1) '>= sf])
+  [s0 '- '>= sf])
 
 (defn for-to
   [[s0 _ sf]]
-  [s0 `(~'+ 1) '<= sf])
+  [s0 '+ '<= sf])
 
 (defn for-stmnt [[_0 id _1 flist _3 stmnt]]
   (let [[Vi update comp end] flist
@@ -296,9 +294,8 @@
        (binop id ':= Vi)
        (makeif `(~comp ~id ~end)
                (makeprogn [stmnt
-                           (binop id ':= (concat update (list id)))
-                           (makegoto lstart)]))
-       ])))
+                           (binop id ':= (binop id update 1))
+                           (makegoto lstart)]))])))
 
 ;;;;----------------------------------------------------------------------------
 ;;;; the REPEAT control structure
