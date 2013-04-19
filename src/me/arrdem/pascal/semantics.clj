@@ -1,6 +1,5 @@
 (ns me.arrdem.pascal.semantics
   (:require [clojure.pprint :refer [pprint]]
-
             [me.arrdem.compiler :refer [nameof typeof sizeof fields
                                         valueof follow field-offset]]
             [me.arrdem.compiler.types :refer [->RecordType]]
@@ -12,8 +11,7 @@
                                                 ->PointerType ->ThinType
                                                 ->RangeType]]
             [me.arrdem.compiler.symbol-conversions]
-            [me.arrdem.pascal.ast :refer :all]
-            [name.choi.joshua.fnparse :as fnp]))
+            [me.arrdem.pascal.ast :refer :all]))
 
 (defn tail-cons
   "Basic cons operation for joining recursively defined eliminated lists.
@@ -181,25 +179,31 @@
 (defn var-dot [[_dot id]]
   (fn [obj]
     (assert (satisfies? me.arrdem.compiler/IIndexable obj))
-    (list (list '. id)
-          (get (fields obj) id))))
+    (let [res (nameof (typeof (get (fields obj) id)))]
+      (println "; [var-dot] " (nameof obj)
+               " is " res)
+      (list (list '. id)
+            res))))
 
 (defn var-point [_]
   (fn [obj]
-    ;; (println "; [var-point] " (nameof obj) " is " (nameof (follow obj)))
-    (assert (satisfies? me.arrdem.compiler/IPointer obj))
+    (assert (satisfies? me.arrdem.compiler/IPointer obj)
+            (str "type " obj " does not appear to be IPointer"))
     (assert (not (nil? (follow obj))))
-    (list (list (symbol "^"))
-          (follow obj))))
+    (let [res (typeof (follow obj))]
+      (println "; [var-point] " (nameof obj) " is " res)
+      (list (list (symbol "^"))
+            res))))
 
 (defn var-index
   [[_lb subscripts _rb]]
   (fn [obj]
     (assert (satisfies? me.arrdem.compiler/IIndexable obj))
+    (println "; [var-index] " (nameof obj) " is " (nameof (typeof (last (fields obj)))))
     (list (partial-make-aref
            (field-offset
             obj (seq subscripts)))
-          (typeof (last (fields obj))))))
+          (last (fields obj)))))
 
 (defn variable
   "Generates the appropriate aref & pointer expressions for indexing into a
