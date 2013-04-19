@@ -1,6 +1,7 @@
 (ns me.arrdem.compiler.symbol-conversions
   (:require [me.arrdem.compiler :refer [sizeof nameof typeof fields
-                                        field-offset reftype follow]]
+                                        field-offset reftype follow
+                                        valueof]]
             [me.arrdem.compiler.symtab :refer [search]]))
 
 ;;------------------------------------------------------------------------------
@@ -61,3 +62,7 @@
   String
     (field-offset [self field] (field-offset (search self) field))
     (fields [self] (fields (search self))))
+
+(extend-protocol me.arrdem.compiler/IValued
+  String
+    (valueof [self] (valueof (search self))))
