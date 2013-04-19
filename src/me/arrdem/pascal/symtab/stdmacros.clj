@@ -1,6 +1,6 @@
 (ns me.arrdem.pascal.symtab.stdmacros
-  (:require [me.arrdem.compiler.symtab :refer [install! search]]
-            [me.arrdem.compiler.symbols :refer [sizeof nameof]]
+  (:require [me.arrdem.compiler :refer [sizeof nameof]]
+            [me.arrdem.compiler.symtab :refer [install! search]]
             [me.arrdem.compiler.macros :refer [->MacroType]]
             [me.arrdem.pascal.ast :refer [makefuncall binop]]))
 

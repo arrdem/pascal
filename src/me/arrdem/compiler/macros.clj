@@ -1,9 +1,9 @@
 (ns me.arrdem.compiler.macros
-  (:require [me.arrdem.compiler.symbols :refer [typeof]]
+  (:require [me.arrdem.compiler :refer [typeof]]
             [me.arrdem.compiler.symtab :refer [search]]))
 
 (defrecord MacroType [name expander]
-  me.arrdem.compiler.symbols.ISymbol
+  me.arrdem.compiler.ISymbol
     (typeof [self] "macro")
     (nameof [self] (.name self))
     (sizeof [self] nil)
@@ -23,9 +23,9 @@
     (do ;; (println "; macroexpanding " expr)
         (let [expander (pmacroexpand (first expr))
               expandfn (cond
-                        (macro? expander) expander
                         (string? expander) (search expander)
                         (symbol? expander) (search (name expander))
+                        (macro? expander) expander
                         true nil)
               expandfn (when (macro? expandfn)
                          (.expander expandfn))

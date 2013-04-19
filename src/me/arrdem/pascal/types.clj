@@ -6,7 +6,7 @@
       me.arrdem.pascal.types
   (:require [me.arrdem.compiler.type-hierarchy :as h]
             [me.arrdem.compiler.symtab :refer [search install!]]
-            [me.arrdem.compiler.symbols :refer [typeof]]
+            [me.arrdem.compiler :refer [typeof]]
             [me.arrdem.pascal.ast :refer [e-> makefuncall]]
             [loom.graph  :as graph]))
 

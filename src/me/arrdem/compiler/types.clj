@@ -1,6 +1,6 @@
 (ns me.arrdem.compiler.types
-  (:require [me.arrdem.compiler.symbols :refer [sizeof typeof nameof
-                                                ->RecordEntry
+  (:require [me.arrdem.compiler :refer [sizeof typeof nameof]]
+            [me.arrdem.compiler.symbols :refer [->RecordEntry
                                                 map->RecordType]]))
 
 ;;------------------------------------------------------------------------------

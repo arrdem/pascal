@@ -486,13 +486,15 @@
    (fnp/semantics
     (fnp/conc delim_lbrack subscript-list delim_rbrack)
     s/var-index)
-   (fnp/conc (fnp/conc op_dot fieldid))
-   (fnp/conc op_point)))
+   (fnp/semantics
+    (fnp/conc op_dot fieldid)
+    s/var-dot)
+   (fnp/semantics
+    op_point
+    s/var-point)))
 
 (def var-postfixes
-  (fnp/semantics
-   (fnp/rep* var-postfix)
-   (partial reduce concat)))
+  (fnp/rep* var-postfix))
 
 (def variable
   (fnp/semantics
