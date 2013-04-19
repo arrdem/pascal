@@ -144,9 +144,11 @@
     (addrof [self] nil)
   me.arrdem.compiler.IPPrinted
     (toString [self] (.name self))
+  me.arrdem.compiler.IValued
+    (valueof [self] (keys (.members self)))
   me.arrdem.compiler.IIndexable
     (field-offset [self name]
-      (.indexOf (apply list (keys (.children self))) name))
+      (.indexOf (apply list (keys (.members self))) name))
     (fields [self] (.members self)))
 
 (defrecord ThinType [qname type]
@@ -163,6 +165,8 @@
   me.arrdem.compiler.IPointer
     (reftype [self] (typeof (.type self)))
     (follow [self] (follow (.type self)))
+  me.arrdem.compiler.IValued
+    (valueof [self] (valueof (.type self)))
   me.arrdem.compiler.IPPrinted
     (toString [self] (.qname self)))
 

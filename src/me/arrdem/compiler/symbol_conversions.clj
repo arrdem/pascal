@@ -23,6 +23,12 @@
     (sizeof [self] (:size (typeof self)))
     (addrof [self] (:address self))
 
+  String
+    (typeof [self] (typeof (search self)))
+    (nameof [self] self)
+    (sizeof [self] (sizeof (search self)))
+    (addrof [self] nil)
+
   java.lang.String
     (typeof [self] (typeof (search self)))
     (nameof [self] self)
