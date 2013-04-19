@@ -158,7 +158,7 @@
   [[_t decls _e]]
   (apply makecomment
          "got type definitions:"
-         (map #(. %1 nameof) decls)))
+         (map nameof decls)))
 
 ;;------------------------------------------------------------------------------
 ;; Variables....
