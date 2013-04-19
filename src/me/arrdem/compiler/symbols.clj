@@ -134,7 +134,10 @@
   me.arrdem.compiler.IIndexable
     (field-offset [self name]
       (field-offset (.type self) name))
-    (fields [self] (fields (.type self))))
+    (fields [self] (fields (.type self)))
+  me.arrdem.compiler.IPointer
+    (reftype [self] (typeof (.type self)))
+    (follow [self] (follow (.type self))))
 
 (defrecord EnumType [name members val-type]
   me.arrdem.compiler.ISymbol
