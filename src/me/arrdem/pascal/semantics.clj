@@ -202,6 +202,7 @@
     (assert (satisfies? me.arrdem.compiler/IIndexable obj))
     ;; (println "; [var-index] " (nameof obj) " is " (nameof (typeof (last (fields obj)))))
     (list (partial-make-aref
+           ;; TODO: rework this in terms of binop somehow..
            (cons '+
                  (map #(or (get (fields %1) %3)
                            (binop (sizeof %2) '* %3))
