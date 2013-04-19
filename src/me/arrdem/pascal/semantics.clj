@@ -181,8 +181,8 @@
     (assert (satisfies? me.arrdem.compiler/IIndexable obj))
     (let [val (get (fields obj) id)
           res (nameof (typeof val))]
-      (println "; [var-dot] " (nameof obj)
-               " is " res)
+      ;; (println "; [var-dot] " (nameof obj)
+      ;;          " is " res)
       (list (list 'aref (addrof val))
             res))))
 
@@ -192,7 +192,7 @@
             (str "type " obj " does not appear to be IPointer"))
     (assert (not (nil? (follow obj))))
     (let [res (typeof (follow obj))]
-      (println "; [var-point] " (nameof obj) " is " res)
+      ;; (println "; [var-point] " (nameof obj) " is " res)
       (list (list (symbol "^"))
             res))))
 
@@ -200,10 +200,13 @@
   [[_lb subscripts _rb]]
   (fn [obj]
     (assert (satisfies? me.arrdem.compiler/IIndexable obj))
-    (println "; [var-index] " (nameof obj) " is " (nameof (typeof (last (fields obj)))))
+    ;; (println "; [var-index] " (nameof obj) " is " (nameof (typeof (last (fields obj)))))
     (list (partial-make-aref
-           (field-offset
-            obj (seq subscripts)))
+           (map #(or (get (fields %1) %3)
+                     (binop (sizeof %2) '* %3))
+                (fields obj)
+                (next (fields obj))
+                subscripts))
           (last (fields obj)))))
 
 (defn variable
@@ -215,7 +218,7 @@
   [[id postfixes]]
   (if-let [self (search id)]
     (let [res (reduce (fn [state f]
-                        (println "; [variable-fn] f:" f)
+                        ;; (println "; [variable-fn] f:" f)
                         (let [[expr new-state] (f (:sym state))]
                           (-> state
                               (assoc :sym new-state)
@@ -267,7 +270,7 @@
 
 (defn block2progn
   [[_0 exprs _1]]
-  (println "; in block2progn..")
+  ;; (println "; in block2progn..")
   (->> exprs
       (remove nil?)
       (makeprogn-v)
