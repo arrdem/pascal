@@ -52,7 +52,7 @@
             (map (partial apply transformer-name)
                  (map vector path
                       (rest path))))
-     {:exprtype (last path)}))
+     {:type (last path)}))
 
 (defn convert
   "Special case of a type conversion for forcing an expression to a known type.
@@ -61,7 +61,8 @@
   [typed-expr from to]
   (-> @*type-graph*
       (h/conversion-path from to)
-      first
+      ((fn [x] (or (first x)
+                   (reverse (second x)))))
       path->transformer
       (apply typed-expr '())))
 
