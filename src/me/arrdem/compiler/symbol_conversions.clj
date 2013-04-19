@@ -62,8 +62,9 @@
 (extend-protocol me.arrdem.compiler/IPointer
   String
     (reftype [self]
-      (assert (= \^ (first self)))
-      (apply str (rest self)))
+      (let [refname (nameof (typeof self))]
+        (assert (= \^ (first refname)))
+        (apply str (rest refname))))
     (follow [self] (search (reftype self))))
 
 (extend-protocol me.arrdem.compiler/IIndexable
