@@ -121,7 +121,7 @@
     (toString [self] (.name self))
   me.arrdem.compiler.IIndexable
     (field-offset [self name]
-      (.offset (get (.children self) name)))
+      (.offset (get (.members self) name)))
     (fields [self] (.members self)))
 
 (defrecord RecordEntry [name type offset]
