@@ -46,7 +46,7 @@ actually allocates memory at runtime."
   (and (list? expr)
        (contains? #{'+ '- '* '/ '%} (first expr))))
 
-(defn addition-cleaner [forms]
+(defn arith-cleaner [init op forms]
   (if (list? forms)
     (->> forms
          (reduce (fn [state x]
@@ -56,7 +56,7 @@ actually allocates memory at runtime."
                     ;; case for me here, I just need to perform one inlining
                     ;; transform in order to have made progress
                     (and (arith? x)
-                         (= '+ (first x)))
+                         (= op (first x)))
                         (update-in state [:exprs] concat (next x))
 
                     ;; strip additions of zero
@@ -65,15 +65,21 @@ actually allocates memory at runtime."
 
                     ;; maintain a partial sum
                     (number? x)
-                        (update-in state [:partial] + x)
+                        (update-in state [:partial] (eval op) x)
                    true
                         (update-in state [:exprs] concat (list x))))
-                 {:partial 0 :exprs '()})
+                 {:partial init :exprs '()})
          ((juxt :partial :exprs))
          (apply cons)
-         (cons '+)
+         (cons op)
          ((fn [x] (if (= 2 (count x)) (second x) x))))
     forms))
+
+(def addition-cleaner
+  (partial arith-cleaner 0 '+))
+
+(def multiplication-cleaner
+  (partial arith-cleaner 1 '*))
 
 ;;------------------------------------------------------------------------------
 (defn aref-cleaner
@@ -102,6 +108,7 @@ ensuring and soforth."
              ["progn" progn-inliner]
              ["aref" aref-cleaner]
              ["+" addition-cleaner]
+             ["*" multiplication-cleaner]
              ]]
     (install! (apply ->MacroType m)))
   (println "; standard macros installed!"))
