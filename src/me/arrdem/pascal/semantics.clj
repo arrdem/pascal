@@ -53,7 +53,7 @@
    returning a variable identifier which the constant's symbol will shadow."
   [[id _ v]]
   (let [v (->VariableType id (nameof (typeof v)) v)]
-    (dbg-install v)))
+    (install! v)))
 
 (defn constant-declaration
   [[_ c0 cs]]
@@ -65,7 +65,7 @@
    code can use (and shadow) the constant string val it represents."
   [s]
   (let [sym (->VariableType (gensym! "str_") "string" s)]
-    (dbg-install sym)))
+    (install! sym)))
 
 (defn label-declaration
   "Generates variables with the _string_ values of labels, integer type and a
@@ -107,7 +107,7 @@
                                                     (assoc :value %2))))
                            (zipmap idlist))
                       i)
-        t (install! t)]
+        t (nameof (install! t))]
     (doseq [[i j] (map list idlist (range c))]
       (install! (->VariableType i t j)))
     t))
@@ -188,7 +188,7 @@
   [[varseq _ type]]
   (doseq [v varseq]
     (let [v (->VariableType v (nameof type) nil)]
-      (dbg-install v)))
+      (install! v)))
   (map nameof varseq))
 
 (defn variable-declaration
