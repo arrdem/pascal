@@ -64,8 +64,8 @@
   "Generates an anonymous string variable & returns its identifier so that other
    code can use (and shadow) the constant string val it represents."
   [s]
-  (let [sym (->VariableType (gensym! "str_") "string" s)]
-    (install! sym)))
+  (let [sym (->VariableType (gensym! "__str_") "string" s)]
+    (nameof (install! sym))))
 
 (defn label-declaration
   "Generates variables with the _string_ values of labels, integer type and a
