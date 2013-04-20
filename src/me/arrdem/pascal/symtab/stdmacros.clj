@@ -50,7 +50,7 @@ actually allocates memory at runtime."
 
 (defn arith-cleaner [init_ittr init_val op forms]
   (if (list? forms)
-    (->> (eval init_ittr)
+    (->> (init_ittr forms)
          (reduce (fn [state x]
                    (cond
                     ;; strip nested additions
@@ -71,7 +71,7 @@ actually allocates memory at runtime."
 
                    true
                         (update-in state [:exprs] concat (list x))))
-                 {:partial (eval init_val) :exprs '()})
+                 {:partial (init_val forms) :exprs '()})
          ((juxt :partial :exprs))
          (apply cons)
          (cons op)
@@ -79,16 +79,16 @@ actually allocates memory at runtime."
     forms))
 
 (def addition-cleaner
-  (partial arith-cleaner identity 0 '+))
+  (partial arith-cleaner identity (fn [x] 0) '+))
 
 (def multiplication-cleaner
-  (partial arith-cleaner identity 1 '*))
+  (partial arith-cleaner identity (fn [x] 1) '*))
 
 (def subtraction-cleaner
-  (partial arith-cleaner '(next forms) '(first forms) '-))
+  (partial arith-cleaner next first '-))
 
 (def division-cleaner
-  (partial arith-cleaner '(next forms) '(first forms) '/))
+  (partial arith-cleaner next first '/))
 
 ;;------------------------------------------------------------------------------
 (defn aref-cleaner
