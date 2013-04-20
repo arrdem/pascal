@@ -25,8 +25,8 @@
    Serves as a portal through which all arithmetic must pass and thus provides
    almost all required type conversion silently."
   [e0 op e1]
-     (println "; [binop] " e0 op e1)
-     (println "; [binop]" (nameof (typeof e0)) op (nameof (typeof e1)))
+     ;; (println "; [binop] " e0 op e1)
+     ;; (println "; [binop]" (nameof (typeof e0)) op (nameof (typeof e1)))
      (let [lvlval (level e0 e1)]
        (with-meta
          `(~op ~@lvlval)
@@ -53,7 +53,7 @@
    returning a variable identifier which the constant's symbol will shadow."
   [[id _ v]]
   (let [v (->VariableType id (nameof (typeof v)) v)]
-    (install! v)))
+    (nameof (install! v))))
 
 (defn constant-declaration
   [[_ c0 cs]]
