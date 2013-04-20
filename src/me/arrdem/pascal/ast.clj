@@ -68,6 +68,9 @@
 
 ;;------------------------------------------------------------------------------
 ;; Expression fragments
+(defn binnot [form]
+  `(~'not form))
+
 (defn makecomment [& cmnts]
   `(~'comment ~@cmnts))
 
