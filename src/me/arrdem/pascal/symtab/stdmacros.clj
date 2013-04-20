@@ -6,7 +6,6 @@
             [me.arrdem.pascal.semantics :refer [binop]]))
 
 ;;------------------------------------------------------------------------------
-
 (defn p-new-macro
   "A macro function which serves to boostrap the equivalent of a malloc call.
 Takes on argument: a type, and expands to a call to the trnew function which
@@ -26,8 +25,12 @@ actually allocates memory at runtime."
   [body]
   (reduce (fn [prev form]
             (concat prev
-                    (if (progn? form)
-                      (_progn-inliner (rest form))
+                    (cond
+                     (progn? form)
+                         (_progn-inliner (rest form))
+                     (nil? form)
+                         '()
+                     true
                       (list form))))
           nil body))
 
@@ -41,7 +44,6 @@ actually allocates memory at runtime."
     body))
 
 ;;------------------------------------------------------------------------------
-
 (defn- arith? [expr]
   (and (list? expr)
        (contains? #{'+ '- '* '/ '%} (first expr))))
