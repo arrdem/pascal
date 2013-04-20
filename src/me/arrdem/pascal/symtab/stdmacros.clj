@@ -46,9 +46,9 @@ actually allocates memory at runtime."
   (and (list? expr)
        (contains? #{'+ '- '* '/ '%} (first expr))))
 
-(defn arith-cleaner [init op forms]
+(defn arith-cleaner [init_ittr init_val op forms]
   (if (list? forms)
-    (->> forms
+    (->> (eval init_ittr)
          (reduce (fn [state x]
                    (cond
                     ;; strip nested additions
@@ -66,9 +66,10 @@ actually allocates memory at runtime."
                     ;; maintain a partial sum
                     (number? x)
                         (update-in state [:partial] (eval op) x)
+
                    true
                         (update-in state [:exprs] concat (list x))))
-                 {:partial init :exprs '()})
+                 {:partial (eval init_val) :exprs '()})
          ((juxt :partial :exprs))
          (apply cons)
          (cons op)
@@ -76,10 +77,16 @@ actually allocates memory at runtime."
     forms))
 
 (def addition-cleaner
-  (partial arith-cleaner 0 '+))
+  (partial arith-cleaner identity 0 '+))
 
 (def multiplication-cleaner
-  (partial arith-cleaner 1 '*))
+  (partial arith-cleaner identity 1 '*))
+
+(def subtraction-cleaner
+  (partial arith-cleaner '(next forms) '(first forms) '-))
+
+(def division-cleaner
+  (partial arith-cleaner '(next forms) '(first forms) '/))
 
 ;;------------------------------------------------------------------------------
 (defn aref-cleaner
@@ -109,6 +116,8 @@ ensuring and soforth."
              ["aref" aref-cleaner]
              ["+" addition-cleaner]
              ["*" multiplication-cleaner]
+             ["-" subtraction-cleaner]
+             ["/" division-cleaner]
              ]]
     (install! (apply ->MacroType m)))
   (println "; standard macros installed!"))
