@@ -54,12 +54,19 @@
    Intended for use when assigning an int to a float variable and so forth.
    returns a new expression being typed-expr"
   [typed-expr from to]
-  (-> @*type-graph*
-      (h/conversion-path from to)
-      ((fn [x] (or (first x)
-                   (reverse (second x)))))
-      path->transformer
-      (apply typed-expr '())))
+  (if-not (= from to)
+    (-> @*type-graph*
+        (h/conversion-path from to)
+        ((fn [x] (or (first x)
+                     (reverse (second x)))))
+        path->transformer
+        (apply typed-expr '()))
+    (if (or (string? typed-expr)
+            (number? typed-expr))
+      typed-expr
+      (with-meta
+        typed-expr
+        {:type from}))))
 
 (defn level
   "Named because it computes the \"level\" representation type for the two
@@ -67,12 +74,14 @@
    of the minimum common representation according to the type graph. Note that
    this function will _only_ convert to higher types"
   [& exprs]
-  (map (fn [x y]
-         ((path->transformer x) y))
-       (->> exprs
-            (map typeof)
-            (apply h/conversion-path @*type-graph*))
-       exprs))
+  (if-not (apply = exprs)
+    (map (fn [x y]
+           ((path->transformer x) y))
+         (->> exprs
+              (map typeof)
+              (apply h/conversion-path @*type-graph*))
+         exprs)
+    exprs))
 
 ;;------------------------------------------------------------------------------
 ;; Type matrix manipulation expressions
