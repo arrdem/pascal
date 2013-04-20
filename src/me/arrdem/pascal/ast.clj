@@ -5,9 +5,7 @@
       :author "Reid McKenzie"
       :added  "0.2.0"}
   me.arrdem.pascal.ast
-  (:require [me.arrdem.compiler :refer [typeof nameof]]
-            [me.arrdem.compiler.symtab :refer [search install! genlabel!]]
-            [me.arrdem.pascal.types :refer [convert level]]))
+  (:require [me.arrdem.compiler.symtab :refer [search install! genlabel!]]))
 
 ;;------------------------------------------------------------------------------
 ;; Symbol table manipulation
@@ -83,28 +81,6 @@
   (if (< 1 (count forms))
     (makeprogn-v forms)
     (first forms)))
-
-(defn binop
-  "Computes a typed arithmetic expression for two arguments and an operator.
-   Serves as a portal through which all arithmetic must pass and thus provides
-   almost all required type conversion silently. In the three argument case the
-   type of the resulting expression is undefined but will be the minimum common
-   representation of the types of the argument expressions. In the four argument
-   case the second expression will be coerced to the type of the first."
-  ([e0 op e1]
-     (let [lvlval (level e0 e1)]
-       (with-meta
-         `(~op ~@lvlval)
-         {:type (->> lvlval
-                    (map typeof)
-                    (remove nil?)
-                    first
-                    typeof
-                    nameof)})))
-  ([e0 op e1 _]
-     `(~op ~e0 ~(convert e1
-                         (nameof (typeof e1))
-                         (nameof (typeof e0))))))
 
 (defn makelabel [v]
   `(~'label ~v))

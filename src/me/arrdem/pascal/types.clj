@@ -4,11 +4,12 @@
       :added "0.2.1"
       :author "Reid McKenzie"}
       me.arrdem.pascal.types
-  (:require [me.arrdem.compiler.type-hierarchy :as h]
+  (:require [me.arrdem.compiler :refer [typeof]]
             [me.arrdem.compiler.symtab :refer [search install!]]
-            [me.arrdem.compiler :refer [typeof]]
-            [me.arrdem.pascal.ast :refer [e-> makefuncall]]
-            [loom.graph  :as graph]))
+            [me.arrdem.compiler.type-hierarchy :as h]
+            [me.arrdem.compiler.symbol-conversions]
+            [me.arrdem.pascal.ast :refer [e->]]
+            [loom.graph :as graph]))
 
 (def -type-graph
   "A directed graph representing the basic state of Pascal's almost nonexistent
@@ -31,15 +32,11 @@
 ;; Note that it's pretty tied up in my symbol table architecture and naming
 ;; scheme, hence it's implementation in a pascal. namespace rather than in
 ;; the compiler.
-(defn expr-typeof [e]
-  (or (:exprtype (meta e))
-      (typeof e)))
-
 (defn ^:dynamic transformer-name
   "A way to look up the macro which computes a given type transform."
   [x y]
   (-> (if y (str (name x) "->" (name y))
-            (name x))
+          (name x))
       (symbol)))
 
 (defn- path->transformer
@@ -47,12 +44,10 @@
    taking expressions as arguments and returning the appropriate type converted
    expression. Depends on the type conversion resolution operations."
   [path]
-  #(with-meta
-     (apply e-> %1
-            (map (partial apply transformer-name)
-                 (map vector path
-                      (rest path))))
-     {:type (last path)}))
+  #(apply e-> %1
+         (map (partial apply transformer-name)
+              (map vector path
+                   (rest path)))))
 
 (defn convert
   "Special case of a type conversion for forcing an expression to a known type.
@@ -69,12 +64,13 @@
 (defn level
   "Named because it computes the \"level\" representation type for the two
    expressions, this function transforms both expression arguments to the type
-   of the minimum common representation according to the type graph."
+   of the minimum common representation according to the type graph. Note that
+   this function will _only_ convert to higher types"
   [& exprs]
   (map (fn [x y]
          ((path->transformer x) y))
        (->> exprs
-            (map expr-typeof)
+            (map typeof)
             (apply h/conversion-path @*type-graph*))
        exprs))
 
