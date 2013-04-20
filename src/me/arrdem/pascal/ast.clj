@@ -1,7 +1,7 @@
-(ns ^{:doc    "A more structured setting for the various functions which are
-               used to manipulate and generate abstract syntax tree elements.
-               Intended for use as a more elegant backend to semantics, and
-               as a utility suite for macros when they come down the pipe."
+(ns ^{:doc "A more structured setting for the various functions which are used
+            to manipulate and generate abstract syntax tree elements. Intended
+            for use as a more elegant backend to semantics, and as a utility
+            suite for macros."
       :author "Reid McKenzie"
       :added  "0.2.0"}
   me.arrdem.pascal.ast
@@ -11,7 +11,11 @@
 
 ;;------------------------------------------------------------------------------
 ;; Symbol table manipulation
-(defn abs-name
+
+;; TODO: find uses of this guy and remove em
+(defn ^:depricated abs-name
+  "Performs a symbol table lookup for the argument symbol. As of the new string
+   & protocol based type system this code is not needed yet it remains."
   [sym]
   ;; (println @me.arrdem.compiler.symtab/*symtab*)
   ;; (println "; searching for symbol" sym)
@@ -24,16 +28,27 @@
     (string? sym)
     (search sym))))
 
-(defn dbg-install [v]
+(defn dbg-install
+  "Wrapper around install! which may provide pre-installation debug printing"
+  [v]
   ;; (println "; declared var " v)
   (:qname (install! v)))
 
 ;;------------------------------------------------------------------------------
 ;; Expression manipulators
-(defn ecomp [fx fn]
+(defn ecomp
+  "Composes to Expressions ergo 'ecomp'."
+  [fx fn]
   `(~fn ~fx))
 
-(defn er-> [val & forms]
+;; TODO: After removing e-> rename to e->
+(defn er->
+  "A reduce based implementation of the -> operator for ast components. As with
+   clojure.core/-> this routine takes a single 'base' value and an arbitrary
+   number of body forms and threads the base value through all the argument
+   forms. Ex. (e-> 4 (+ 4) (/ 2)) => (/ (+ 4 4) 2). Used to nest expressions,
+   especially partially computed expressions as in variable indexing."
+  [val & forms]
   (reduce (fn [e form]
             (if (list? form)
              (concat (list (first form) e)
@@ -41,7 +56,10 @@
              (list form e)))
           val forms))
 
-(defn e->
+;; TODO: find uses of this guy and remove em
+(defn ^:depricated e->
+  "A 'traditional' recursive implementation of the -> operator, ported directly
+   from clojure.core for use on AST groups."
   ([x] x)
   ([x form]
      (if (seq? form)
@@ -67,6 +85,12 @@
     (first forms)))
 
 (defn binop
+  "Computes a typed arithmetic expression for two arguments and an operator.
+   Serves as a portal through which all arithmetic must pass and thus provides
+   almost all required type conversion silently. In the three argument case the
+   type of the resulting expression is undefined but will be the minimum common
+   representation of the types of the argument expressions. In the four argument
+   case the second expression will be coerced to the type of the first."
   ([e0 op e1]
      (let [lvlval (level e0 e1)]
        (with-meta
@@ -77,17 +101,20 @@
                     first
                     typeof
                     nameof)})))
-  ([e0 op e1 _] `(~op ~e0 ~(convert e1
-                                    (nameof (typeof e1))
-                                    (nameof (typeof e0))))))
+  ([e0 op e1 _]
+     `(~op ~e0 ~(convert e1
+                         (nameof (typeof e1))
+                         (nameof (typeof e0))))))
 
 (defn makelabel [v]
   `(~'label ~v))
 
 (defn makeif
-  ([test s] `(~'if ~test ~s))
-  ([test s e] (if e `(~'if ~test ~s ~e)
-                  (makeif test s))))
+  ([test s]
+     `(~'if ~test ~s))
+  ([test s e]
+     (if e `(~'if ~test ~s ~e)
+         (makeif test s))))
 
 (defn makederef [sym]
   (:qname (search sym)))
