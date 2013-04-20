@@ -1,5 +1,6 @@
 (ns me.arrdem.pascal.symtab.stdtypes
-  (:require [me.arrdem.compiler.symbols :refer [->PrimitiveType ->PointerType]]
+  (:require [me.arrdem.compiler.symbols :refer [->PrimitiveType ->PointerType
+                                                ->VariableType]]
             [me.arrdem.compiler.symtab :refer [search install!]]))
 
 ;; documentation has moved, see compiler.symbols for details on the
