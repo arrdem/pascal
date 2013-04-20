@@ -24,4 +24,10 @@
              ["^real" 4 "real"]
              ]]
     (install! (apply ->PointerType t)))
+
+  ;; create a nil type and a nil variable
+  (let [niltype (->PrimitiveType "^niltype" 0)]
+    (install! niltype)
+    (install! (->VariableType "nil" niltype 0)))
+
   (println "; standard types installed!"))
