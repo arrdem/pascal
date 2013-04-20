@@ -57,6 +57,12 @@
     (typeof [self] "real")
     (nameof [self] "real")
     (sizeof [self] 8)
+    (addrof [self] nil)
+
+  Object
+    (typeof [self] (typeof (meta self)))
+    (nameof [self] (nameof (meta self)))
+    (sizeof [self] (sizeof (meta self)))
     (addrof [self] nil))
 
 (extend-protocol me.arrdem.compiler/IPointer

@@ -1,5 +1,6 @@
 (ns me.arrdem.pascal.symtab.stdtypes
-  (:require [me.arrdem.compiler.symbols :refer [->PrimitiveType ->PointerType]]
+  (:require [me.arrdem.compiler.symbols :refer [->PrimitiveType ->PointerType
+                                                ->VariableType]]
             [me.arrdem.compiler.symtab :refer [search install!]]))
 
 ;; documentation has moved, see compiler.symbols for details on the
@@ -24,4 +25,10 @@
              ["^real" 4 "real"]
              ]]
     (install! (apply ->PointerType t)))
+
+  ;; create a nil type and a nil variable
+  (let [niltype (->PrimitiveType "^niltype" 0)]
+    (install! niltype)
+    (install! (->VariableType "nil" niltype 0)))
+
   (println "; standard types installed!"))

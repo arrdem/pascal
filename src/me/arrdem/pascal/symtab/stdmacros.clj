@@ -2,7 +2,7 @@
   (:require [me.arrdem.compiler :refer [sizeof nameof]]
             [me.arrdem.compiler.symtab :refer [install! search]]
             [me.arrdem.compiler.macros :refer [->MacroType]]
-            [me.arrdem.pascal.ast :refer [makefuncall binop]]))
+            [me.arrdem.pascal.ast :refer [makefuncall]]))
 
 ;;------------------------------------------------------------------------------
 
@@ -14,8 +14,9 @@ actually allocates memory at runtime."
   (let [T (search t)]
     (assert (not (nil? T)) (str "Failed to find type " t " in the symbol tbl"))
     (assert (not (string? T)) (str "got a string for " t " in the symbol tbl"))
-    (binop t ':= (makefuncall "trnew" (list (sizeof T))))))
+    (list ':= t (makefuncall "trnew" (list (sizeof T))))))
 
+;;------------------------------------------------------------------------------
 (defn- progn? [form]
   (and (list? form)
        (= (first form) 'progn)))
@@ -40,6 +41,11 @@ actually allocates memory at runtime."
 
 ;;------------------------------------------------------------------------------
 
+;; TODO: arithmetic expression compressing routines
+
+;; TODO: nested aref elimination
+
+;;------------------------------------------------------------------------------
 (defn init!
   "Function of no arguments, its sole purpose is to side-effect the symbol
 table and install the standard macros used for pre-code generation type

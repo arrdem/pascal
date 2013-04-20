@@ -1,6 +1,5 @@
 (ns me.arrdem.pascal.symtab.stdlib
-  (:require [me.arrdem.compiler.symbols :refer [->FunctionType ->VariableType
-                                                ->PrimitiveType]]
+  (:require [me.arrdem.compiler.symbols :refer [->FunctionType]]
             [me.arrdem.compiler.symtab :refer [install!]]))
 
 (defn init!
@@ -8,11 +7,6 @@
 table to install the basic Pascal functions."
   []
   (println "; installing standard library...")
-  ;; create a nil type and a nil variable
-  (let [niltype (->PrimitiveType "niltype" 0)]
-    (install! niltype)
-    (install! (->VariableType "nil" niltype 0)))
-
   ;; install the standard library
   (doseq [f [
              ["exp" #{"real"} "real"]

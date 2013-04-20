@@ -1,6 +1,5 @@
 (ns me.arrdem.pascal.semantics
-  (:require [clojure.pprint :refer [pprint]]
-            [me.arrdem.compiler :refer [nameof typeof sizeof fields
+  (:require [me.arrdem.compiler :refer [nameof typeof sizeof fields
                                         valueof follow field-offset addrof]]
             [me.arrdem.compiler.types :refer [->RecordType]]
             [me.arrdem.compiler.macros :refer [pmacroexpand macro?]]
@@ -11,7 +10,8 @@
                                                 ->PointerType ->ThinType
                                                 ->RangeType]]
             [me.arrdem.compiler.symbol-conversions]
-            [me.arrdem.pascal.ast :refer :all]))
+            [me.arrdem.pascal.ast :refer :all]
+            [me.arrdem.pascal.types :refer [convert level]]))
 
 (defn tail-cons
   "Basic cons operation for joining recursively defined eliminated lists.
@@ -19,6 +19,28 @@
    (a b c d e) for ease of use."
   [[s [_ rest]]]
   (cons s rest))
+
+(defn binop
+  "Computes a typed arithmetic expression for two arguments and an operator.
+   Serves as a portal through which all arithmetic must pass and thus provides
+   almost all required type conversion silently."
+  [e0 op e1]
+     (println "; [binop] " e0 op e1)
+     (println "; [binop]" (nameof (typeof e0)) op (nameof (typeof e1)))
+     (let [lvlval (level e0 e1)]
+       (with-meta
+         `(~op ~@lvlval)
+         {:type (->> lvlval
+                     (remove nil?)
+                     (map typeof)
+                     first)})))
+(defn makeassign
+  "Builds an assignment statement forcing the type of the second expression to
+   that of the first expression. Previously a special case of binop."
+  [e0 e1]
+  `(~':= ~e0 ~(convert e1
+                       (nameof (typeof e1))
+                       (nameof (typeof e0)))))
 
 ;;------------------------------------------------------------------------------
 ;; NEW generation code..
@@ -202,11 +224,14 @@
     (assert (satisfies? me.arrdem.compiler/IIndexable obj))
     ;; (println "; [var-index] " (nameof obj) " is " (nameof (typeof (last (fields obj)))))
     (list (partial-make-aref
-           (map #(or (get (fields %1) %3)
-                     (binop (sizeof %2) '* %3))
-                (fields obj)
-                (next (fields obj))
-                subscripts))
+           ;; TODO: rework this in terms of binop somehow..
+           (reduce #(binop %1 '+ %2) 0
+                   (map #(or (if-let [fields (get (fields %1) %3)]
+                               (addrof fields))
+                             (binop (sizeof %2) '* %3))
+                        (fields obj)
+                        (next (fields obj))
+                        subscripts)))
           (last (fields obj)))))
 
 (defn variable
@@ -228,7 +253,9 @@
       ;; (println "; [variable] " id)
       ;; (println "; [variable] " (:ops res))
       (if-not (empty? postfixes)
-        (apply e-> id (reverse (:ops res)))
+        (with-meta
+          (apply e-> id (reverse (:ops res)))
+          {:type (:sym res)})
         id))))
 
 ;;------------------------------------------------------------------------------
@@ -240,18 +267,16 @@
     me))
 
 (defn assignment
-  [[target assignop expr]]
-  (binop target ':= expr))
+  [[target _assignop expr]]
+  (makeassign target expr))
 
 (defn unary-expression
   [[op expr]]
-  (if-let [form (case op
-                  (+) nil
-                  (-) `(~'* -1)
-                  (not) `(~'not)
-                  (nil) nil)]
-      (concat form (list expr))
-      expr))
+  ((case op
+     (-) (partial binop -1 '*)
+     (not) binnot
+     identity)
+   expr))
 
 ;;------------------------------------------------------------------------------
 ;; Basic program control structure transforms
@@ -280,11 +305,11 @@
 ;;;; the FOR control structure
 (defn for-downto
   [[s0 _ sf]]
-  [s0 `(~'- 1) '>= sf])
+  [s0 '- '>= sf])
 
 (defn for-to
   [[s0 _ sf]]
-  [s0 `(~'+ 1) '<= sf])
+  [s0 '+ '<= sf])
 
 (defn for-stmnt [[_0 id _1 flist _3 stmnt]]
   (let [[Vi update comp end] flist
@@ -292,12 +317,11 @@
         id     (abs-name (search id))]
     (makeprogn
       [(makelabel lstart)
-       (binop id ':= Vi)
+       (makeassign id Vi)
        (makeif `(~comp ~id ~end)
                (makeprogn [stmnt
-                           (binop id ':= (concat update (list id)))
-                           (makegoto lstart)]))
-       ])))
+                           (makeassign id (binop id update 1))
+                           (makegoto lstart)]))])))
 
 ;;;;----------------------------------------------------------------------------
 ;;;; the REPEAT control structure
