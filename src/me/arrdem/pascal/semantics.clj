@@ -92,7 +92,7 @@
   [[low _r high]]
   (let [c (- (inc high) low)
         i "integer"
-        t (->RangeType (gensym! (str "range-" low "->" high "_"))
+        t (->RangeType (gensym! (str "__range-" low "->" high "_"))
                        (range low (inc high)))]
     (nameof (install! t))))
 
@@ -100,7 +100,7 @@
   [[_0 idlist _1]]
   (let [c (count idlist)
         i "integer"
-        t (->EnumType (gensym! (str "enum-0->" c "_"))
+        t (->EnumType (gensym! (str "__enum-0->" c "_"))
                       (->> [(repeat c i) (range c)]
                            (apply (partial map #(-> {}
                                                     (assoc :name %1)
@@ -160,7 +160,7 @@
 (defn install-record
   [[_tr field-list _tend]]
   (let [members (reduce concat field-list)
-        t (->RecordType (gensym! "record__")
+        t (->RecordType (gensym! "__record_")
                         members)]
     (nameof (install! t))))
 
