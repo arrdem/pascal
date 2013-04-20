@@ -1,24 +1,27 @@
 # TODO list
-## todo & buggy
+- Tweak the nameof protocol so that for all objects it will default to :qname
+  over .name. this should make symbol table & code output more consistent.
+- Test the symbol table make sure that vals are installing with qnames
+- Make sure that the pprinter is doing its job, it seems to be dropping all
+  type symbols probably due to the way that I handle map based records.
+- Update the namespace pprinter to actually use pprint?
+- Migrate me.arrdem.pascal.util into me.arrdem.pascal.lexer or .tokens?
+- Clean up symbol_conversions.clj and sybols.clj into some more reasonable and
+  modular structure?
+- Rework me.arrdem.compiler.symtab to operate _either_ on a _rebindable_
+  symbol or an argument state map ala congomongo.
+- Bring the test suite up to date because it's waaay behind.
+
+## back burner
 - improve the output of the symbol table printer so as to be... reasonable
   -- make sure that for records it shows the offsets, sizes & fields
-- add type conversion via macros over arithmetic expressions
-- add type metadata to all arithmetic expressions
+
 - move the "standard" type graph into the standard library symbol table code
-- improve the type conversion code to transform into an arbitrary
-  representation rather than strict supersets as the current type transform is
-  designed to do what with being directed and all.
-- track down && manually inspect the current failure point, it seems to be
-  something to do with my type system resolving to a nil value incorrectly on
-  line 41 of "pasrec.pas". Not sure where this is coming from but looks to be
-  something screwy in the way that the type of an array entry is resolved. Fix
-  it so I can finish and submit.
+
 - take another look at the lexington toolkit, see if there's a way to
   associate line & column metadata with tokens so that I can print information
   about the failure point rather than the failure and a bunch of garbage.
 
-
-## back burner
 - Add tests for the macro system
 
 - Add a way to determine whether a type conversion is required and perform it if so
