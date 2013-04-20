@@ -33,11 +33,14 @@
                     (expandfn (apply list (rest expr)))
                     expr)]
           ;; (println "; macroexpanding intermediate state " res)
-          (let [res (apply list
-                           (cons (first res)
-                                 (doall (map pmacroexpand (apply list (rest res))))))]
+          (let [res (if (seq? res)
+                      (apply list
+                             (cons (first res)
+                                   (doall (map pmacroexpand (apply list (rest res))))))
+                      res)]
             (if (and (fn? expandfn) ;; possibility of recursive macro
-                     (not (= res expr))) ;; prevent non-transforming recursion
+                     (not (= res expr))  ;; prevent non-transforming recursion
+                     (seq? res)) ;; there's something left to expand
               (pmacroexpand res)
               res))))
     expr))
