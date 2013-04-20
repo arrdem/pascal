@@ -58,6 +58,7 @@
     (nameof [self] "real")
     (sizeof [self] 8)
     (addrof [self] nil)
+
   Object
     (typeof [self] (typeof (meta self)))
     (nameof [self] (nameof (meta self)))
