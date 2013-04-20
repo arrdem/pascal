@@ -4,8 +4,9 @@
       :added "0.2.1"
       :author "Reid McKenzie"}
       me.arrdem.pascal.types
-  (:require [me.arrdem.compiler :refer [typeof]]
+  (:require [me.arrdem.compiler :refer [typeof nameof]]
             [me.arrdem.compiler.symtab :refer [search install!]]
+            [me.arrdem.compiler.symbols]
             [me.arrdem.compiler.type-hierarchy :as h]
             [me.arrdem.compiler.symbol-conversions]
             [me.arrdem.pascal.ast :refer [e->]]
@@ -26,6 +27,17 @@
       (graph/add-edges ["character" "integer"])))
 
 (def ^:dynamic *type-graph* (atom -type-graph))
+
+(defn- types-eq? [a b]
+  (or (= a b) ;; trivial equality
+      ;; support that nil is all pointer types
+      ;; yeck this is a hack
+      (reduce #(or %1 %2)
+              (map #(and (satisfies? me.arrdem.compiler/IPointer (typeof %1))
+                         (or (= "nil" %2)
+                             (= (typeof "nil") %2)))
+                   [a b]
+                   [b a]))))
 
 ;;------------------------------------------------------------------------------
 ;; Public api for computing the minimum representation of types and type casts.
@@ -54,7 +66,7 @@
    Intended for use when assigning an int to a float variable and so forth.
    returns a new expression being typed-expr"
   [typed-expr from to]
-  (if-not (= from to)
+  (if-not (types-eq? to from)
     (-> @*type-graph*
         (h/conversion-path from to)
         ((fn [x] (or (first x)
@@ -74,11 +86,11 @@
    of the minimum common representation according to the type graph. Note that
    this function will _only_ convert to higher types"
   [& exprs]
-  (if-not (apply = exprs)
+  (if-not (reduce types-eq? exprs)
     (map (fn [x y]
            ((path->transformer x) y))
          (->> exprs
-              (map typeof)
+              (map (comp nameof typeof))
               (apply h/conversion-path @*type-graph*))
          exprs)
     exprs))
