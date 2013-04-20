@@ -23,24 +23,24 @@
 (defn binop
   "Computes a typed arithmetic expression for two arguments and an operator.
    Serves as a portal through which all arithmetic must pass and thus provides
-   almost all required type conversion silently. In the three argument case the
-   type of the resulting expression is undefined but will be the minimum common
-   representation of the types of the argument expressions. In the four argument
-   case the second expression will be coerced to the type of the first."
-  ([e0 op e1]
+   almost all required type conversion silently."
+  [e0 op e1]
+     (println "; [binop] " e0 op e1)
+     (println "; [binop]" (nameof (typeof e0)) op (nameof (typeof e1)))
      (let [lvlval (level e0 e1)]
        (with-meta
          `(~op ~@lvlval)
          {:type (->> lvlval
-                    (map typeof)
-                    (remove nil?)
-                    first
-                    typeof
-                    nameof)})))
-  ([e0 op e1 _]
-     `(~op ~e0 ~(convert e1
-                         (nameof (typeof e1))
-                         (nameof (typeof e0))))))
+                     (remove nil?)
+                     (map typeof)
+                     first)})))
+(defn makeassign
+  "Builds an assignment statement forcing the type of the second expression to
+   that of the first expression. Previously a special case of binop."
+  [e0 e1]
+  `(~':= ~e0 ~(convert e1
+                       (nameof (typeof e1))
+                       (nameof (typeof e0)))))
 
 ;;------------------------------------------------------------------------------
 ;; NEW generation code..
@@ -226,7 +226,8 @@
     (list (partial-make-aref
            ;; TODO: rework this in terms of binop somehow..
            (cons '+
-                 (map #(or (get (fields %1) %3)
+                 (map #(or (if-let [fields (get (fields %1) %3)]
+                             (addrof fields))
                            (binop (sizeof %2) '* %3))
                       (fields obj)
                       (next (fields obj))
@@ -252,7 +253,9 @@
       ;; (println "; [variable] " id)
       ;; (println "; [variable] " (:ops res))
       (if-not (empty? postfixes)
-        (apply e-> id (reverse (:ops res)))
+        (with-meta
+          (apply e-> id (reverse (:ops res)))
+          {:type (:sym res)})
         id))))
 
 ;;------------------------------------------------------------------------------
@@ -264,8 +267,8 @@
     me))
 
 (defn assignment
-  [[target assignop expr]]
-  (binop target ':= expr))
+  [[target _assignop expr]]
+  (makeassign target expr))
 
 (defn unary-expression
   [[op expr]]
@@ -314,10 +317,10 @@
         id     (abs-name (search id))]
     (makeprogn
       [(makelabel lstart)
-       (binop id ':= Vi)
+       (makeassign id Vi)
        (makeif `(~comp ~id ~end)
                (makeprogn [stmnt
-                           (binop id ':= (binop id update 1))
+                           (makeassign id (binop id update 1))
                            (makegoto lstart)]))])))
 
 ;;;;----------------------------------------------------------------------------
