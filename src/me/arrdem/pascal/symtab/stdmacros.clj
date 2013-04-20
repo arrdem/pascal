@@ -2,7 +2,8 @@
   (:require [me.arrdem.compiler :refer [sizeof nameof]]
             [me.arrdem.compiler.symtab :refer [install! search]]
             [me.arrdem.compiler.macros :refer [->MacroType]]
-            [me.arrdem.pascal.ast :refer [makefuncall]]))
+            [me.arrdem.pascal.ast :refer [makefuncall]]
+            [me.arrdem.pascal.semantics :refer [binop]]))
 
 ;;------------------------------------------------------------------------------
 
@@ -41,9 +42,54 @@ actually allocates memory at runtime."
 
 ;;------------------------------------------------------------------------------
 
-;; TODO: arithmetic expression compressing routines
+(defn- arith? [expr]
+  (and (list? expr)
+       (contains? #{'+ '- '* '/ '%} (first expr))))
 
-;; TODO: nested aref elimination
+(defn addition-cleaner [forms]
+  (if (list? forms)
+    (->> forms
+         (reduce (fn [state x]
+                   (cond
+                    ;; strip nested additions
+                    ;; note that the macro system will take care of the recursive
+                    ;; case for me here, I just need to perform one inlining
+                    ;; transform in order to have made progress
+                    (and (arith? x)
+                         (= '+ (first x)))
+                        (update-in state [:exprs] concat (next x))
+
+                    ;; strip additions of zero
+                    (= 0 x)
+                        state
+
+                    ;; maintain a partial sum
+                    (number? x)
+                        (update-in state [:partial] + x)
+                   true
+                        (update-in state [:exprs] concat (list x))))
+                 {:partial 0 :exprs '()})
+         ((juxt :partial :exprs))
+         (apply cons)
+         (cons '+)
+         ((fn [x] (if (= 2 (count x)) (second x) x))))
+    forms))
+
+;;------------------------------------------------------------------------------
+(defn aref-cleaner
+  "A macro function which seeks first to remove (aref <> 0) groups, and second
+   to optimize nested aref statements out to a single aref by taking the sum of
+   their index values and eliminating the inner aref."
+  ([[expr offset]]
+     (cond
+      (= 0 offset)
+        expr ;; zero offset case
+      (= 'aref (first expr))
+        (list 'aref
+              (second expr)
+              (binop offset '+ (nth expr 2)))
+      true
+        (list 'aref expr offset))))
 
 ;;------------------------------------------------------------------------------
 (defn init!
@@ -54,6 +100,8 @@ ensuring and soforth."
   (println "; installing standard macros...")
   (doseq [m [["new" p-new-macro]
              ["progn" progn-inliner]
+             ["aref" aref-cleaner]
+             ["+" addition-cleaner]
              ]]
     (install! (apply ->MacroType m)))
   (println "; standard macros installed!"))
