@@ -272,7 +272,7 @@
   ((case op
      (-) (partial binop -1 '*)
      (not) binnot
-     :else identity)
+     identity)
    expr))
 
 ;;------------------------------------------------------------------------------
