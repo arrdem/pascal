@@ -225,13 +225,13 @@
     ;; (println "; [var-index] " (nameof obj) " is " (nameof (typeof (last (fields obj)))))
     (list (partial-make-aref
            ;; TODO: rework this in terms of binop somehow..
-           (cons '+
-                 (map #(or (if-let [fields (get (fields %1) %3)]
-                             (addrof fields))
-                           (binop (sizeof %2) '* %3))
-                      (fields obj)
-                      (next (fields obj))
-                      subscripts)))
+           (reduce #(binop %1 '+ %2) 0
+                   (map #(or (if-let [fields (get (fields %1) %3)]
+                               (addrof fields))
+                             (binop (sizeof %2) '* %3))
+                        (fields obj)
+                        (next (fields obj))
+                        subscripts)))
           (last (fields obj)))))
 
 (defn variable
