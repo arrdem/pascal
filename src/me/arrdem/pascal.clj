@@ -2,7 +2,7 @@
   (:require [clojure.pprint :refer :all]
             [me.arrdem.pascal.grammar :refer [pascal-program]]
             [me.arrdem.pascal.lexer :refer [pascal]]
-            [me.arrdem.pascal.symtab :refer [pr-symtab init!]]
+            [me.arrdem.pascal.symtab :refer [pr-symtab clear!]]
             [me.arrdem.compiler.symtab]
             [name.choi.joshua.fnparse :as fnp])
   (:gen-class :main true))
@@ -17,7 +17,7 @@ easily accessed."
 (defn pr-line
   "Prints an 80 char wide dash line."
   ([]
-     (println (apply str (repeat 80 \-)))))
+     (println (apply str (cons "; " (repeat 78 \-))))))
 
 (defn build-ast
   "Wrapper around the grammar and the FNParse rule invocation to make throwing a
@@ -36,7 +36,7 @@ token sequence at the grammar stack easy."
   "The only valid arguments are targeted files. If there are no targeted files
 then decomp will target stdin as its token source."
   ([& args]
-     (init!)
+     (clear!)
      (if-not (empty? args)
        (doseq [f args]
          (println "attempting to read file" f)

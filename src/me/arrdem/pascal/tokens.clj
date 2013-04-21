@@ -39,7 +39,6 @@
   (deftoken tok_with      "with")
   (deftoken tok_do        "do")
   (deftoken tok_for       "for")
-  (deftoken tok_nil       "nil")
   (deftoken tok_record    "record")
   (deftoken tok_type      "type")
   (deftoken tok_forward   "forward")
@@ -51,7 +50,7 @@
   (deftoken op_or         "or"  :val)
   (deftoken op_mul        "*"   :val)
   (deftoken op_mod        "mod" :val)
-;  (deftoken op_in         "in"  :val)
+  (deftoken op_in         #"in(?!\w+)" :val)
   (deftoken op_div        "/"   :val)
   (deftoken op_and        "and" :val)
   (deftoken op_assign     ":="  :val)
@@ -62,7 +61,7 @@
   (deftoken op_ge         ">="  :val)
   (deftoken op_gt         ">"   :val)
   (deftoken op_point      "^"   :val)
-  (deftoken op_dot        "."   :val)
+  (deftoken op_dot        #"\.(?!\.)":val)
   (deftoken op_not        "not" :val)
 
 ;;------------------------------------------------------------------------------

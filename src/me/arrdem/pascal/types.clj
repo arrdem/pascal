@@ -4,28 +4,40 @@
       :added "0.2.1"
       :author "Reid McKenzie"}
       me.arrdem.pascal.types
-  (:require [me.arrdem.compiler.type-hierarchy :as h]
+  (:require [me.arrdem.compiler :refer [typeof nameof]]
             [me.arrdem.compiler.symtab :refer [search install!]]
-            [me.arrdem.pascal.ast :refer [e-> makefuncall]]
-
-            [loom.graph  :as graph]))
-
+            [me.arrdem.compiler.symbols]
+            [me.arrdem.compiler.type-hierarchy :as h]
+            [me.arrdem.compiler.symbol-conversions]
+            [me.arrdem.pascal.ast :refer [e->]]
+            [loom.graph :as graph]))
 
 (def -type-graph
   "A directed graph representing the basic state of Pascal's almost nonexistent
-type conversion hierarchy. The graph is of the form
-        Real
-         ^
-      integer
-      ^     ^
-character  Boolean
-to be exact"
+   type conversion hierarchy. The graph is of the form
+           Real
+            ^
+         integer
+         ^     ^
+   character  Boolean
+   to be exact"
   (-> (graph/digraph)
       (graph/add-edges ["integer"   "real"])
       (graph/add-edges ["boolean"   "integer"])
       (graph/add-edges ["character" "integer"])))
 
-(def *type-graph* (atom -type-graph))
+(def ^:dynamic *type-graph* (atom -type-graph))
+
+(defn- types-eq? [a b]
+  (or (= a b) ;; trivial equality
+      ;; support that nil is all pointer types
+      ;; yeck this is a hack
+      (reduce #(or %1 %2)
+              (map #(and (satisfies? me.arrdem.compiler/IPointer (typeof %1))
+                         (or (= "nil" %2)
+                             (= (typeof "nil") %2)))
+                   [a b]
+                   [b a]))))
 
 ;;------------------------------------------------------------------------------
 ;; Public api for computing the minimum representation of types and type casts.
@@ -34,46 +46,64 @@ to be exact"
 ;; the compiler.
 (defn ^:dynamic transformer-name
   "A way to look up the macro which computes a given type transform."
-  ([x y]
-     (if y
-       (str (name x) "->" (name y))
-       (name x))))
+  [x y]
+  (-> (if y (str (name x) "->" (name y))
+          (name x))
+      (symbol)))
 
 (defn- path->transformer
   "Transforms a conversion-path into a function f being a macro style functions
-taking expressions as arguments and returning the appropriate type converted
-expression. Depends on the type conversion resolution operations."
-  ([path]
-     (let [steps (map vector path
-                             (rest path))]
-       #(apply e-> %1 (map (partial apply transformer-name)
-                     steps)))))
+   taking expressions as arguments and returning the appropriate type converted
+   expression. Depends on the type conversion resolution operations."
+  [path]
+  #(apply e-> %1
+         (map (partial apply transformer-name)
+              (map vector path
+                   (rest path)))))
 
 (defn convert
   "Special case of a type conversion for forcing an expression to a known type.
-Intended for use when assigning an int to a float variable and soforth."
-  ([typed-expr from to]
-     ((path->transformer (first (h/conversion-path @*type-graph* from to)))
-      typed-expr)))
+   Intended for use when assigning an int to a float variable and so forth.
+   returns a new expression being typed-expr"
+  [typed-expr from to]
+  (if-not (types-eq? to from)
+    (-> @*type-graph*
+        (h/conversion-path from to)
+        ((fn [x] (or (first x)
+                     (reverse (second x)))))
+        path->transformer
+        (apply typed-expr '()))
+    (if (or (string? typed-expr)
+            (number? typed-expr))
+      typed-expr
+      (with-meta
+        typed-expr
+        {:type from}))))
 
 (defn level
   "Named because it computes the \"level\" representation type for the two
-expressions, this function transforms both expression arguments to the type of
-the minimum common representation according to the type graph."
-  ([e0 t0 e1 t1]
-     (let [[c0 c1] (h/conversion-path @*type-graph* t0 t1)]
-       [((path->transformer c0) e0)
-        ((path->transformer c1) e1)])))
+   expressions, this function transforms both expression arguments to the type
+   of the minimum common representation according to the type graph. Note that
+   this function will _only_ convert to higher types"
+  [& exprs]
+  (if-not (reduce types-eq? exprs)
+    (map (fn [x y]
+           ((path->transformer x) y))
+         (->> exprs
+              (map (comp nameof typeof))
+              (apply h/conversion-path @*type-graph*))
+         exprs)
+    exprs))
 
 ;;------------------------------------------------------------------------------
 ;; Type matrix manipulation expressions
 (defmacro with-types
-  ([binding & forms]
-     `(binding [*type-graph* ~binding]
-        ~@forms)))
+  [binding & forms]
+  `(binding [*type-graph* ~binding]
+     ~@forms))
 
 (defn install-transformer!
-  ([from to entry]
-     (swap! *type-graph* graph/add-edges [from to])
-     (install! (assoc entry
-                 :name (transformer-name from to)))))
+  [from to entry]
+  (swap! *type-graph* graph/add-edges [from to])
+  (install! (assoc entry
+              :name (transformer-name from to))))

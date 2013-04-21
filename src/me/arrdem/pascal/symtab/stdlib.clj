@@ -1,39 +1,36 @@
 (ns me.arrdem.pascal.symtab.stdlib
-  (:require [me.arrdem.compiler.symtab :refer [install!]]))
-
-(defn Function [name ret-type & arg-types]
-  {:name     name
-   :type     :fn
-   :arity    (count arg-types)
-   :type/ret ret-type
-   :type/arg arg-types})
+  (:require [me.arrdem.compiler.symbols :refer [->FunctionType]]
+            [me.arrdem.compiler.symtab :refer [install!]]))
 
 (defn init!
   "Function of no arguments, its sole purpose is to side-effect the symbol
 table to install the basic Pascal functions."
-  ([]
-     (doseq [f [
-                (Function "exp"      "real"    "real")
-                (Function "trexp"    "real"    "real")
-                (Function "sin"      "real"    "real")
-                (Function "cos"      "real"    "real")
-                (Function "trsin"    "real"    "real")
-                (Function "sqrt"     "real"    "real")
-                (Function "round"    "real"    "real")
-                (Function "iround"   "integer" "real")
-                (Function "ord"      "integer" "char")
-                (Function "trnew"    "integer" "integer")
-                (Function "write"    nil       "char")
-                (Function "writeln"  nil       "charsym")
-                (Function "writef"   nil       "real")
-                (Function "writelnf" nil       "real")
-                (Function "writei"   nil       "integer")
-                (Function "writelni" nil       "integer")
-                (Function "read"     nil       )
-                (Function "readln"   nil       )
-                (Function "eof"      "boolean" )
-                (Function "ctoi"     "integer" "char")
-                (Function "btoi"     "integer" "boolean")
-                (Function "itof"     "real"    "integer")
-                ]]
-       (install! f))))
+  []
+  (println "; installing standard library...")
+  ;; install the standard library
+  (doseq [f [
+             ["exp" #{"real"} "real"]
+             ["trexp" #{"real"} "real"]
+             ["sin" #{"real"} "real"]
+             ["cos" #{"real"} "real"]
+             ["trsin" #{"real"} "real"]
+             ["sqrt" #{"real"} "real"]
+             ["round" #{"real"} "real"]
+             ["iround" #{"real"} "integer"]
+             ["ord" #{"char"} "integer"]
+             ["trnew" #{"integer"} "integer"]
+             ["write" #{"char"} nil]
+             ["writeln" #{"char"} nil]
+             ["writef" #{"real"} nil]
+             ["writelnf" #{"real"} nil]
+             ["writei" #{"integer"} nil]
+             ["writelni" #{"integer"} nil]
+             ["read" #{} nil]
+             ["readln" #{} nil]
+             ["eof" #{} "boolean"]
+             ["ctoi" #{"char"} "integer"]
+             ["btoi" #{"boolean"} "integer"]
+             ["itof" #{"integer"} "real"]
+             ]]
+    (install! (apply ->FunctionType f)))
+  (println "; standard library installed!"))

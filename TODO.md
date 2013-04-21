@@ -1,24 +1,30 @@
 # TODO list
-## due today
-1. parse an enum declaration and create the appropriate type entry with values
-   - register the enum as a type
-   - register the enum's values as vars in their own right with integer values
-   - register those values with type equal to that of the enum parent
-2. parse a pointer op and be able to generate the appropriate (^ <foo>) deref group
-3. parse an array and be able to construct the appropriate type table entry
-   for it. This still needs some thought but I think that the idea of
-   describing the type by actually declaring gensym types for each sub-array
-   makes a lot of sense and could make life really easy.
+- Tweak the nameof protocol so that for all objects it will default to :qname
+  over .name. this should make symbol table & code output more consistent.
+- Test the symbol table make sure that vals are installing with qnames
+- Make sure that the pprinter is doing its job, it seems to be dropping all
+  type symbols probably due to the way that I handle map based records.
+- Update the namespace pprinter to actually use pprint?
+- Migrate me.arrdem.pascal.util into me.arrdem.pascal.lexer or .tokens?
+- Clean up symbol_conversions.clj and sybols.clj into some more reasonable and
+  modular structure?
+- Rework me.arrdem.compiler.symtab to operate _either_ on a _rebindable_
+  symbol or an argument state map ala congomongo.
+- Bring the test suite up to date because it's waaay behind.
+- Add absolute (static heap) allocation for VAR variables. Be able to compute 
+  the heap address of a value via (addrof).
 
 ## back burner
-- Figure out _when_ to invoke macros, and make it so. Last thing done before the
-  AST is yielded by the AST generation pipeline perhaps?
+- improve the output of the symbol table printer so as to be... reasonable
+  -- make sure that for records it shows the offsets, sizes & fields
+
+- move the "standard" type graph into the standard library symbol table code
+
+- take another look at the lexington toolkit, see if there's a way to
+  associate line & column metadata with tokens so that I can print information
+  about the failure point rather than the failure and a bunch of garbage.
 
 - Add tests for the macro system
-
-- Note the convention that all AST expression heads are assumed to be macros, so
-  even funcall which is really just a special case macro expanding into an
-  argument pushing and popping function call.
 
 - Add a way to determine whether a type conversion is required and perform it if so
   -- it seems to me that the easiest thing to do would be to recur from the left, taking
@@ -35,27 +41,12 @@
         time, which shouldn't be hard as I've already finished all the type
         resolving code.
 
-- Rework the way that +, -, * and / generate in the IR, replacing them with
-  -- M+, M-, M* and M/, being macros which do type checking and argument type conversion before expanding to
-  -- float+ float- float* float/ int%
-  -- int+ int- int* int/ int%
-  -- This will be done at macro expansion time as part of type resolution. We
-     aren't there yet, don't stress this bit but keep in mind.
-
-- Add an "inlining" progn macro which attempts to eliminate nested progn groups
-  by inserting their contents inline. Will probably just be a reduce over the
-  body forms checking the first to see if it's 'progn and concat-ing rather
-  than cons-ing.
-
 - Add tests for the various grammar fragments
 
 - Add type table and structure alignment tests
 
 - Add a better pretty-printer now that it is possible to do a namespace based traversal of the symbol table.
 - Add a better pretty-printer for code in general.
-
-- Implement a way to dereference a pointer type
-- Implement the nested dereference operation required for struct and array access to work as expected.
 
 - Implement a debug library with selectable printing ala debug.h.
 

@@ -25,11 +25,6 @@
 ;;------------------------------------------------------------------------------
 ;; Grammar terminals & nonterminals which were not defined in the grammar
 
-;; (def identifier
-;;   (fnp/semantics
-;;    me.arrdem.pascal.tokens/identifier
-;;    s/identifier))
-
 (def unsigned-integer intnum)
 (def unsigned-real floatnum)
 
@@ -124,17 +119,27 @@
                const-assign)))
    s/constant-declaration))
 
-(def type-declaration
-  (fnp/alt
+(def typedecl
+  (fnp/semantics
    (fnp/conc identifier
              op_eq
-             ptype
-             delim_semi
-             type-declaration)
+             ptype)
+   s/install-type))
+
+(def typedecls
+  (fnp/semantics
+   (fnp/conc typedecl
+             (fnp/opt
+              (fnp/conc
+               delim_semi
+               typedecls)))
+   s/tail-cons))
+
+(def type-declaration
+  (fnp/semantics
    (fnp/conc tok_type
-             identifier
-             op_eq
-             ptype)))
+             typedecls)
+   s/type-declaration))
 
 (def vardecl
   (fnp/semantics
@@ -148,7 +153,7 @@
    (fnp/conc vardecl
              (fnp/opt
               (fnp/conc delim_semi vardecls)))
-   s/vardecls))
+   s/tail-cons))
 
 (def variable-declaration
   (fnp/semantics
@@ -177,31 +182,62 @@
 (def ptype
   (fnp/alt simple-type
            structured-type
-           (fnp/conc op_point typeid)))
+           (fnp/semantics
+            (fnp/conc op_point typeid)
+            s/point-type)))
 
-(def simple-type
-  (fnp/alt
-   (fnp/conc delim_lparen
-             identifier-list
-             delim_rparen)
+(def prange
+  (fnp/semantics
    (fnp/conc constant
              delim_dotdot
              constant)
+   s/install-range))
+
+(def penum
+  (fnp/semantics
+   (fnp/conc delim_lparen
+             identifier-list
+             delim_rparen)
+   s/install-enum))
+
+(def precord
+  (fnp/semantics
+   (fnp/conc tok_record field-list tok_end)
+   s/install-record))
+
+(def pref
+  (fnp/semantics
+   (fnp/conc op_point identifier)
+   s/install-reftype))
+
+(def simple-type
+  (fnp/alt
+   penum
+   prange
    typeid))
+
+(def array-type
+  (fnp/semantics
+   (fnp/conc tok_array delim_lbrack index-list delim_rbrack tok_of ptype)
+   s/install-arrtype))
 
 (def structured-type
   (fnp/alt
-   (fnp/conc tok_array delim_lbrack index-list delim_rbrack tok_of ptype)
-   (fnp/conc tok_record field-list tok_end)
+   array-type
+   precord
+   pref
    (fnp/conc tok_set tok_of simple-type)
    (fnp/conc tok_file tok_of ptype)
    (fnp/conc tok_packed structured-type)))
 
 (def index-list
-  (fnp/alt (fnp/conc simple-type
-                     delim_comma
-                     index-list)
-           simple-type))
+  (fnp/semantics
+   (fnp/conc simple-type
+             (fnp/opt
+              (fnp/conc
+               delim_comma
+               index-list)))
+   s/tail-cons))
 
 (def field-list
   (fnp/alt
@@ -210,20 +246,29 @@
    variant-part))
 
 (def fixed-part
-  (fnp/alt record-field
-           (fnp/conc fixed-part
-                     delim_semi
-                     record-field)))
+  (fnp/semantics
+   (fnp/conc record-field
+             (fnp/opt
+              (fnp/conc
+               delim_semi
+               fixed-part)))
+   s/tail-cons))
 
 (def record-field
-  (fnp/alt (fnp/conc fieldid-list
-                     delim_colon
-                     ptype)
-           fnp/emptiness))
+  (fnp/semantics
+   (fnp/conc fieldid-list
+             delim_colon
+             ptype)
+   s/record-field))
 
 (def fieldid-list
-  (fnp/alt (fnp/conc identifier delim_comma fieldid-list)
-           identifier))
+  (fnp/semantics
+   (fnp/conc identifier
+             (fnp/opt
+              (fnp/conc
+               delim_comma
+               fieldid-list)))
+   s/tail-cons))
 
 (def variant-part
   (fnp/conc tok_case
@@ -232,10 +277,13 @@
             variant-list))
 
 (def tag-field
-  (fnp/alt typeid
-           (fnp/conc identifier
-                     delim_colon
-                     typeid)))
+  (fnp/semantics
+   (fnp/conc identifier
+             (fnp/opt
+              (fnp/conc
+               delim_colon
+               typeid)))
+   s/tail-cons))
 
 (def variant-list
   (fnp/alt variant
@@ -318,7 +366,7 @@
    (fnp/conc statement
              (fnp/opt
               (fnp/conc delim_semi statement-list)))
-   s/cons-ht))
+   s/tail-cons))
 
 (def assignment
   (fnp/semantics
@@ -331,24 +379,30 @@
    s/statements))
 
 (def ifte
-  (fnp/conc tok_if
-            expression
-            tok_then
-            statement
-            tok_else
-            statement))
+  (fnp/semantics
+   (fnp/conc tok_if
+             expression
+             tok_then
+             statement
+             tok_else
+             statement)
+   s/ifte))
 
 (def ift
-  (fnp/conc tok_if
-            expression
-            tok_then
-            statement))
+  (fnp/semantics
+   (fnp/conc tok_if
+             expression
+             tok_then
+             statement)
+   s/ift))
 
 (def case-stmnt
   (fnp/conc tok_case expression tok_of case-list tok_end))
 
 (def while-stmnt
-  (fnp/conc tok_while expression tok_do statement))
+  (fnp/semantics
+   (fnp/conc tok_while expression tok_do statement)
+   s/while-stmnt))
 
 (def repeat-stmnt
   (fnp/semantics
@@ -386,14 +440,17 @@
    s/procinvoke))
 
 (def goto-stmnt
-  (fnp/conc tok_goto label))
+  (fnp/semantics
+   (fnp/conc tok_goto label)
+   s/goto-label))
 
 (def with-stmnt
   (fnp/conc tok_with record-variable-list tok_do statement))
 
 (def label-stmnt
-  (fnp/conc label delim_colon statement))
-
+  (fnp/semantics
+   (fnp/conc label delim_colon statement)
+   s/label-stmnt))
 ;;------------------------------------------------------------------------------
 ;; Statement v2.0
 
@@ -426,19 +483,31 @@
 
 (def var-postfix
   (fnp/alt
-   (fnp/conc delim_lbrack subscript-list delim_rbrack)
-   (fnp/conc op_dot fieldid)
-   (fnp/conc op_point)))
+   (fnp/semantics
+    (fnp/conc delim_lbrack subscript-list delim_rbrack)
+    s/var-index)
+   (fnp/semantics
+    (fnp/conc op_dot fieldid)
+    s/var-dot)
+   (fnp/semantics
+    op_point
+    s/var-point)))
+
+(def var-postfixes
+  (fnp/rep* var-postfix))
 
 (def variable
   (fnp/semantics
    (fnp/conc identifier
-             (fnp/rep* var-postfix))
+             var-postfixes)
    s/variable))
 
 (def subscript-list
-  (fnp/alt (fnp/conc expression delim_comma subscript-list)
-           expression))
+  (fnp/semantics
+   (fnp/conc expression
+            (fnp/opt
+             (fnp/conc delim_comma subscript-list)))
+   s/tail-cons))
 
 (def case-list
   (fnp/alt
@@ -515,7 +584,6 @@
 (def primary-expression
   (fnp/alt procinvoke
            string
-           tok_nil
            (fnp/conc delim_lbrack element-list delim_rbrack)
            (fnp/conc delim_lparen expression delim_rparen)
            variable
