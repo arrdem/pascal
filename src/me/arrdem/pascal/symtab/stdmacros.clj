@@ -17,7 +17,6 @@
     (list ':= t (makefuncall "new" (list (sizeof T))))))
 
 ;;------------------------------------------------------------------------------
-(defn write*)
 
 ;;------------------------------------------------------------------------------
 (defn- progn? [form]
@@ -121,7 +120,7 @@
    ensuring and soforth."
   []
   (println "; installing standard macros...")
-  (doseq [m [["new" p-new-macro]
+  (doseq [m [["new" new-macro]
              ["progn" progn-inliner]
              ["aref" aref-cleaner]
              ["+" addition-cleaner]
