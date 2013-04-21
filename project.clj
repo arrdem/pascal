@@ -1,7 +1,4 @@
-(defproject me.arrdem/pascal (->> "VERSION"
-                                  (slurp)
-                                  (replace {\newline ""})
-                                  (apply str))
+(defproject me.arrdem/pascal "0.3.0"
   :description "A Pascal lexer, parser and AST generator"
   :url "http://github.com/arrdem/pascal"
   :license {:name "Eclipse Public License"
