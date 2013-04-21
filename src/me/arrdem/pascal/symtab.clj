@@ -30,22 +30,40 @@ invocation per compile batch but here it is anyway."
      (reset! cst/*symns* '())
      (init!)))
 
-(def fmnt "%%-%ss : %%s")
+(def fmnt-0 "")
+(def fmnt-1 "")
 
-(defn pr-symtab
-  "Pretty-prints the core symbol table. Indended for debugging, may be migrated
-to compiler.symtab and linked here. Needs to be modified to print symbols in
-some sort of namespace derived order."
-  ([] (pr-symtab @cst/*symtab* '()))
-  ([tbl stack]
-     (doseq [[k v] tbl]
-       (when (string? k)
-         (let [indent (* 7 (inc (count stack)))
-               fmnt (format fmnt indent)
-               stack  (concat stack (list k))
-               vals (select-keys v [:value :type :value])]
-           (if-not (empty? vals)
-             (println (format fmnt (cst/render-ns stack)
-                              (pr-str vals))))
-           (when (map? v)
-             (pr-symtab v stack)))))))
+;; shitty-pprint is designed to produce output like this:
+;; :a
+;;     :b -> 3
+;;     :c -> 4
+;;     :d
+;;         :a -> 3
+;;         :b -> 4
+;;         :c -> 'foo
+
+(defn make-prefix [prefix str]
+  (if (= 0 (count prefix))
+    str
+    (concat prefix "/" str)))
+
+(defn shitty-pprint
+  [prefix map]
+  (let [indent (-> prefix count (repeat " ") ((partial apply str)))
+        {members true fields false} (group-by (comp map? second) map)]
+
+    (doseq [[k v] fields]
+      (println ";" indent k "=>" v))
+
+    (doseq [[k v] members]
+      (let [my-prefix (->> k
+                           str
+                           (make-prefix prefix)
+                           (apply str))]
+        (println "; " my-prefix)
+        (shitty-pprint my-prefix (-> v
+                                     (assoc :class (type v))))
+        (println ";")))))
+
+(defn pr-symtab []
+  (shitty-pprint "" @cst/*symtab*))
