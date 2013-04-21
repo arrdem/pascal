@@ -11,6 +11,8 @@
 - Rework me.arrdem.compiler.symtab to operate _either_ on a _rebindable_
   symbol or an argument state map ala congomongo.
 - Bring the test suite up to date because it's waaay behind.
+- Add absolute (static heap) allocation for VAR variables. Be able to compute 
+  the heap address of a value via (addrof).
 
 ## back burner
 - improve the output of the symbol table printer so as to be... reasonable
