@@ -17,7 +17,7 @@ easily accessed."
 (defn pr-line
   "Prints an 80 char wide dash line."
   ([]
-     (println (apply str (repeat 80 \-)))))
+     (println (apply str (cons "; " (repeat 78 \-))))))
 
 (defn build-ast
   "Wrapper around the grammar and the FNParse rule invocation to make throwing a
