@@ -6,15 +6,18 @@
             [me.arrdem.pascal.semantics :refer [binop]]))
 
 ;;------------------------------------------------------------------------------
-(defn p-new-macro
+(defn new-macro
   "A macro function which serves to boostrap the equivalent of a malloc call.
-Takes on argument: a type, and expands to a call to the trnew function which
-actually allocates memory at runtime."
+   Takes on argument: a type, and expands to a call to the trnew function which
+   actually allocates memory at runtime."
   [[t]]
   (let [T (search t)]
     (assert (not (nil? T)) (str "Failed to find type " t " in the symbol tbl"))
     (assert (not (string? T)) (str "got a string for " t " in the symbol tbl"))
-    (list ':= t (makefuncall "trnew" (list (sizeof T))))))
+    (list ':= t (makefuncall "new" (list (sizeof T))))))
+
+;;------------------------------------------------------------------------------
+(defn write*)
 
 ;;------------------------------------------------------------------------------
 (defn- progn? [form]
@@ -84,11 +87,16 @@ actually allocates memory at runtime."
 (def multiplication-cleaner
   (partial arith-cleaner identity (fn [x] 1) '*))
 
-(def subtraction-cleaner
-  (partial arith-cleaner next first '-))
+(defn subtraction-cleaner [forms]
+  (list '-
+        (first forms)
+        (addition-cleaner (rest forms))))
 
-(def division-cleaner
-  (partial arith-cleaner next first '/))
+(defn division-cleaner [forms]
+  (println "; [division-cleaner] running...")
+  (list '/
+        (first forms)
+        (multiplication-cleaner (rest forms))))
 
 ;;------------------------------------------------------------------------------
 (defn aref-cleaner
@@ -109,8 +117,8 @@ actually allocates memory at runtime."
 ;;------------------------------------------------------------------------------
 (defn init!
   "Function of no arguments, its sole purpose is to side-effect the symbol
-table and install the standard macros used for pre-code generation type
-ensuring and soforth."
+   table and install the standard macros used for pre-code generation type
+   ensuring and soforth."
   []
   (println "; installing standard macros...")
   (doseq [m [["new" p-new-macro]
