@@ -63,8 +63,8 @@ invocation per compile batch but here it is anyway."
     (doseq [[k v] fields]
       (println ";" indent k "=>" v))
 
-    (let [my-prefix (->> k str (make-prefix prefix) (apply str))]
-      (doseq [[k v] members]
+    (doseq [[k v] members]
+      (let [my-prefix (->> k str (make-prefix prefix) (apply str))]
         (println "; " my-prefix)
         (shitty-pprint my-prefix (-> v
                                      (assoc :class (type v))))
