@@ -4,7 +4,8 @@
             [me.arrdem.compiler.types :refer [->RecordType]]
             [me.arrdem.compiler.macros :refer [pmacroexpand macro?]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
-                                               search gensym! render-ns]]
+                                               search gensym!]]
+            [me.arrdem.compiler.namespace :refer [render-ns]]
             [me.arrdem.compiler.symbols :refer [->VariableType ->ArrayType
                                                 ->EnumType ->RecordEntry
                                                 ->PointerType ->ThinType

@@ -1,39 +1,23 @@
 (ns me.arrdem.pascal.symtab
   (:require [me.arrdem.compiler.symtab :as cst]
+            [me.arrdem.compiler.namespace :as cns]
             [me.arrdem.pascal.symtab.stdlib :as stdl]
             [me.arrdem.pascal.symtab.stdmacros :as stdm]
             [me.arrdem.pascal.symtab.stdtypes :as stdt]))
 
-(defn init!
-  "Installs the basic Pascal symbols and type conversions to the symbol table.
-May or may not handle types and macros as well, may or may not pass those off to
-type and macro specific initializers elsewhere."
-  ([]
-     (stdm/init!)
-     (stdl/init!)
-     (stdt/init!)))
-
-(defmacro with-p-symtab
+(defmacro with-symtab
   [& forms]
-  `(binding [cst/*symtab* (atom {})
-             cst/*symns* (atom (list))]
-     (init!)
-     ~@forms))
-
-(defn clear!
-  "Nukes the symbol table, replacing it with the Pascal basic table as defined
-above. Not sure why you would need this as the typical case is single program
-invocation per compile batch but here it is anyway."
-  ([]
-     (reset! cst/*symtab* {})
-     (reset! cst/*symns* '())
-     (init!)))
+  `(cst/with-symtab {}
+     (cns/with-namespace '()
+       (stdm/init!)
+       (stdl/init!)
+       (stdt/init!)
+       ~@forms)))
 
 (defn make-prefix [prefix str]
   (if (= 0 (count prefix))
     str
     (concat prefix "/" str)))
-
 
 ;; shitty-pprint is designed to produce output like this:
 ;; ; :a
