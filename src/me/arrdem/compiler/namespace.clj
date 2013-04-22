@@ -1,10 +1,7 @@
-(ns me.arrdem.compiler.namespace)
+(ns me.arrdem.compiler.namespace
+  (:require [clojure.string :refer [split]]))
 
-;;------------------------------------------------------------------------------
-;; The namespace stack
-
-(def ^:dynamic *symns*
-  ""
+(def ^:dynamic *namespace*
   (atom '()))
 
 (defn descend
@@ -15,15 +12,8 @@
   (concat stack (list ns)))
 
 (defn ascend
-  ""
   [stack]
   (butlast stack))
-
-(defn reset-symns!
-  "Nukes the *symns* value restoring it to its base state. Usefull for testing,
-   multiple compile runs without restart."
-  []
-  (reset! *symns* (list)))
 
 (defn render-ns
   "Renders a ns stack to a prefix string for symbols."
@@ -34,6 +24,42 @@
     (first stack)))
 
 (defn decomp-ns
-  "Unrenders a namespace"
+  "Splits a namespace string into a namespace path"
   [name]
   (split name #"[\./]"))
+
+
+;;------------------------------------------------------------------------------
+;;------------------------------------------------------------------------------
+;; side-effectful wrapers around the namespace operations
+(defmacro with-namespace
+  [stack & body]
+  `(binding [*namespace* (atom '())]
+    ~@body))
+
+(defn set-namespace!
+  [stack]
+  (alter-var-root #'*namespace*
+                  (constantly (atom stack))))
+
+(defn namespace!
+  [& fns]
+  (with-namespace
+    (set-namespace! '())
+    (doseq [f fns]
+      (f))))
+
+(defn ascend! []
+  (swap! *namespace* ascend))
+
+(defn descend! [sub-ns]
+  (swap! *namespace* descend sub-ns))
+
+(defn get-ns []
+  @*namespace*)
+
+(defn reset-symns!
+  "Nukes the *symns* value restoring it to its base state. Usefull for testing,
+   multiple compile runs without restart."
+  []
+  (reset! *namespace* (list)))
