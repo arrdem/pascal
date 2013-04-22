@@ -15,18 +15,15 @@
 (def ^:dynamic *symtab*
   (atom {}))
 
-(defn gensym
+(defn pgensym
   "Generates a symbol name (string) which is guranteed by use of an
    incriminating counter to be unique to the current compile session. Optionally
    takes a string prefix for the generated name which does not effect the
    numeric part of the name. Returns a string being the prefix argument or
    \"G__\" followed by the string render of the gensym counter before it was
    incremented."
-  ([table] (gensym table "G__"))
-  ([table s] (-> table
-                 (update-in table [:gensym] ninc)
-                 :gensym
-                 ((partial str s)))))
+  ([table] (pgensym table "G__"))
+  ([table s] (str s (:gensym table))))
 
 (defn reset-gensym
   "Nukes the *symtab* gensym counter restoring it to its base state. Usefull for
@@ -38,9 +35,7 @@
   "Generates and returns an integer label, side-effecting the :label count of the
    *symtab* registry."
   [table]
-  (-> table
-      (update-in [:label] ninc)
-      (:label)))
+  (:label table))
 
 (defn reset-genlabel
   "Nukes the *symtab* genlabel counter restoring it to its base state. Usefull for
@@ -64,9 +59,6 @@
   [table ns-stack sym]
   (let [qualified-sym (concat ns-stack (list sym))
         rstack (rest ns-stack)]
-    (println "; [search-symtab]" table)
-    (println "; [search-symtab] -" qualified-sym)
-
     (or (get-in table qualified-sym)
         (if (empty? ns-stack)
           nil
@@ -109,3 +101,12 @@ stack-search before returning a failure result."
 (defn install! [symbol]
   (swap! *symtab* symbol-install (get-ns) symbol)
   (search (nameof symbol)))
+
+(defn gensym! [& arg?]
+  (swap! *symtab* update-in [:gensym] ninc)
+  (apply pgensym @*symtab* arg?))
+
+(defn genlabel! []
+  (let [l (genlabel @*symtab*)]
+    (swap! *symtab* update-in [:label] ninc)
+    l))
