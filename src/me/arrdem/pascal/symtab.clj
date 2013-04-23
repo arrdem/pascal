@@ -5,13 +5,16 @@
             [me.arrdem.pascal.symtab.stdmacros :as stdm]
             [me.arrdem.pascal.symtab.stdtypes :as stdt]))
 
+(defn init! []
+  (do (stdm/init!)
+       (stdl/init!)
+       (stdt/init!)))
+
 (defmacro with-symtab
   [& forms]
   `(cst/with-symtab {}
      (cns/with-namespace '()
-       (stdm/init!)
-       (stdl/init!)
-       (stdt/init!)
+       (init!)
        ~@forms)))
 
 (defn make-prefix [prefix str]
