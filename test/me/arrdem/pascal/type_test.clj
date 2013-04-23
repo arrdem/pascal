@@ -58,15 +58,17 @@
                #(println "LEFTOVER: " %2)
                {:remainder (pascal "(red, white, blue)")})]
       (is (= true
-             (instance? me.arrdem.compiler.symbols.EnumType res))
+             (instance? me.arrdem.compiler.symbols.EnumType
+                        (search res)))
           "Is the result an enum?")
       (doseq [m (keys (fields res))]
-        (let [m (search m)]
+        (let [v (search m)]
           (is (= true
-                 (instance? me.arrdem.compiler.symbols.VariableType m))
+                 (instance? me.arrdem.compiler.symbols.VariableType v))
               "Is the enum value installed as its own symbol?")
           (is (= true
-                 (instance? me.arrdem.compiler.symbols.EnumType (typeof m)))
+                 (instance? me.arrdem.compiler.symbols.EnumType
+                            (search (typeof v))))
               "Is the installed value clearly part of the enum structure?"))))))
 
 (deftest thintype-invisibility-test
