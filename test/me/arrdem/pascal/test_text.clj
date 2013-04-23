@@ -18,9 +18,6 @@
    :symbols [{:type pint :qname "graph1/i"}
              {:type pint :qname "graph1/lim"}]})
 
-;;------------------------------------------------------------------------------
-;; future test cases
-
 (def graph1-pas
   {:text (slurp "test/me/arrdem/pascal/cases/graph1.pas")
    :ast (read-string (slurp "test/me/arrdem/pascal/cases/graph1.tree"))
