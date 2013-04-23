@@ -187,6 +187,8 @@
   me.arrdem.compiler.IInvokable
     (arity [self] (map count (.arity-and-type-set self)))
     (valid-invokation? [self args]
-      (contains? (.arity-and-type-set self)
-                 args))
+      (if (contains? (.arity-and-type-set self) -1)
+        true
+        (contains? (.arity-and-type-set self)
+                   args)))
     (return-type [self] (.ret-type self)))
