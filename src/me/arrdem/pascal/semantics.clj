@@ -249,14 +249,14 @@
                               (assoc :sym new-state)
                               (update-in [:ops] conj expr))))
                       {:sym self} postfixes)]
-      (assert search)
+      (assert self)
       ;; (println "; [variable] " id)
       ;; (println "; [variable] " (:ops res))
       (if-not (empty? postfixes)
         (with-meta
-          (apply e-> id (reverse (:ops res)))
+          (apply e-> (nameof self) (reverse (:ops res)))
           {:type (:sym res)})
-        id))))
+        (nameof self)))))
 
 ;;------------------------------------------------------------------------------
 ;; Arithmetic expressions...
