@@ -1,7 +1,46 @@
-; installing standard macros...
-; standard macros installed!
-; installing standard library...
-; standard library installed!
-; installing standard types...
-; standard types installed!
-; dropping into program graph1
+(program
+  "graph1"
+  (progn "output")
+  (comment
+    "got constant decl group:"
+    "graph1/d"
+    "graph1/s"
+    "graph1/h"
+    "graph1/c"
+    "graph1/lim")
+  (comment
+    "defined variables"
+    "graph1/x"
+    "graph1/y"
+    "graph1/i"
+    "graph1/n")
+  (progn
+    (progn
+      (label 1)
+      (:= "graph1/i" 0)
+      (if (<= "graph1/i" "graph1/lim")
+        (progn
+          (progn
+            (:= "graph1/x" (* "graph1/d" (integer->real "graph1/i")))
+            (:=
+              "graph1/y"
+              (*
+                (funcall "exp" (* (integer->real -1) "graph1/x"))
+                (funcall "sin" (* "graph1/c" "graph1/x"))))
+            (:=
+              "graph1/n"
+              (real->integer
+                (+
+                  (funcall
+                    "round"
+                    (* (integer->real "graph1/s") "graph1/y"))
+                  (integer->real "graph1/h"))))
+            (progn
+              (label 0)
+              (progn
+                (funcall "write" "graph1/__str_0")
+                (:= "graph1/n" (- "graph1/n" 1)))
+              (if (not (= "graph1/n" 0)) (goto 0)))
+            (funcall "writeln" "graph1/__str_1"))
+          (:= "graph1/i" (+ "graph1/i" 1))
+          (goto 1))))))

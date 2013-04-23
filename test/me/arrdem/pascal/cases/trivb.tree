@@ -1,10 +1,3 @@
-; installing standard macros...
-; standard macros installed!
-; installing standard library...
-; standard library installed!
-; installing standard types...
-; standard types installed!
-; dropping into program graph1
 (program
   "graph1"
   (progn "output")
@@ -19,7 +12,3 @@
           (funcall "writeln" "graph1/__str_0")
           (:= "graph1/i" (+ "graph1/i" 1))
           (goto 0))))))
-; ------------------------------------------------------------------------------
-;  :gensym => 0
-;  :label => 0
-;  sqrt
