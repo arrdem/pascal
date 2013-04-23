@@ -189,7 +189,7 @@
   (doseq [v varseq]
     (let [v (->VariableType v (nameof type) nil)]
       (install! v)))
-  (map nameof varseq))
+  (map (comp nameof search) varseq))
 
 (defn variable-declaration
   "Invoked to generate the comment group for variable declaration parts"
