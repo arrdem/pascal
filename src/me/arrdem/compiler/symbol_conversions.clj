@@ -5,35 +5,50 @@
             [me.arrdem.compiler.symtab :refer [search]]))
 
 ;;------------------------------------------------------------------------------
+;; provide most interfaces over strings for ease of use..
+
+(extend-type java.lang.String
+  me.arrdem.compiler/ISymbol
+    (typeof [self] (typeof (search self)))
+    (nameof [self] self)
+    (sizeof [self] (sizeof (search self)))
+    (addrof [self] nil)
+
+  me.arrdem.compiler/IPointer
+    (reftype [self]
+      (let [refname (nameof (typeof self))]
+        (assert (= \^ (first refname)))
+        (apply str (rest refname))))
+    (follow [self] (search (reftype self)))
+
+  me.arrdem.compiler/IIndexable
+    (field-offset [self field] (field-offset (search self) field))
+    (fields [self] (fields (search self)))
+
+  me.arrdem.compiler/IValued
+    (valueof [self] (valueof (search self))))
+
+;;------------------------------------------------------------------------------
 ;; Extensions for Clojure "primitives" of the compiler record protocols
 
 (extend-protocol me.arrdem.compiler/ISymbol
   clojure.lang.PersistentArrayMap
     (typeof [self] (:type self))
     (nameof [self] (or (:qname self)
-                       (:name self)))
+                       (:name self)
+                       (nameof (typeof self))))
     (sizeof [self] (or (:size self)
-                       (:size (typeof self))))
+                       (sizeof (typeof self))))
     (addrof  [self] (:address self))
 
   clojure.lang.PersistentHashMap
     (typeof [self] (:type self))
-    (nameof [self] (or (:name self)
+    (nameof [self] (or (:qname self)
+                       (:name self)
                        (nameof (typeof self))))
-    (sizeof [self] (:size (typeof self)))
+    (sizeof [self] (or (:size self)
+                       (sizeof (typeof self))))
     (addrof [self] (:address self))
-
-  String
-    (typeof [self] (typeof (search self)))
-    (nameof [self] self)
-    (sizeof [self] (sizeof (search self)))
-    (addrof [self] nil)
-
-  java.lang.String
-    (typeof [self] (typeof (search self)))
-    (nameof [self] self)
-    (sizeof [self] (sizeof (search self)))
-    (addrof [self] nil)
 
   Long
     (typeof [self] "integer")
@@ -64,20 +79,3 @@
     (nameof [self] (nameof (meta self)))
     (sizeof [self] (sizeof (meta self)))
     (addrof [self] nil))
-
-(extend-protocol me.arrdem.compiler/IPointer
-  String
-    (reftype [self]
-      (let [refname (nameof (typeof self))]
-        (assert (= \^ (first refname)))
-        (apply str (rest refname))))
-    (follow [self] (search (reftype self))))
-
-(extend-protocol me.arrdem.compiler/IIndexable
-  String
-    (field-offset [self field] (field-offset (search self) field))
-    (fields [self] (fields (search self))))
-
-(extend-protocol me.arrdem.compiler/IValued
-  String
-    (valueof [self] (valueof (search self))))
