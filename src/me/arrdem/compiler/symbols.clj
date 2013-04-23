@@ -175,11 +175,6 @@
 
 ;;------------------------------------------------------------------------------
 ;;Function representation
-(defprotocol IInvokable
-  (arity [self] "Returns the arity of the callable record")
-  (valid-invokation? [self arg-type-list]
-    "Tests an argument type sequence for arity and type")
-  (return-type [self] "Returns the return type of the callable record"))
 
 (defrecord FunctionType [name arity-and-type-set ret-type]
   me.arrdem.compiler.ISymbol
@@ -189,7 +184,7 @@
     (addrof [self] nil)
   me.arrdem.compiler.IPPrinted
     (toString [self] (.name self))
-  IInvokable
+  me.arrdem.compiler.IInvokable
     (arity [self] (map count (.arity-and-type-set self)))
     (valid-invokation? [self args]
       (contains? (.arity-and-type-set self)
