@@ -144,3 +144,4 @@ multiple compile runs without restart."
    (map? obj) (m-search symtab (nameof obj))))
 
 (def install! (partial m-install! symtab))
+(defn ->qname [str] (render-ns (concat @symns (list str))))
