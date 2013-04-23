@@ -1,6 +1,7 @@
 (ns me.arrdem.pascal.semantics
   (:require [me.arrdem.compiler :refer [nameof typeof sizeof fields
-                                        valueof follow field-offset addrof]]
+                                        valueof follow field-offset addrof
+                                        return-type valid-invokation?]]
             [me.arrdem.compiler.types :refer [->RecordType]]
             [me.arrdem.compiler.macros :refer [pmacroexpand macro?]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
@@ -357,7 +358,13 @@
   (if (macro? id)
     (concat (list (nameof id))
             params)
-    (makefuncall id params)))
+    (do
+      (assert (valid-invokation? (search id)
+                                 (apply list
+                                        (map typeof params))))
+      (with-meta
+        (makefuncall id params)
+        {:type (return-type (search id))}))))
 
 (defn statements
   [[_0 stmnts _1]]

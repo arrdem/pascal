@@ -19,3 +19,9 @@
 
 (defprotocol IPPrinted
   (toString [_] "Pretty printing for the TA's benefit"))
+
+(defprotocol IInvokable
+  (arity [self] "Returns the arity of the callable record")
+  (valid-invokation? [self arg-type-list]
+    "Tests an argument type sequence for arity and type")
+  (return-type [self] "Returns the return type of the callable record"))
