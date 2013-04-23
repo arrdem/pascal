@@ -1,16 +1,14 @@
 (ns me.arrdem.pascal.type-test
   (:require [clojure.test :refer :all]
+            [me.arrdem.compiler :refer [nameof typeof fields]]
             [me.arrdem.compiler.symtab :refer [search install!]]
-            [me.arrdem.compiler.symbols :refer [nameof typeof fields]]
             [me.arrdem.pascal :refer [process-string build-ast]]
-            [me.arrdem.pascal.symtab :refer [init! clear!]]
             [me.arrdem.pascal.lexer :refer [pascal]]
+            [me.arrdem.pascal.symtab :refer [with-symtab clear!]]
             [name.choi.joshua.fnparse :as fnp]))
 
 (deftest pointer-def-case
-  (binding [me.arrdem.compiler.symtab/*symtab* (atom {})]
-    (clear!)
-    (install! {:name "^foo" :type "integer"})
+  (with-symtab
     (let [res (-> (fnp/rule-match
                    me.arrdem.pascal.grammar/variable-declaration
                    #(println "FAILED: " %)
@@ -25,9 +23,8 @@
               "Is the installed really installed?"))))))
 
 (deftest simple-record-def-case
-  (binding [me.arrdem.compiler.symtab/*symtab* (atom {})]
-    (clear!)
-    (let [int (search "integer")
+  (with-symtab
+    (let [int "integer"
           res (name.choi.joshua.fnparse/rule-match
                    me.arrdem.pascal.grammar/variable-declaration
                    prn prn
@@ -46,7 +43,7 @@
         (is (= true
                (instance? me.arrdem.compiler.symbols.VariableType r))
             "Did the record install at all?")
-        (is (= "record__0"
+        (is (= "__record_0"
                (nameof (typeof r)))
             "Did the record install as a gensym named record?")
         (is (= #{"y" "h"}
@@ -54,8 +51,7 @@
             "Did the record get the correct fields?")))))
 
 (deftest enum-def-case
-  (binding [me.arrdem.compiler.symtab/*symtab* (atom {})]
-    (clear!)
+  (with-symtab
     (let [res (fnp/rule-match
                me.arrdem.pascal.grammar/ptype
                #(println "FAILED: " %)
@@ -74,7 +70,7 @@
               "Is the installed value clearly part of the enum structure?"))))))
 
 (deftest thintype-invisibility-test
-  (binding [me.arrdem.compiler.symtab/*symtab* (atom {})]
+  (with-symtab
     (let [res1 (do (clear!)
                    (fnp/rule-match
                     me.arrdem.pascal.grammar/ptype
