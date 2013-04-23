@@ -188,5 +188,5 @@
     (arity [self] (map count (.arity-and-type-set self)))
     (valid-invokation? [self args]
       (contains? (.arity-and-type-set self)
-                 (map typeof args)))
+                 args))
     (return-type [self] (.ret-type self)))
