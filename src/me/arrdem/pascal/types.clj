@@ -56,10 +56,14 @@
    taking expressions as arguments and returning the appropriate type converted
    expression. Depends on the type conversion resolution operations."
   [path]
-  #(apply e-> %1
-         (map (partial apply transformer-name)
-              (map vector path
-                   (rest path)))))
+  #(let [v (apply e-> %1
+                  (map (partial apply transformer-name)
+                       (map vector
+                            path
+                            (rest path))))]
+     (if (list? v)
+       (with-meta v {:type (last path)})
+       v)))
 
 (defn convert
   "Special case of a type conversion for forcing an expression to a known type.
@@ -78,7 +82,7 @@
       typed-expr
       (with-meta
         typed-expr
-        {:type from}))))
+        {:type to}))))
 
 (defn level
   "Named because it computes the \"level\" representation type for the two
