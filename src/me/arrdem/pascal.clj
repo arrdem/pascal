@@ -36,7 +36,6 @@ token sequence at the grammar stack easy."
   "The only valid arguments are targeted files. If there are no targeted files
 then decomp will target stdin as its token source."
   ([& args]
-     (clear!)
      (if-not (empty? args)
        (doseq [f args]
          (with-symtab
