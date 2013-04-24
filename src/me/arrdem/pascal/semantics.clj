@@ -223,7 +223,7 @@
     (assert (not (nil? (follow obj))))
     (let [res (typeof (follow obj))]
       ;; (println "; [var-point] " (nameof obj) " is " res)
-      (list (list (symbol "^"))
+      (list (list 'deref)
             res))))
 
 (defn- var-compute-index [field type subscript]
