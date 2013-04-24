@@ -13,21 +13,17 @@ type and macro specific initializers elsewhere."
      (stdl/init!)
      (stdt/init!)))
 
-(defmacro with-p-symtab
-  [& forms]
-  `(binding [cst/*symtab* (atom {})
-             cst/*symns* (atom (list))]
-     (init!)
-     ~@forms))
-
 (defn clear!
-  "Nukes the symbol table, replacing it with the Pascal basic table as defined
-above. Not sure why you would need this as the typical case is single program
-invocation per compile batch but here it is anyway."
+  "Nukes the symbol table."
   ([]
-     (reset! cst/*symtab* {})
-     (reset! cst/*symns* '())
-     (init!)))
+     (reset! cst/symtab {})
+     (reset! cst/symns '())))
+
+(defmacro with-symtab [& forms]
+  `(do (clear!)
+       (init!)
+       ~@forms
+       (clear!)))
 
 (defn make-prefix [prefix str]
   (if (= 0 (count prefix))
@@ -71,4 +67,4 @@ invocation per compile batch but here it is anyway."
         (println ";")))))
 
 (defn pr-symtab []
-  (shitty-pprint "" @cst/*symtab*))
+  (shitty-pprint "" @cst/symtab))

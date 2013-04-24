@@ -1,0 +1,73 @@
+(program
+  "graph1"
+  (progn "output")
+  (comment "found label declarations" "1492" "1776")
+  (comment
+    "got type definitions:"
+    "graph1/complex"
+    "graph1/color"
+    "graph1/pp"
+    "graph1/person")
+  (comment
+    "defined variables"
+    "graph1/c"
+    "graph1/d"
+    "graph1/i"
+    "graph1/sum"
+    "graph1/ac"
+    "graph1/aco"
+    "graph1/john"
+    "graph1/mary"
+    "graph1/fred"
+    "graph1/ptr"
+    "graph1/people")
+  (progn
+    (:= "graph1/john" (funcall "trnew" 8))
+    (:= "graph1/mary" (funcall "trnew" 8))
+    (:= "graph1/fred" (funcall "trnew" 8))
+    (:= (aref (deref "graph1/john") 32) "graph1/blue")
+    (:= (aref (deref "graph1/john") 0) 19)
+    (label 0)
+    (:= (aref (deref "graph1/john") 8) "graph1/mary")
+    (:= (aref (deref "graph1/john") 40) 40000.0)
+    (:= (aref (aref (deref "graph1/john") 16) 0) (integer->real 3))
+    (:= (aref (deref "graph1/mary") 0) 21)
+    (:= (aref (deref "graph1/mary") 8) "graph1/fred")
+    (label 1)
+    (:= (aref (deref "graph1/fred") 0) 20)
+    (:= (aref (deref "graph1/fred") 8) "nil")
+    (:=
+      (aref
+        (aref
+          (deref (aref (deref (aref (deref "graph1/john") 8)) 8))
+          16)
+        8)
+      4.5)
+    (:=
+      (aref (aref "graph1/ac" (+ 0 96)) 0)
+      (aref (deref "graph1/john") 40))
+    (:= "graph1/ptr" "graph1/john")
+    (:= "graph1/sum" 0)
+    (:= "graph1/i" 1)
+    (label 2)
+    (if (<> "graph1/ptr" "nil")
+      (progn
+        (:=
+          "graph1/sum"
+          (+ "graph1/sum" (aref (deref "graph1/ptr") 0)))
+        (:=
+          (aref (aref "graph1/people" (+ 0 (* 48 "graph1/i"))) 0)
+          (aref (deref "graph1/ptr") 0))
+        (:=
+          (aref "graph1/aco" (+ (+ 0 (* 12 "graph1/i")) 4))
+          (aref (deref "graph1/john") 32))
+        (:= "graph1/ptr" (aref (deref "graph1/ptr") 8))
+        (:= "graph1/i" (+ "graph1/i" 1))
+        (goto 2)))
+    (funcall "write" "graph1/__str_13")
+    (funcall "writeln" "graph1/i")
+    (funcall "write" "graph1/__str_14")
+    (funcall "writeln" "graph1/sum")
+    (funcall "write" "graph1/__str_15")
+    (funcall "writeln" (aref (aref (deref "graph1/fred") 16) 8))
+    (if (< "graph1/sum" 3) (goto 1))))

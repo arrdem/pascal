@@ -2,21 +2,10 @@
   (:require [clojure.string :refer [split]]
             [me.arrdem.compiler :refer [nameof]]))
 
-(def base_st
-  {
-;;------------------------------------------------------------------------------
-;; Values
-;; These are "magic" values which various parts of the compiler rely on.
-
-   :label  0 ;; counter used for label generation
-   :gensym 0 ;; counter shared by all symbol generation
-
-   })
-
 ;;------------------------------------------------------------------------------
 ;; The namespace stack
 
-(def ^:dynamic *symns*
+(def symns
   "Used to track the namespace levels above the current point of evaluation.
 An empty list signifies that we are operating at the \"top\" level where program
 forms and other such values live. It is here that the \"standard library\" lives.
@@ -33,23 +22,23 @@ is resolved, or the stack is empty."
   "Pushes the argument namespace onto the *symns* stack, altering how symbols are
 resolved until the *symns* stack is poped. Used for recuring into function
 and program definitions which may have local bindings."
-  [ns] (swap! *symns* concat (list ns)))
+  [ns] (swap! symns concat (list ns)))
 
 (defn ascend!
   "Pops the *synms* stack, taking any symbols defined in a nested ns out of
 scope. Invoked when returning from function and program definitions as they may
 contain symbol bindings."
-  [] (swap! *symns* butlast))
+  [] (swap! symns butlast))
 
 (defn reset-symns!
   "Nukes the *symns* value restoring it to its base state. Usefull for testing,
 multiple compile runs without restart."
-  ([] (reset! *symns* (list))))
+  ([] (reset! symns (list))))
 
 ;;------------------------------------------------------------------------------
 ;; The symbol table
 
-(def ^:dynamic *symtab*
+(def symtab
   "Used to track all symbols."
   (atom {}))
 
@@ -68,14 +57,14 @@ multiple compile runs without restart."
   ([] (gensym! "G__"))
   ([s] (str s
             (:gensym
-             (swap! *symtab*
+             (swap! symtab
                     update-in [:gensym] ninc)))))
 
 (defn reset-gensym!
   "Nukes the *symtab* gensym counter restoring it to its base state. Usefull for
    testing, multiple compile runs without restart."
   []
-  (swap! *symtab* assoc :gensym 0))
+  (swap! symtab assoc :gensym 0))
 
 
 (defn genlabel!
@@ -83,21 +72,21 @@ multiple compile runs without restart."
    *symtab* registry."
   []
   (:label
-   (swap! *symtab*
+   (swap! symtab
           update-in [:label] ninc)))
 
 (defn reset-genlabel!
   "Nukes the *symtab* genlabel counter restoring it to its base state. Usefull for
    testing, multiple compile runs without restart."
   []
-  (swap! *symtab* assoc :label 0))
+  (swap! symtab assoc :label 0))
 
 ;;------------------------------------------------------------------------------
 ;; Namespace stringification and destringification
 
 (defn render-ns
   "Renders the *symns* stack to a prefix string for symbols."
-  ([] (render-ns @*symns*))
+  ([] (render-ns @symns))
   ([stack]
      (if (< 1 (count stack))
        (str (apply str (interpose \. (butlast stack)))
@@ -118,7 +107,7 @@ multiple compile runs without restart."
   "Meta symbol installer. Takes a namespace structure and a record as arguments,
    and performs the appropriate swap! respecting the namespacing stack."
   [atom sym]
-  (let [path (concat @*symns* (list (nameof sym)))
+  (let [path (concat @symns (list (nameof sym)))
         sym (assoc sym :qname (render-ns path))]
     (swap! atom assoc-in path sym)
     sym))
@@ -144,14 +133,15 @@ multiple compile runs without restart."
   (let [stack (decomp-ns name)
         name  (last stack)
         stack (butlast stack)
-        stack (if (empty? stack) @*symns* stack)]
+        stack (if (empty? stack) @symns stack)]
     (stack-search atom name stack)))
 
 ;;------------------------------------------------------------------------------
 ;; The public symbol table searching routines
 (defn search [obj]
   (cond
-   (string? obj) (m-search *symtab* obj)
-   (map? obj) (m-search *symtab* (nameof obj))))
+   (string? obj) (m-search symtab obj)
+   (map? obj) (m-search symtab (nameof obj))))
 
-(def install! (partial m-install! *symtab*))
+(def install! (partial m-install! symtab))
+(defn ->qname [str] (render-ns (concat @symns (list str))))
