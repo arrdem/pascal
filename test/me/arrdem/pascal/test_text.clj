@@ -33,3 +33,8 @@
              {:type pint :qname "graph1/i"}
              {:type pint :qname "graph1/n"}
              ]})
+
+(def pasrec-pas
+  {:text (slurp "test/me/arrdem/pascal/cases/pasrec.pas")
+   :ast (read-string (slurp "test/me/arrdem/pascal/cases/pasrec.tree"))
+   :symbols []})

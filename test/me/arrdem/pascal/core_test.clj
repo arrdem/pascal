@@ -35,3 +35,4 @@
 (full-test-case triv-pas-test data/triv-pas)    ;; parser assignment 1
 (full-test-case trivb-pas-test data/trivb-pas)  ;; parser assignment 1
 (full-test-case graph1-pas-test data/graph1-pas) ;; parser assignment 2
+(full-test-case pasrec-pas-test data/pasrec-pas) ;; parser assignment 3
