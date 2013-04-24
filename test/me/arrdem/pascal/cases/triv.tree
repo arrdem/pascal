@@ -1,0 +1,5 @@
+(program
+  "graph1"
+  (progn "output")
+  (comment "defined variables" "graph1/i")
+  (progn (:= "graph1/i" 3)))
