@@ -33,8 +33,8 @@
     (['- nil nil]) 0
     (['/ nil nil]) 1
     (do
-      (println "; [binop] " e0 op e1)
-      (println "; [binop]" (nameof (typeof e0)) op (nameof (typeof e1)))
+      ;; (println "; [binop] " e0 op e1)
+      ;; (println "; [binop]" (nameof (typeof e0)) op (nameof (typeof e1)))
       (let [lvlval (level e0 e1)]
         (with-meta
           `(~op ~@lvlval)
@@ -240,7 +240,7 @@
                         (fields obj)
                         (next (fields obj))
                         subscripts)]
-      (println "; [var-index]" index-seq)
+      ;; (println "; [var-index]" index-seq)
       (list (partial-make-aref
              ;; TODO: rework this in terms of binop somehow..
              (reduce #(binop %1 '+ %2) 0
