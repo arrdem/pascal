@@ -145,7 +145,6 @@
    table and install the standard macros used for pre-code generation type
    ensuring and soforth."
   []
-  (println "; installing standard macros...")
   (doseq [m [["new" new-macro]
              ["progn" progn-inliner]
              ["aref" aref-cleaner]
