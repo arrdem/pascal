@@ -83,8 +83,11 @@
 (def addition-cleaner
   (partial arith-cleaner identity (fn [x] 0) '+))
 
-(def multiplication-cleaner
-  (partial arith-cleaner identity (fn [x] 1) '*))
+(defn multiplication-cleaner [forms]
+  (let [res (arith-cleaner identity (fn [x] 1) '* forms)]
+    (if (= 1 (second res))
+      (apply list '* (drop 2 res))
+      res)))
 
 (defn subtraction-cleaner [forms]
   (list '-
