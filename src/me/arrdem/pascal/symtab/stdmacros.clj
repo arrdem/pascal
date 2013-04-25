@@ -86,7 +86,9 @@
        expr
      (= c (second expr))
        (apply list op
-              (drop 2 expr))))
+              (drop 2 expr))
+     true
+       expr))
 
 
 (defn addition-cleaner [forms]
