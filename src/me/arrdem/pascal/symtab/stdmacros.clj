@@ -98,10 +98,8 @@
         (number? (first forms)))
      (/ (first forms) (second forms))
    true
-     (do (println "; [division-cleaner] running...")
-         (list '/
-               (first forms)
-               (multiplication-cleaner (rest forms))))))
+     (list '/ (first forms)
+              (multiplication-cleaner (rest forms)))))
 
 ;;------------------------------------------------------------------------------
 (defn aref-cleaner
