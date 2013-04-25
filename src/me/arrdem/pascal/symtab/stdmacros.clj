@@ -57,7 +57,7 @@
                    (cond
                     ;; strip nested additions
                     ;; note that the macro system will take care of the recursive
-                    ;; case for me here, I just need to perform one inlining
+                    ;; case for me here, I just need  to perform one inlining
                     ;; transform in order to have made progress
                     (and (arith? x)
                          (= op (first x)))
@@ -92,10 +92,16 @@
         (addition-cleaner (rest forms))))
 
 (defn division-cleaner [forms]
-  (println "; [division-cleaner] running...")
-  (list '/
-        (first forms)
-        (multiplication-cleaner (rest forms))))
+  (cond
+   (and (= 2 (count forms))
+        (not (list? (second forms)))
+        (number? (first forms)))
+     (/ (first forms) (second forms))
+   true
+     (do (println "; [division-cleaner] running...")
+         (list '/
+               (first forms)
+               (multiplication-cleaner (rest forms))))))
 
 ;;------------------------------------------------------------------------------
 (defn aref-cleaner
@@ -128,5 +134,6 @@
              ["-" subtraction-cleaner]
              ["/" division-cleaner]
              ]]
+    (println "; [stdmacros] installing" (first m))
     (install! (apply ->MacroType m)))
   (println "; standard macros installed!"))
