@@ -47,7 +47,6 @@
    (fnp/conc tok_program
              identifier)
    (fn [[_ id]]
-     (println "; dropping into program" id)
      (descend! id)
      [_ id])))
 

@@ -6,7 +6,6 @@
   "Function of no arguments, its sole purpose is to side-effect the symbol
 table to install the basic Pascal functions."
   []
-  (println "; installing standard library...")
   ;; install the standard library
   (doseq [f [
              ["exp" #{'("real")} "real"]
@@ -32,5 +31,4 @@ table to install the basic Pascal functions."
              ["btoi" #{'("boolean")} "integer"]
              ["itof" #{'("integer")} "real"]
              ]]
-    (install! (apply ->FunctionType f)))
-  (println "; standard library installed!"))
+    (install! (apply ->FunctionType f))))

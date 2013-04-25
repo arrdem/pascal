@@ -9,7 +9,6 @@
   "Function of no arguments which serves simply to populate the symbol table
    with the standard 'primitive' types which Pascal supports."
   []
-  (println "; installing standard types...")
   (doseq [t [;; Basic types
              ["integer" 4]
              ["char" 1]
@@ -29,6 +28,4 @@
   ;; create a nil type and a nil variable
   (let [niltype (->PrimitiveType "^niltype" 0)]
     (install! niltype)
-    (install! (->VariableType "nil" niltype 0)))
-
-  (println "; standard types installed!"))
+    (install! (->VariableType "nil" niltype 0))))

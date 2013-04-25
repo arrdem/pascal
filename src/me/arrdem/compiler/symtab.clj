@@ -96,7 +96,9 @@ multiple compile runs without restart."
 (defn decomp-ns
   "Unrenders a namespace"
   [name]
-  (split name #"[\./]"))
+  (if (re-matches #"[^/]+/.+" name)
+    (split name #"[\./]")
+    [name]))
 
 ;;------------------------------------------------------------------------------
 ;; Manipulation routines for the various symbol registries which this system
