@@ -80,29 +80,46 @@
          ((fn [x] (if (= 2 (count x)) (second x) x))))
     forms))
 
-(def addition-cleaner
-  (partial arith-cleaner identity (fn [x] 0) '+))
+(defn drop-const-prefix-maybe [c op expr]
+  (cond
+     (not (seq? expr))
+       expr
+     (= c (second expr))
+       (apply list op
+              (drop 2 expr))))
+
+
+(defn addition-cleaner [forms]
+  (->> forms
+       (arith-cleaner identity (fn [x] 0) '+)
+       (drop-const-prefix-maybe 0 '+)))
 
 (defn multiplication-cleaner [forms]
-  (let [res (arith-cleaner identity (fn [x] 1) '* forms)]
-    (if (= 1 (second res))
-      (apply list '* (drop 2 res))
-      res)))
+  (->> forms
+       (arith-cleaner identity (fn [x] 1) '*)
+       (drop-const-prefix-maybe 1 '*)))
+
+(defn eval-expr-maybe [fn vals]
+  (if (every? number? vals)
+    (apply fn vals)
+    vals))
+
+(defn apply-prefix-maybe [prefix vals]
+  (if (seq? vals)
+    (cons prefix vals)
+    vals))
 
 (defn subtraction-cleaner [forms]
-  (list '-
-        (first forms)
-        (addition-cleaner (rest forms))))
+  (->> (list (first forms)
+             (addition-cleaner (rest forms)))
+       (eval-expr-maybe -)
+       (apply-prefix-maybe '-)))
 
 (defn division-cleaner [forms]
-  (cond
-   (and (= 2 (count forms))
-        (not (list? (second forms)))
-        (number? (first forms)))
-     (/ (first forms) (second forms))
-   true
-     (list '/ (first forms)
-              (multiplication-cleaner (rest forms)))))
+  (->> (list (first forms)
+             (multiplication-cleaner (rest forms)))
+       (eval-expr-maybe /)
+       (apply-prefix-maybe '/)))
 
 ;;------------------------------------------------------------------------------
 (defn aref-cleaner
