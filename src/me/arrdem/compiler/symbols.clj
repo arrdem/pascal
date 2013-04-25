@@ -49,7 +49,7 @@
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
   me.arrdem.compiler.IPPrinted
-    (toString [self] (.name self)))
+    (toString [self] (nameof self)))
 
 (defrecord PointerType [name size-field ref]
   me.arrdem.compiler.ISymbol
@@ -58,7 +58,7 @@
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
   me.arrdem.compiler.IPPrinted
-    (toString [self] (.name self))
+    (toString [self] (nameof self))
   me.arrdem.compiler.IPointer
     (reftype [self] (typeof (.ref self)))
     (follow [self] (.ref self)))
@@ -66,11 +66,12 @@
 (defrecord ArrayType [name size-field children]
   me.arrdem.compiler.ISymbol
     (typeof [self] self)
-    (nameof [self] (.name self))
+    (nameof [self] (or (:qname self)
+                       (.name self)))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
   me.arrdem.compiler.IPPrinted
-    (toString [self] (.name self))
+    (toString [self] (nameof self))
   me.arrdem.compiler.IIndexable
     (field-offset [self path]
       (->> path
@@ -82,10 +83,11 @@
 
 ;;------------------------------------------------------------------------------
 ;; Variable representation
-(defrecord VariableType [qname type val]
+(defrecord VariableType [name type val]
   me.arrdem.compiler.ISymbol
     (typeof [self] (.type self))
-    (nameof [self] (.qname self))
+    (nameof [self] (or (:qname self)
+                       (.name self)))
     (sizeof [self] (sizeof (typeof self)))
     (addrof [self] nil)
   me.arrdem.compiler.IIndexable
@@ -97,7 +99,7 @@
     (reftype [self] (typeof (.type self)))
     (follow [self] (follow (.type self)))
   me.arrdem.compiler.IPPrinted
-    (toString [self] (.qname self))
+    (toString [self] (nameof self))
   me.arrdem.compiler.IValued
     (valueof [self] (.val self)))
 
@@ -114,11 +116,12 @@
 (defrecord RecordType [name members size-field]
   me.arrdem.compiler.ISymbol
     (typeof [self] self)
-    (nameof [self] (.name self))
+    (nameof [self] (or (:qname self)
+                       (.name self)))
     (sizeof [self] (.size-field self))
     (addrof [self] nil)
   me.arrdem.compiler.IPPrinted
-    (toString [self] (.name self))
+    (toString [self] (nameof self))
   me.arrdem.compiler.IIndexable
     (field-offset [self name]
       (.offset (get (.members self) name)))
@@ -142,11 +145,12 @@
 (defrecord EnumType [name members val-type]
   me.arrdem.compiler.ISymbol
     (typeof [self] self)
-    (nameof [self] (.name self))
+    (nameof [self] (or (:qname self)
+                       (.name self)))
     (sizeof [self] (sizeof (.val-type self)))
     (addrof [self] nil)
   me.arrdem.compiler.IPPrinted
-    (toString [self] (.name self))
+    (toString [self] (nameof self))
   me.arrdem.compiler.IValued
     (valueof [self] (keys (.members self)))
   me.arrdem.compiler.IIndexable
@@ -154,10 +158,11 @@
       (.indexOf (apply list (keys (.members self))) name))
     (fields [self] (.members self)))
 
-(defrecord ThinType [qname type]
+(defrecord ThinType [name type]
   me.arrdem.compiler.ISymbol
     (typeof [self] (typeof (.type self)))
-    (nameof [self] (.qname self))
+    (nameof [self] (or (:qname self)
+                       (.name self)))
     (sizeof [self] (sizeof (typeof self)))
     (addrof [self] nil)
   me.arrdem.compiler.IIndexable
@@ -171,15 +176,10 @@
   me.arrdem.compiler.IValued
     (valueof [self] (valueof (.type self)))
   me.arrdem.compiler.IPPrinted
-    (toString [self] (.qname self)))
+    (toString [self] (nameof self)))
 
 ;;------------------------------------------------------------------------------
 ;;Function representation
-(defprotocol IInvokable
-  (arity [self] "Returns the arity of the callable record")
-  (valid-invokation? [self arg-type-list]
-    "Tests an argument type sequence for arity and type")
-  (return-type [self] "Returns the return type of the callable record"))
 
 (defrecord FunctionType [name arity-and-type-set ret-type]
   me.arrdem.compiler.ISymbol
@@ -189,9 +189,11 @@
     (addrof [self] nil)
   me.arrdem.compiler.IPPrinted
     (toString [self] (.name self))
-  IInvokable
+  me.arrdem.compiler.IInvokable
     (arity [self] (map count (.arity-and-type-set self)))
     (valid-invokation? [self args]
-      (contains? (.arity-and-type-set self)
-                 (map typeof args)))
+      (if (contains? (.arity-and-type-set self) -1)
+        true
+        (contains? (.arity-and-type-set self)
+                   args)))
     (return-type [self] (.ret-type self)))

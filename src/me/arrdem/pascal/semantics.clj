@@ -1,10 +1,12 @@
 (ns me.arrdem.pascal.semantics
   (:require [me.arrdem.compiler :refer [nameof typeof sizeof fields
-                                        valueof follow field-offset addrof]]
+                                        valueof follow field-offset addrof
+                                        return-type valid-invokation?]]
             [me.arrdem.compiler.types :refer [->RecordType]]
             [me.arrdem.compiler.macros :refer [pmacroexpand macro?]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
-                                               search gensym! render-ns]]
+                                               search gensym! render-ns
+                                               ->qname]]
             [me.arrdem.compiler.symbols :refer [->VariableType ->ArrayType
                                                 ->EnumType ->RecordEntry
                                                 ->PointerType ->ThinType
@@ -25,15 +27,21 @@
    Serves as a portal through which all arithmetic must pass and thus provides
    almost all required type conversion silently."
   [e0 op e1]
-     ;; (println "; [binop] " e0 op e1)
-     ;; (println "; [binop]" (nameof (typeof e0)) op (nameof (typeof e1)))
-     (let [lvlval (level e0 e1)]
-       (with-meta
-         `(~op ~@lvlval)
-         {:type (->> lvlval
-                     (remove nil?)
-                     (map typeof)
-                     first)})))
+  (case [op e0 e1]
+    (['+ nil nil]) 1
+    (['* nil nil]) 1
+    (['- nil nil]) 0
+    (['/ nil nil]) 1
+    (do
+      ;; (println "; [binop] " e0 op e1)
+      ;; (println "; [binop]" (nameof (typeof e0)) op (nameof (typeof e1)))
+      (let [lvlval (level e0 e1)]
+        (with-meta
+          `(~op ~@lvlval)
+          {:type (->> lvlval
+                      (remove nil?)
+                      (map typeof)
+                      first)})))))
 (defn makeassign
   "Builds an assignment statement forcing the type of the second expression to
    that of the first expression. Previously a special case of binop."
@@ -105,7 +113,7 @@
                            (apply (partial map #(-> {}
                                                     (assoc :name %1)
                                                     (assoc :value %2))))
-                           (zipmap idlist))
+                           (zipmap (map ->qname idlist)))
                       i)
         t (nameof (install! t))]
     (doseq [[i j] (map list idlist (range c))]
@@ -189,7 +197,7 @@
   (doseq [v varseq]
     (let [v (->VariableType v (nameof type) nil)]
       (install! v)))
-  (map nameof varseq))
+  (map (comp nameof search) varseq))
 
 (defn variable-declaration
   "Invoked to generate the comment group for variable declaration parts"
@@ -215,24 +223,29 @@
     (assert (not (nil? (follow obj))))
     (let [res (typeof (follow obj))]
       ;; (println "; [var-point] " (nameof obj) " is " res)
-      (list (list (symbol "^"))
+      (list (list 'deref)
             res))))
+
+(defn- var-compute-index [field type subscript]
+  (or (if-let [field-entry (get (fields field) subscript)]
+        (addrof field-entry))
+      (binop (sizeof type) '* subscript)))
 
 (defn var-index
   [[_lb subscripts _rb]]
   (fn [obj]
     (assert (satisfies? me.arrdem.compiler/IIndexable obj))
     ;; (println "; [var-index] " (nameof obj) " is " (nameof (typeof (last (fields obj)))))
-    (list (partial-make-aref
-           ;; TODO: rework this in terms of binop somehow..
-           (reduce #(binop %1 '+ %2) 0
-                   (map #(or (if-let [fields (get (fields %1) %3)]
-                               (addrof fields))
-                             (binop (sizeof %2) '* %3))
+    (let [index-seq (map var-compute-index
                         (fields obj)
                         (next (fields obj))
-                        subscripts)))
-          (last (fields obj)))))
+                        subscripts)]
+      ;; (println "; [var-index]" index-seq)
+      (list (partial-make-aref
+             ;; TODO: rework this in terms of binop somehow..
+             (reduce #(binop %1 '+ %2) 0
+                     index-seq))
+             (last (fields obj))))))
 
 (defn variable
   "Generates the appropriate aref & pointer expressions for indexing into a
@@ -249,14 +262,14 @@
                               (assoc :sym new-state)
                               (update-in [:ops] conj expr))))
                       {:sym self} postfixes)]
-      (assert search)
+      (assert self)
       ;; (println "; [variable] " id)
       ;; (println "; [variable] " (:ops res))
       (if-not (empty? postfixes)
         (with-meta
-          (apply e-> id (reverse (:ops res)))
+          (apply e-> (nameof self) (reverse (:ops res)))
           {:type (:sym res)})
-        id))))
+        (nameof self)))))
 
 ;;------------------------------------------------------------------------------
 ;; Arithmetic expressions...
@@ -357,7 +370,13 @@
   (if (macro? id)
     (concat (list (nameof id))
             params)
-    (makefuncall id params)))
+    (do
+      (assert (valid-invokation? (search id)
+                                 (apply list
+                                        (map typeof params))))
+      (with-meta
+        (makefuncall id params)
+        {:type (return-type (search id))}))))
 
 (defn statements
   [[_0 stmnts _1]]
