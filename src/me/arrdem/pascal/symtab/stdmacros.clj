@@ -154,6 +154,4 @@
              ["-" subtraction-cleaner]
              ["/" division-cleaner]
              ]]
-    (println "; [stdmacros] installing" (first m))
-    (install! (apply ->MacroType m)))
-  (println "; standard macros installed!"))
+    (install! (apply ->MacroType m))))
