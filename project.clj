@@ -1,4 +1,4 @@
-(defproject me.arrdem/pascal "0.3.2"
+(defproject me.arrdem/pascal "0.3.3"
   :description "A Pascal lexer, parser and AST generator"
   :url "http://github.com/arrdem/pascal"
   :license {:name "Eclipse Public License"
