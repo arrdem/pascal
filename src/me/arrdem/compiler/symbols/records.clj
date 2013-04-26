@@ -1,4 +1,9 @@
-(ns me.arrdem.compiler.symbols.records
+(ns ^{:doc "Contains the code used to create and align struct records prior to
+            their installation in the symbol table. Isolated due to the
+            overriding of ->RecordType from the default."
+      :author "Reid McKenzie"
+      :added "0.3.3"}
+      me.arrdem.compiler.symbols.records
   (:require [me.arrdem.compiler :refer :all]))
 
 (defrecord RecordType [name members size-field]
