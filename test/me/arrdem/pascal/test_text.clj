@@ -1,5 +1,4 @@
-(ns me.arrdem.pascal.test-text
-  (:require [me.arrdem.compiler.symbols]))
+(ns me.arrdem.pascal.test-text)
 
 (def pint {:name "integer" :size 4})
 (def preal {:name "real" :size 8})
