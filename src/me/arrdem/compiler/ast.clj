@@ -4,7 +4,8 @@
             suite for macros."
       :author "Reid McKenzie"
       :added  "0.2.0"}
-  me.arrdem.compiler.ast)
+  me.arrdem.compiler.ast
+  (:require [me.arrdem.compiler.symtab :refer [genlabel!]]))
 
 ;;------------------------------------------------------------------------------
 ;; Expression manipulators
@@ -70,7 +71,7 @@
          (makeif test s))))
 
 (defn makederef [sym]
-  (:qname (search sym)))
+  `(~'deref ~sym))
 
 (defn makefuncall [sym args]
   `(~'funcall ~sym ~@args))
