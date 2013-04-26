@@ -1,4 +1,9 @@
-(ns me.arrdem.compiler.symbols
+(ns ^{:doc "Defines some relatively complex ISymbol structures which are used to
+            provide enums, ranges, varaibles and arrays within the symbol table.
+            Also provides ThinType which is essential to type aliasing."
+      :author "Reid McKenzie"
+      :added "0.3.3"}
+  me.arrdem.compiler.symbols.complex
   (:require [me.arrdem.compiler :refer [nameof typeof sizeof addrof
                                         field-offset fields reftype
                                         follow valueof toString]]))

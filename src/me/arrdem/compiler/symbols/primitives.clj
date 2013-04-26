@@ -1,4 +1,4 @@
-(ns me.arrdem.compiler.symbol-conversions
+(ns me.arrdem.compiler.symbols.primitives
   (:require [me.arrdem.compiler :refer [sizeof nameof typeof fields
                                         field-offset reftype follow
                                         valueof]]
