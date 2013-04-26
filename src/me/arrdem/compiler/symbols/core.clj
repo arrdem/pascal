@@ -4,7 +4,8 @@
       :author "Reid McKenzie"
       :added "0.3.3"}
   me.arrdem.compiler.symbols.core
-  (:require [me.arrdem.compiler :refer :all]))
+  (:require [me.arrdem.compiler :refer [nameof sizeof typeof]
+                                :as compiler]))
 
 (defrecord PrimitiveType [name size-field]
   me.arrdem.compiler.ISymbol

@@ -41,7 +41,7 @@
               "Normal var did not register its type correctly")))
       (let [r (search "l")]
         (is (= true
-               (instance? me.arrdem.compiler.symbols.VariableType r))
+               (instance? me.arrdem.compiler.symbols.complex.VariableType r))
             "Did the record install at all?")
         (is (= "__record_0"
                (nameof (typeof r)))
@@ -58,16 +58,16 @@
                #(println "LEFTOVER: " %2)
                {:remainder (pascal "(red, white, blue)")})]
       (is (= true
-             (instance? me.arrdem.compiler.symbols.EnumType
+             (instance? me.arrdem.compiler.symbols.complex.EnumType
                         (search res)))
           "Is the result an enum?")
       (doseq [m (keys (fields res))]
         (let [v (search m)]
           (is (= true
-                 (instance? me.arrdem.compiler.symbols.VariableType v))
+                 (instance? me.arrdem.compiler.symbols.complex.VariableType v))
               "Is the enum value installed as its own symbol?")
           (is (= true
-                 (instance? me.arrdem.compiler.symbols.EnumType
+                 (instance? me.arrdem.compiler.symbols.complex.EnumType
                             (search (typeof v))))
               "Is the installed value clearly part of the enum structure?"))))))
 
