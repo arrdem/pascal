@@ -9,7 +9,7 @@
             [me.arrdem.compiler.symbols]
             [me.arrdem.compiler.type-hierarchy :as h]
             [me.arrdem.compiler.symbol-conversions]
-            [me.arrdem.pascal.ast :refer [e->]]
+            [me.arrdem.compiler.ast :refer [e->]]
             [loom.graph :as graph]))
 
 (def -type-graph

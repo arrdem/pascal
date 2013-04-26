@@ -4,7 +4,7 @@
             suite for macros."
       :author "Reid McKenzie"
       :added  "0.2.0"}
-  me.arrdem.pascal.ast)
+  me.arrdem.compiler.ast)
 
 ;;------------------------------------------------------------------------------
 ;; Expression manipulators

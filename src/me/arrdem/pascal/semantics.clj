@@ -12,7 +12,7 @@
                                                 ->PointerType ->ThinType
                                                 ->RangeType]]
             [me.arrdem.compiler.symbol-conversions]
-            [me.arrdem.pascal.ast :refer :all]
+            [me.arrdem.compiler.ast :refer :all]
             [me.arrdem.pascal.types :refer [convert level]]))
 
 (defn tail-cons
@@ -327,7 +327,7 @@
 (defn for-stmnt [[_0 id _1 flist _3 stmnt]]
   (let [[Vi update comp end] flist
         lstart (genlabel!)
-        id     (abs-name (search id))]
+        id     (search id)]
     (makeprogn
       [(makelabel lstart)
        (makeassign id Vi)
