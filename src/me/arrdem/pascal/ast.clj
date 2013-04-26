@@ -4,33 +4,7 @@
             suite for macros."
       :author "Reid McKenzie"
       :added  "0.2.0"}
-  me.arrdem.pascal.ast
-  (:require [me.arrdem.compiler.symtab :refer [search install! genlabel!]]))
-
-;;------------------------------------------------------------------------------
-;; Symbol table manipulation
-
-;; TODO: find uses of this guy and remove em
-(defn ^:depricated abs-name
-  "Performs a symbol table lookup for the argument symbol. As of the new string
-   & protocol based type system this code is not needed yet it remains."
-  [sym]
-  ;; (println @me.arrdem.compiler.symtab/*symtab*)
-  ;; (println "; searching for symbol" sym)
-  (:qname
-   (cond
-    (map? sym)
-    (if (contains? sym :qname)
-      (select-keys sym [:qname])
-      (search (:name sym)))
-    (string? sym)
-    (search sym))))
-
-(defn dbg-install
-  "Wrapper around install! which may provide pre-installation debug printing"
-  [v]
-  ;; (println "; declared var " v)
-  (:qname (install! v)))
+  me.arrdem.pascal.ast)
 
 ;;------------------------------------------------------------------------------
 ;; Expression manipulators
