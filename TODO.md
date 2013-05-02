@@ -20,6 +20,6 @@
 - Implement a debug library with selectable printing ala debug.h.
 
 - Take grfrederik's advice and rework the entire symbol table system using the
-  old fasioned "pass a map around like nobody's buisness" approach as noted in
+  old fashioned "pass a map around like nobody's buisness" approach as noted in
   the git log at some point. This will be a major rework and may be difficult
   due to fnparse but it should be done.
