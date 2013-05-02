@@ -3,6 +3,13 @@
 - [CRITICAL] add absolute (static heap) allocation for VAR variables. Be able
   to compute the heap address of a value via (addrof).
   -- provide this by making each (program) generate a heap structure of some sort
+- [CRITICAL] get code generation working
+  -- register spilling, figure out how to build an LRU system
+  -- figure out converting floats to ints and back
+- Implement better command line arguments
+  -- macros? (defaults to true)
+  -- codegen? (defaults to true)
+  -- print symbol table? (defaults to true)
 
 ## back burner
 - improve the output of the symbol table printer so as to be... reasonable
