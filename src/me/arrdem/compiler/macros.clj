@@ -14,36 +14,45 @@
     (= "macro" (typeof obj))
     (catch Exception e false)))
 
-(defn macro-val [token]
-  (cond
-   (string? token) (search token)
-   (symbol? token) (macro-val (name token))
-   (macro? token) token
-   true nil))
+(defn macro-val
+  ([token] (macro-val nil token))
+  ([map token]
+     (if (nil? map)
+            (cond
+             (string? token) (search token)
+             (symbol? token) (macro-val (name token))
+             (macro? token) token
+             true nil)
+            (cond
+             (symbol? token) (get map (name token))
+             true (get map token)))))
+
 
 (defn pmacroexpand
   "An \"outermost first\" macro implementation. Looks up macros from the symbol
    table, and applies them if possible."
-  [expr]
-  ;; (println "; macroexpand got param of type " (type expr))
-  (if (seq? expr)
-    (do ;; (println "; macroexpanding " expr)
-        (let [expander (pmacroexpand (first expr))
-              expandfn (macro-val expander)
-              expandfn (when (macro? expandfn)
-                         (.expander expandfn))
-              res (if (fn? expandfn)
-                    (expandfn (apply list (rest expr)))
-                    expr)]
-          ;; (println "; macroexpanding intermediate state " res)
-          (let [res (if (seq? res)
-                      (apply list
-                             (cons (first res)
-                                   (doall (map pmacroexpand (apply list (rest res))))))
-                      res)]
-            (if (and (fn? expandfn) ;; possibility of recursive macro
-                     (not (= res expr))  ;; prevent non-transforming recursion
-                     (seq? res)) ;; there's something left to expand
-              (pmacroexpand res)
-              res))))
-    expr))
+  ([expr] (pmacroexpand nil expr))
+  ([map expr]
+     ;; (println "; macroexpand got param of type " (type expr))
+     (if (seq? expr)
+       (do ;; (println "; macroexpanding " expr)
+         (let [expander (pmacroexpand map (first expr))
+               expandfn (macro-val map expander)
+               expandfn (when (macro? expandfn)
+                          (.expander expandfn))
+               res (if (fn? expandfn)
+                     (expandfn (apply list (rest expr)))
+                     expr)]
+           ;; (println "; macroexpanding intermediate state " res)
+           (let [res (if (seq? res)
+                       (apply list
+                              (cons (first res)
+                                    (doall (map (partial pmacroexpand map)
+                                                (apply list (rest res))))))
+                       res)]
+             (if (and (fn? expandfn) ;; possibility of recursive macro
+                      (not (= res expr))  ;; prevent non-transforming recursion
+                      (seq? res)) ;; there's something left to expand
+               (pmacroexpand map res)
+               res))))
+       expr)))
