@@ -2,7 +2,7 @@
   (:require [me.arrdem.compiler :refer [sizeof nameof]]
             [me.arrdem.compiler.symtab :refer [install! search]]
             [me.arrdem.compiler.macros :refer [->MacroType]]
-            [me.arrdem.pascal.ast :refer [makefuncall]]
+            [me.arrdem.compiler.ast :refer [makefuncall]]
             [me.arrdem.pascal.semantics :refer [binop]]))
 
 ;;------------------------------------------------------------------------------

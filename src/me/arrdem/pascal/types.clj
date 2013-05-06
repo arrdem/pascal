@@ -5,11 +5,10 @@
       :author "Reid McKenzie"}
       me.arrdem.pascal.types
   (:require [me.arrdem.compiler :refer [typeof nameof]]
+            [me.arrdem.compiler.symbols.primitives]
             [me.arrdem.compiler.symtab :refer [search install!]]
-            [me.arrdem.compiler.symbols]
             [me.arrdem.compiler.type-hierarchy :as h]
-            [me.arrdem.compiler.symbol-conversions]
-            [me.arrdem.pascal.ast :refer [e->]]
+            [me.arrdem.compiler.ast :refer [e->]]
             [loom.graph :as graph]))
 
 (def -type-graph

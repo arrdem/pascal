@@ -25,3 +25,11 @@
   (valid-invokation? [self arg-type-list]
     "Tests an argument type sequence for arity and type")
   (return-type [self] "Returns the return type of the callable record"))
+
+;; TODO: where should this live?
+(defn aligned-offset [t o]
+  (let [s (sizeof t)
+        off-mod (int (/ o s))]
+    (* s
+       (+ (if (= (* off-mod s) o) 0 1)
+          off-mod))))

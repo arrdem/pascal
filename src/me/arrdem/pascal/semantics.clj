@@ -2,18 +2,18 @@
   (:require [me.arrdem.compiler :refer [nameof typeof sizeof fields
                                         valueof follow field-offset addrof
                                         return-type valid-invokation?]]
-            [me.arrdem.compiler.types :refer [->RecordType]]
             [me.arrdem.compiler.macros :refer [pmacroexpand macro?]]
             [me.arrdem.compiler.symtab :refer [genlabel! install!
                                                search gensym! render-ns
                                                ->qname]]
-            [me.arrdem.compiler.symbols :refer [->VariableType ->ArrayType
-                                                ->EnumType ->RecordEntry
-                                                ->PointerType ->ThinType
-                                                ->RangeType]]
-            [me.arrdem.compiler.symbol-conversions]
-            [me.arrdem.pascal.ast :refer :all]
-            [me.arrdem.pascal.types :refer [convert level]]))
+            [me.arrdem.compiler.ast :refer :all]
+            [me.arrdem.pascal.types :refer [convert level]]
+            (me.arrdem.compiler.symbols
+               [primitives]
+               [records :refer [->RecordType ->RecordEntry]]
+               [core :refer [->PointerType]]
+               [complex :refer [->EnumType ->ThinType ->RangeType
+                                ->VariableType ->ArrayType]])))
 
 (defn tail-cons
   "Basic cons operation for joining recursively defined eliminated lists.
@@ -208,7 +208,10 @@
 
 (defn var-dot [[_dot id]]
   (fn [obj]
-    (assert (satisfies? me.arrdem.compiler/IIndexable obj))
+    (if-not (satisfies? me.arrdem.compiler/IIndexable obj)
+      (do (println "[VAR-DOT] got argument" (pr-str obj))
+          (println "[VAR-DOT] NOT PROVIDING IIndexable")
+          (assert false)))
     (let [val (get (fields obj) id)
           res (nameof (typeof val))]
       ;; (println "; [var-dot] " (nameof obj)
@@ -223,8 +226,7 @@
     (assert (not (nil? (follow obj))))
     (let [res (typeof (follow obj))]
       ;; (println "; [var-point] " (nameof obj) " is " res)
-      (list (list 'deref)
-            res))))
+      (makederef res))))
 
 (defn- var-compute-index [field type subscript]
   (or (if-let [field-entry (get (fields field) subscript)]
@@ -327,7 +329,7 @@
 (defn for-stmnt [[_0 id _1 flist _3 stmnt]]
   (let [[Vi update comp end] flist
         lstart (genlabel!)
-        id     (abs-name (search id))]
+        id (nameof (search id))]
     (makeprogn
       [(makelabel lstart)
        (makeassign id Vi)
