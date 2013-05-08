@@ -130,11 +130,12 @@
 ;; genarith and supporting functions
 
 (declare genc genarith genop genc gendref gensub genmul genadd genfuncall
-         genlabel gengoto genftoi genitof loadlit loadsym)
+         genlabel gengoto genftoi genitof loadlit loadsym genaref genprogn)
 
 (defn genaddr [state sym-or-expr]
   (cond (string? sym-or-expr)
-            (loadlit state (addrof sym-or-expr))
+        (let [[state sym] (preamble-ensure-installed state sym-or-expr)]
+          [state nil sym])
 
         (list? sym-or-expr)
             (genarith state sym-or-expr)))
@@ -165,8 +166,9 @@
      (case (first expr)
        (:=) (genc state expr)
        (deref) (gendref state expr)
+       (aref) (genaref state expr)
+       (progn) (genprogn state expr)
        (integer->real) (genitof state expr)
-       (real->integer) (genftoi state expr)
        (+) (genadd state expr)
        (-) (gensub state expr)
        (*) (genmul state expr))
@@ -355,3 +357,27 @@
          (list (format "    mov %s, (%s) ;; load symbol %s from memory\n"
                        dst label sym-id))
          dst]))))
+
+(defn genaref
+  "Generates an array reference, being another case of having to call genaddr on
+   the left hand side rather than simply being (deref (+ <base> <offset>)) which
+   is what I was hoping to transform this into. Generates the usual tripple."
+  [state [_aref base-sym offset]]
+  (let [[state label] (preamble-ensure-installed state base-sym)
+        [state code dst] (genarith state offset)]
+    [state
+     (concat (list (format "    ;; aref of %s by %s\n" base-sym offset))
+             code
+             (list (format "    add %s, %s ;; index in\n" dst label)
+                   (format "    mov (%s), %s ;; and deref\n" dst dst)))
+     dst]))
+
+(defn genprogn
+  "Generates a progn group, being simply the accumulation of genarith carrying
+   state over the argument expressions. Returns the same tripple as every other
+   genarith helper function does."
+  [state [_progn & exprs]]
+  (reduce (fn [[state code] expr]
+            (let [[state new-code _] (genarith state expr)]
+              [state (concat code new-code)]))
+          state exprs))
