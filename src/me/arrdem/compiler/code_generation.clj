@@ -377,7 +377,21 @@
    state over the argument expressions. Returns the same tripple as every other
    genarith helper function does."
   [state [_progn & exprs]]
-  (reduce (fn [[state code] expr]
+  (reduce (fn [[state code _] expr]
             (let [[state new-code _] (genarith state expr)]
-              [state (concat code new-code)]))
+              [state (concat code new-code) nil]))
           state exprs))
+
+(defn genitof
+  "Generates an integer to floating point push."
+  [state expr]
+
+)
+
+(defn genif
+  "Has the unfortunate job of generating code for conditional expressions. Some
+   sort of helper function like (genconditional state true-target false-target)
+   could really help me out here."
+  [state [_if predicate true-case false-case]]
+
+)
