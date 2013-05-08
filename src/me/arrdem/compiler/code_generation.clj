@@ -129,8 +129,8 @@
 ;;------------------------------------------------------------------------------
 ;; genarith and supporting functions
 
-(declare genc genarith genop genc gendref gensub genmul genadd genfuncall
-         genlabel gengoto genftoi genitof loadlit loadsym genaref genprogn)
+(declare genc genarith genop genc genderef gensub genmul genadd genfuncall
+         genlabel gengoto genitof loadlit loadsym genaref genprogn genif)
 
 (defn genaddr [state sym-or-expr]
   (cond (string? sym-or-expr)
@@ -165,10 +165,11 @@
    (list? expr)
      (case (first expr)
        (:=) (genc state expr)
-       (deref) (gendref state expr)
+       (deref) (genderef state expr)
        (aref) (genaref state expr)
        (progn) (genprogn state expr)
        (integer->real) (genitof state expr)
+       (if) (genif state expr)
        (+) (genadd state expr)
        (-) (gensub state expr)
        (*) (genmul state expr))
@@ -204,7 +205,7 @@
                            lhs-dst rhs-dst)))
      nil]))
 
-(defn gendref
+(defn genderef
   "Deref operation generator. Only takes on argument expression, computing it
    via (genaddr) and emits a single mov instruction to dereference the value
    in the returned register."
@@ -432,7 +433,7 @@
         end-l (gensym!)
         [state pred-code _] (genconditional predicate true-l false-l)
         [state true-case-code _] (genarith state true-case)
-        [state false-case-code _] (genarith state false-case-code)
+        [state false-case-code _] (genarith state false-case)
         [_ true-l _]  (genlabel state true-l)
         [_ false-l _] (genlabel state false-l)
         [_ end-l _]   (genlabel state end-l)
@@ -446,3 +447,17 @@
              false-case-code
              end-l)
      nil]))
+
+;;------------------------------------------------------------------------------
+;; main entry point function which is used to compute the .s output for an
+;; entire compiler AST. Note that it is not mutually recursive with genarith
+;; and that it simply returns a list of asm forms & discards the state record.
+
+(defn gencode [_program name & forms]
+  (let [[state code _]
+        (genarith {:free-regs x86-regs
+                   :used-regs #{}
+                   :preamble {}}
+                  (last <>))]
+    (concat (buid-preamble state)
+            code)))
