@@ -22,6 +22,9 @@
 ;; The idea is that the union of freed-regs and used-regs is constant, being the
 ;; set of architectural registers.
 
+(def x86-regs #{"%rax" "%rbx" "%rcx" "%rdx" "%rsi" "%rdi" "%r8" "%r9" "%r10"
+                "%r11" "%r12" "%r13" "%r14" "%r15"})
+
 ;;------------------------------------------------------------------------------
 ;; preamble api
 (defn preamble-ensure-installed
