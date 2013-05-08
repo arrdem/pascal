@@ -385,13 +385,64 @@
 (defn genitof
   "Generates an integer to floating point push."
   [state expr]
+  (let [[state code dst] (genarith state expr)]
+    [state
+     (concat code
+             (list (format "    ;; int -> float %s\n" expr)
+                   (format "    fild %s\n" dst)))
+     "st(0)"]))
 
-)
+(defn genconditional
+  "Generates a conditional expression preface, suitable for use in choosing
+   \"if\" causes (hint hint). Takes a state, two expressions and two labels
+   as arguments. The position of the labels is arbitrary, but if the generated
+   code will jump to the first label if the condition is true."
+  [state [comparison casel caser] true-l false-l]
+  (let [[state [codel dstl]
+               [coder dstr]]
+            (genlr state [casel caser])]
+    [state
+     (concat (list (format "    ;; (if %s %s %s)\n"
+                           comparison true-l false-l)
+                           "    ;; left expr\n")
+             codel
+             (list "    ;; right expr\n")
+             coder
+             (list "    ;; and compare\n"
+                   (format "    test %s, %s\n" dstl dstr)
+                   (format "    %s %s\n"
+                           (case comparison
+                             (<=) "jle"
+                             (<) "jl"
+                             (>=) "jge"
+                             (>) "jg"
+                             (==) "je"
+                             (<>) "jne")
+                           true-l)
+                   (format "    jmp %s\n" false-l)))
+     nil]))
 
 (defn genif
   "Has the unfortunate job of generating code for conditional expressions. Some
    sort of helper function like (genconditional state true-target false-target)
    could really help me out here."
   [state [_if predicate true-case false-case]]
-
-)
+  (let [true-l  (gensym!)
+        false-l (gensym!)
+        end-l (gensym!)
+        [state pred-code _] (genconditional predicate true-l false-l)
+        [state true-case-code _] (genarith state true-case)
+        [state false-case-code _] (genarith state false-case-code)
+        [_ true-l _]  (genlabel state true-l)
+        [_ false-l _] (genlabel state false-l)
+        [_ end-l _]   (genlabel state end-l)
+        [_ goto-end-l _] (gengoto state end-l)]
+    [state
+     (concat pred-code
+             true-l
+             true-case-code
+             goto-end-l
+             false-l
+             false-case-code
+             end-l)
+     nil]))
