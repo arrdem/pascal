@@ -363,6 +363,13 @@
                        label sym-id))
          "st(0)"]
 
+    ("string")
+        (let [[state reg] (reg-alloc state)
+              [state label] (preamble-install-string state sym-id)]
+          [state
+           (list (format "    mov %s, (%s) ;; load string addr to register\n"
+                         reg label))])
+
       (let [[state dst] (reg-alloc state)]
         [(-> state
              (free-reg dst))
