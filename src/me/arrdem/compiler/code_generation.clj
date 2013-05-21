@@ -183,6 +183,7 @@
        (aref) (genaref state expr)
        (progn) (genprogn state expr)
        (integer->real) (genitof state expr)
+       (funcall) (genfuncall state expr)
        (if) (genif state expr)
        (+) (genadd state expr)
        (-) (gensub state expr)
