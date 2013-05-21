@@ -1,7 +1,7 @@
 (ns me.arrdem.compiler.code-generation
   (:require [clojure.set :as s
                          :refer [union difference]]
-            [me.arrdem.compiler :refer [addrof typeof sizeof]]
+            [me.arrdem.compiler :refer [addrof typeof sizeof valueof]]
             [me.arrdem.compiler.symtab :refer [gensym!]]
             (me.arrdem.compiler.symbols
                  [complex] [core] [records])))
@@ -40,9 +40,10 @@
     [state sym]
     ;; not installed case, generate an alignment directive and a dat directive.
     ;; then concat that to the :preamble :code value in state.
-    (let [code (list (format "    ;; var %s\n" sym)
-                     (format ".align %s\n" (sizeof (typeof sym)))
-                     (format ".space %s\n" (sizeof sym)))]
+    (let [code (list (format ";; var %s\n" sym)
+                     (format "    .align %s\n" (sizeof (typeof sym)))
+                     (format "    .label %s\n" sym)
+                     (format "    .space %s\n" (sizeof sym)))]
       [(-> state
            (update-in [:preamble :installed] union #{sym})
            (update-in [:preamble :code] concat code))
@@ -59,6 +60,16 @@
   [(-> state
        (update-in [:preamble :code] concat code))
    sym]))
+
+(defn preamble-install-string
+  "Installs a string typed symbol into the preamble table."
+  [state sym]
+  [(-> state
+       (update-in [:preamble :code] concat
+                  (list (format ".label %s\n" sym)
+                        (format ".string \"%s\",0\n" (valueof sym)))))
+     sym])
+
 
 (defn buid-preamble
   "Extracts the preamble code from a state map for prefixing or postfixing a
@@ -199,10 +210,8 @@
                   (use-reg lhs-dst))
         [state rhs-code rhs-dst] (genarith state rhs)]
     [state
-     (concat (list (format "    ;; [genc] %s\n" (list := lhs rhs))
-                           "    ;; left hand side first..\n")
+     (concat (list (format "    ;; [genc] %s\n" (list := lhs rhs)))
              lhs-code
-             (list         "    ;; right hand side\n")
              rhs-code
              (list (format "    mov (%s), %s ;; write back to target address\n"
                            lhs-dst rhs-dst)))
@@ -354,7 +363,6 @@
                        label sym-id))
          "st(0)"]
 
-    :else
       (let [[state dst] (reg-alloc state)]
         [(-> state
              (free-reg dst))
@@ -381,10 +389,10 @@
    state over the argument expressions. Returns the same tripple as every other
    genarith helper function does."
   [state [_progn & exprs]]
-  (reduce (fn [[state code _] expr]
-            (let [[state new-code _] (genarith state expr)]
+  (reduce (fn [[state code] expr]
+            (let [[state new-code] (genarith state expr)]
               [state (concat code new-code) nil]))
-          state exprs))
+          [state []] exprs))
 
 (defn genitof
   "Generates an integer to floating point push."
@@ -456,11 +464,12 @@
 ;; entire compiler AST. Note that it is not mutually recursive with genarith
 ;; and that it simply returns a list of asm forms & discards the state record.
 
-(defn gencode [_program name & forms]
+(defn gencode [[_program name & forms]]
+  (println forms)
   (let [[state code _]
         (genarith {:free-regs x86-regs
                    :used-regs #{}
                    :preamble {}}
-                  (last <>))]
-    (concat (buid-preamble state)
-            code)))
+                  (last forms))]
+    (concat code
+            (buid-preamble state))))
