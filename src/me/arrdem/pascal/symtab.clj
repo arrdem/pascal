@@ -6,18 +6,18 @@
 
 (defn init!
   "Installs the basic Pascal symbols and type conversions to the symbol table.
-May or may not handle types and macros as well, may or may not pass those off to
-type and macro specific initializers elsewhere."
-  ([]
-     (stdm/init!)
-     (stdl/init!)
-     (stdt/init!)))
+   May or may not handle types and macros as well, may or may not pass those
+   off to type and macro specific initializers elsewhere."
+  []
+  (stdm/init!)
+  (stdl/init!)
+  (stdt/init!))
 
 (defn clear!
   "Nukes the symbol table."
-  ([]
-     (reset! cst/symtab {})
-     (reset! cst/symns '())))
+  []
+  (reset! cst/symtab {})
+  (reset! cst/symns '()))
 
 (defmacro with-symtab [& forms]
   `(do (clear!)
