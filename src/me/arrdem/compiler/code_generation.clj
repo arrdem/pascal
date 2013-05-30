@@ -53,6 +53,7 @@
        (+)             genadd
        (-)             gensub
        (*)             genmul
+       (/)             gendiv
        (<<)            genlsh
        (>>)            genrsh
        (and & &&)      genand
@@ -150,6 +151,11 @@
 (defn genmul [state arg]
   ((partial genop 'mul
                   '[fmul [st 0] [st 1]])
+   state arg))
+
+(defn gendiv [state arg]
+  ((partial genop 'div
+                  '[fdiv [st 0] [st 1]])
    state arg))
 
 (defmacro definstr-trivial [sym opcode]
