@@ -2,7 +2,6 @@
   (:require [me.arrdem.pascal.tokens :refer :all]
             [me.arrdem.pascal.semantics :as s]
             [me.arrdem.compiler.symtab :refer [ascend! descend!]]
-
             [name.choi.joshua.fnparse :as fnp]
             ))
 
