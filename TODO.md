@@ -1,10 +1,15 @@
 # TODO list
 - Migrate me.arrdem.pascal.util into me.arrdem.pascal.lexer or .tokens?
-- [CRITICAL] add absolute (static heap) allocation for VAR variables. Be able
-  to compute the heap address of a value via (addrof).
-  -- provide this by making each (program) generate a heap structure of some sort
 - Implement better command line arguments
   -- macros? (defaults to true)
+- Implement missing arithmetic operations
+  -- modulus (int, float)
+  -- division (int, float)
+  -- bit shift (int)
+  -- bitwise and (int)
+  -- bitwise or (int)
+  -- bitwise xor (int)
+  -- bitwise inversion (not)
 
 ## back burner
 - improve the output of the symbol table printer so as to be... reasonable
