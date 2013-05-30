@@ -1,5 +1,6 @@
 (ns me.arrdem.compiler.code-generation
-  (:require [me.arrdem.compiler.symtab :refer [gensym!]]
+  (:require [me.arrdem.compiler :refer [typeof sizeof]]
+            [me.arrdem.compiler.symtab :refer [gensym!]]
             (me.arrdem.compiler.code-generation [data-segment :refer :all]
                                                 [registers :refer :all])))
 
@@ -8,7 +9,7 @@
 
 (declare genc genarith genop genc genderef gensub genmul genadd genfuncall
          genlabel gengoto genitof loadlit loadsym genaref genprogn genif
-         genitof gennot genand genxor genor genlsh genrsh gendiv)
+         genitof gennot genand genxor genor genlsh genrsh gendiv genftoi)
 
 (defn genaddr [state sym-or-expr]
   (cond (string? sym-or-expr)
@@ -49,6 +50,7 @@
        (integer->real) genitof
        (real->integer) genftoi
        (funcall)       genfuncall
+       (label)         genlabel
        (if)            genif
        (+)             genadd
        (-)             gensub
@@ -359,7 +361,7 @@
   (let [true-l (gensym!)
         false-l (gensym!)
         end-l (gensym!)
-        [state pred-code _] (genconditional predicate true-l false-l)
+        [state pred-code _] (genconditional state predicate true-l false-l)
         [state true-case-code _] (genarith state true-case)
         [state false-case-code _] (genarith state false-case)
         [_ true-l _]  (genlabel state true-l)
