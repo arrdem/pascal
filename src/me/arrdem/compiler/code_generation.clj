@@ -8,7 +8,7 @@
 
 (declare genc genarith genop genc genderef gensub genmul genadd genfuncall
          genlabel gengoto genitof loadlit loadsym genaref genprogn genif
-         genitof)
+         genitof gennot genand genxor genor genlsh genrsh gendiv)
 
 (defn genaddr [state sym-or-expr]
   (cond (string? sym-or-expr)
@@ -52,7 +52,14 @@
        (if)            genif
        (+)             genadd
        (-)             gensub
-       (*)             genmul)
+       (*)             genmul
+       (<<)            genlsh
+       (>>)            genrsh
+       (and & &&)      genand
+       (or ||)         genor
+       (xor)           genxor
+       (not)           gennot
+       )
       state expr)
        ;; note that division and modulus are not implemented.
 
@@ -145,8 +152,26 @@
                   '[fmul [st 0] [st 1]])
    state arg))
 
-;; again note that division and modulus are not provided due to not appearing in
-;; any of our input cases.
+(defmacro definstr-trivial [sym opcode]
+  `(defn ~sym [state0# [_# lhs# rhs#]]
+     (let [[state1# lcode# ldst#] (genarith state0# lhs#)
+           state1# (-> state1# (use-reg ldst#))
+           [state2# rcode# rdst#] (genarith state1# rhs#)]
+       (assert (not (= "st(0)" ldst#)))
+       (assert (not (= "st(0)" rdst#)))
+       [(-> state2#
+            (use-reg ldst#)
+            (free-reg rdst#))
+        (concat lcode# rcode#
+                [[(quote ~opcode) ldst# rdst#]])
+        ldst#])))
+
+(definstr-trivial genrsh shr)
+(definstr-trivial genlsh shl)
+(definstr-trivial genand and)
+(definstr-trivial genor  or)
+(definstr-trivial genxor xor)
+(definstr-trivial gennot not)
 
 (defn genfuncall
   "Generates a function call for a rather silly calling convention. Single
@@ -363,6 +388,6 @@
   "A function designed to take an IR AST exactly as generated & defined by the
    rest of the compiler. Note that the last of the (program) group's forms is
    the (progn) for which I am required to emit code, conseqently it is the only
-   form which is extracted from the (program) sequence argument."
+   form whic1h is extracted from the (program) sequence argument."
   [[_program name & forms]]
   (ir->code (last forms)))
