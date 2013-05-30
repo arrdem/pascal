@@ -11,18 +11,18 @@
    with the standard 'primitive' types which Pascal supports."
   []
   (doseq [t [;; Basic types
-             ["integer" 4]
+             ["integer" 8]
              ["char" 1]
-             ["boolean" 4]
+             ["boolean" 8]
              ["real" 8]
              ]]
     (install! (apply ->PrimitiveType t)))
 
   (doseq [t [;; Pointer types
-             ["^integer" 4 "integer"]
-             ["^char" 4 "char"]
-             ["^boolean" 4 "boolean"]
-             ["^real" 4 "real"]
+             ["^integer" 8 "integer"]
+             ["^char" 8 "char"]
+             ["^boolean" 8 "boolean"]
+             ["^real" 8 "real"]
              ]]
     (install! (apply ->PointerType t)))
 

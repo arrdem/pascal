@@ -1,13 +1,15 @@
 # TODO list
 - Migrate me.arrdem.pascal.util into me.arrdem.pascal.lexer or .tokens?
-- [CRITICAL] add absolute (static heap) allocation for VAR variables. Be able
-  to compute the heap address of a value via (addrof).
-  -- provide this by making each (program) generate a heap structure of some sort
-- [CRITICAL] get code generation working
-  -- register spilling, figure out how to build an LRU system
-  -- figure out converting floats to ints and back
 - Implement better command line arguments
   -- macros? (defaults to true)
+- Implement missing arithmetic operations
+  -- modulus (int, float)
+  -- division (int, float)
+  -- bit shift (int)
+  -- bitwise and (int)
+  -- bitwise or (int)
+  -- bitwise xor (int)
+  -- bitwise inversion (not)
 
 - Rework anon type naming so that it's both deterministic and repeatable. EG:
   two structs with the same sequence of member fields should generate a named 

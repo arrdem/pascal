@@ -140,6 +140,10 @@
         (list 'aref expr offset))))
 
 ;;------------------------------------------------------------------------------
+(defn gen-round [expr]
+  `(~'funcall "round" ~expr))
+
+;;------------------------------------------------------------------------------
 (defn init!
   "Function of no arguments, its sole purpose is to side-effect the symbol
    table and install the standard macros used for pre-code generation type
@@ -152,5 +156,6 @@
              ["*" multiplication-cleaner]
              ["-" subtraction-cleaner]
              ["/" division-cleaner]
+             ["float->int" gen-round]
              ]]
     (install! (apply ->MacroType m))))
