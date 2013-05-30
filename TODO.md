@@ -9,6 +9,11 @@
 - Implement better command line arguments
   -- macros? (defaults to true)
 
+- Rework anon type naming so that it's both deterministic and repeatable. EG:
+  two structs with the same sequence of member fields should generate a named 
+  ThinType and use the _same_ anon backend type. Also two arrays of the same
+  dimensions & types should resolve to the same backed generated type.
+
 ## back burner
 - improve the output of the symbol table printer so as to be... reasonable
   -- make sure that for records it shows the offsets, sizes & fields
