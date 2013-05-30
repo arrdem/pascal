@@ -25,9 +25,9 @@
 (def x86-regs #{'%rax '%rbx '%rcx '%rdx '%rsi' '%rdi '%r8 '%r9 '%r10
                 '%r11 '%r12 '%r13 '%r14 '%r15})
 
-(defmacro format-code [& format-seqs]
-  `(map (partial apply format)
-        ~@format-seqs))
+;;(defmacro format-code [& format-seqs]
+;;  `(map (partial apply format)
+;;        ~@format-seqs))
 
 ;;------------------------------------------------------------------------------
 ;; preamble api
@@ -44,11 +44,10 @@
     [state sym]
     ;; not installed case, generate an alignment directive and a dat directive.
     ;; then concat that to the :preamble :code value in state.
-    (let [code (format-code
-                [[";; var %s\n" sym]
-                 ["    .align %s\n" (sizeof (typeof sym))]
-                 ["    .label %s\n" sym]
-                 ["    .space %s\n" (sizeof sym)]])]
+    (let [code [['comment (format "var %s" sym)]
+                ['.align (sizeof (typeof sym))]
+                ['.label sym]
+                ['.space (sizeof sym)]]]
       [(-> state
            (update-in [:preamble :installed] union #{sym})
            (update-in [:preamble :code] concat code))
@@ -60,8 +59,8 @@
    escap repetition of the same value."
   [state val]
   (let [sym (gensym!)
-        code (code-format [[".label %s\n" sym]
-                           ["    .quad  %s\n" val]])]
+        code [['.label sym]
+              ['.quad val]]]
   [(-> state
        (update-in [:preamble :code] concat code))
    sym]))
@@ -71,9 +70,8 @@
   [state sym]
   [(-> state
        (update-in [:preamble :code] concat
-                  (format-code
-                   [[".label %s\n" sym]
-                    ["    .string \"%s\",0\n" (valueof sym)]])))
+                   [['.label sym]
+                    ['.string (valueof sym)]]))
      sym])
 
 
@@ -82,7 +80,8 @@
    code sequence. Intended to be the last operation on a state. Only returns the
    code seq."
   [state]
-  (concat [".data ;; begin data segment\n"]
+  (concat [;['comment "begin data segment"]
+           ['.data]]
           (:code (:preamble state))))
 
 ;;------------------------------------------------------------------------------
@@ -218,11 +217,12 @@
                   (use-reg lhs-dst))
         [state rhs-code rhs-dst] (genarith state rhs)]
     [state
-     (concat [(format "    ;; [genc] %s\n" (list := lhs rhs))]
+     (concat [;['comment (format "[genc] %s" (list := lhs rhs))]
+              ]
              lhs-code
              rhs-code
-             [(format "    mov (%s), %s ;; write back to target address\n"
-                      lhs-dst rhs-dst)])
+             [; ['comment "write back to target address"]
+              ['mov ['addrof lhs-dst] rhs-dst]])
      nil]))
 
 (defn genderef
@@ -232,13 +232,11 @@
   [state [_deref expr]]
   (let [[state code dst] (genaddr state expr)]
     [state
-     (concat (format-code
-              [["    ;; [genderef] %s\n" (list 'deref expr)]
-                           ["    ;; compute src addr...\n"]])
+     (concat [;['comment (format "[genderef] %s" (list 'deref expr))]
+              ]
              code
-             (format-code
-              [["    ;; deref returned value...\n"
-                "    mov (%s), %s\n" dst dst]]))
+             [;['comment "deref returned value..."]
+              ['mov ['addrof dst] dst]])
      nil]))
 
 ;; declare the math functions in a block since they share a huge ammount of code
@@ -250,16 +248,18 @@
         [state codel dstl] (genarith state l)]
     ;; it is an error guranteed by the AST system to invoke genop with a float
     ;; to nonfloat conversion implicitly.
-    (assert (let [floats? (map (partial = "st(0)") [l r])]
+    (assert (let [floats? (map (partial = '[st 0]) [l r])]
               (or (every? identity floats?)
                   (not (some identity floats?)))))
 
-    (if (and (= dstr "st(0)")
-             (= dstl "st(0)"))
+    (if (and (= dstr '[st 0])
+             (= dstl '[st 0]))
       ;; float case
       [state
-       (list fformatstr)
-       "st(0)"]
+       (concat codel
+               coder
+               [fformatstr])
+       '[st 0]]
 
       ;; integer case
       (list (-> state
@@ -267,22 +267,22 @@
                 (use-reg dstl))
             (concat codel
                     coder
-                    [(format iformatstr dstl dstr)])
+                    [[iformatstr dstl dstr]])
             dstl))))
 
 (defn genadd [state arg]
-  ((partial genop "    add %s, %s\n"
-                  "    fadd st(0), st(1)\n")
+  ((partial genop 'add
+                  '[fadd [st 0] [st 1]])
    state arg))
 
 (defn gensub [state arg]
-  ((partial genop "    sub %s, %s\n"
-                  "    fsub st(0), st(1)\n")
+  ((partial genop 'sub
+                  '[fsub [st 0] [st 1]])
    state arg))
 
 (defn genmul [state arg]
-  ((partial genop "    mul %s, %s\n"
-                  "    fmul st(0), st(1)\n")
+  ((partial genop 'mul
+                  '[fmul [st 0] [st 1]])
    state arg))
 
 ;; again note that division and modulus are not provided due to not appearing in
@@ -296,48 +296,45 @@
    clobber RAX and yield RAX as our destination register."
   [state [_funcall fn arg]]
   (let [[state code dst] (genarith state arg)]
-    (if (contains? (used-regs state) "%rax")
+    (if (contains? (used-regs state) '%rax)
       ;; rax is used case
       (let [[state tmp] (reg-alloc state)]
         [(-> state (free-reg tmp))
-         (concat (format-code
-                  [["    ;; [genfuncall] %s %s\n" fn arg]
-                   ["    ;; compute the argument..\n"]])
+         (concat [;['comment (format "[genfuncall] %s %s" fn arg)]
+                  ;['comment "compute the argument.."]
+                  ]
                  code
-                 (format-code
-                  [["    mov %s, %%rax ;; stash RAX\n" tmp]
-                   ["    mov %%rax, %s ;; move the arg in place\n" dst]
-                   ["    call %s ;; call it in...\n" fn]
-                   ["    mov %s, %%rax ;; save the result\n" dst]
-                   ["    mov %%rax, %s ;; fix rax\n" tmp]]))
+                  [['mov tmp 'rax]
+                   ['mov 'rax dst]
+                   ['call fn]
+                   ['mov dst 'rax]
+                   ['mov 'rax tmp]])
          dst])
 
       ;; rax is unused case
         [(-> state
              (free-reg dst)
-             (use-reg "%rax"))
-         (concat (format-code
-                  [["    ;; [genfuncall] %s %s\n" fn arg]
-                   ["    ;; compute the argument..\n"]])
+             (use-reg '%rax))
+         (concat [;['comment (format "[genfuncall] %s %s\n" fn arg)]
+                  ;["    ;; compute the argument..\n"]
+                  ]
                  code
-                 (format-code
-                  [["    mov %%rax, %s ;; move the arg in place\n" dst]
-                   ["    call %s ;; call it in...\n" fn]]))
+                  [['mov 'rax dst]
+                   ['call fn]])
          "%rax"])))
 
 (defn genlabel
   "A simple but essential function for emitting ASM labels"
   [state [_label id]]
   [state
-   [(format ".label l_%s:\n" id)]
+   ['.label (format "l_%s:\n" id)]
    nil])
 
 (defn gengoto
   "A simple but essential function for emitting toto statements"
   [state [_goto id]]
   [state
-   [(format "    jmp l_%s ;; jump to label %s\n"
-                 id id)]
+   ['jml (format "l_%s" id)]
    nil])
 
 (defn loadlit
@@ -350,16 +347,14 @@
     ("float" "real") ;; both because my type naming is bad..
         (let [[state label] (preamble-install-float state lit)]
           [state
-           [(format "    fld (%s) ;; load float from bottom of stack\n"
-                          label)]
-         "st(0)"])
+           [['fld ['addrof label]]]
+         '[st 0]])
 
     ("integer" nil)
         (let [[state dst] (reg-alloc state)]
           [(-> state
                (free-reg dst))
-           [(format "    mov %s, %s ;; load constant to register\n"
-                    dst lit)]
+           [['mov dst lit]]
            dst])))
 
 (defn loadsym
@@ -370,22 +365,20 @@
     (case (typeof sym-id)
       ("real" "float")
         [state
-         [(format "    fld (%s) ;; load float %s from memory\n"
-                  label sym-id)]
-         "st(0)"]
+         [['fld ['addrof label]]]
+         '[st 0]]
 
     ("string")
-        (let [[state reg] (reg-alloc state)
-              [state label] (preamble-install-string state sym-id)]
-          [state
-           [(format "    mov %s, (%s) ;; load string addr to register\n"
-                         reg label)]])
+      (let [[state reg] (reg-alloc state)
+            [state label] (preamble-install-string state sym-id)]
+        [state
+         [['mov reg ['addrof label]]]
+         reg])
 
       (let [[state dst] (reg-alloc state)]
         [(-> state
              (free-reg dst))
-         (list (format "    mov %s, (%s) ;; load symbol %s from memory\n"
-                       dst label sym-id))
+         [['mov dst ['addrof label]]]
          dst]))))
 
 (defn genaref
@@ -396,11 +389,11 @@
   (let [[state label] (preamble-ensure-installed state base-sym)
         [state code dst] (genarith state offset)]
     [state
-     (concat [(format "    ;; aref of %s by %s\n" base-sym offset)]
+     (concat [;['comment (format "aref of %s by %s\n" base-sym offset)]
+              ]
              code
-             (format-code
-              [["    add %s, %s ;; index in\n" dst label]
-               ["    mov (%s), %s ;; and deref\n" dst dst]]))
+              [['add dst label]
+               ['mov ['addrof dst] dst]])
      dst]))
 
 (defn genprogn
@@ -416,13 +409,13 @@
 (defn genitof
   "Generates an integer to floating point push."
   [state expr]
-  (let [[state code dst] (genarith state expr)]
+  (let [[_itof sym] expr
+        [state code dst] (genarith state sym)]
     [state
      (concat code
-             (format-code
-              [["    ;; int -> float %s\n" expr]
-               ["    fild %s\n" dst]]))
-     "st(0)"]))
+             [;['comment (format "int -> float %s" expr)]
+              ['fild dst]])
+     '[st 0]]))
 
 (defn genconditional
   "Generates a conditional expression preface, suitable for use in choosing
@@ -434,25 +427,24 @@
                [coder dstr]]
             (genlr state [casel caser])]
     [state
-     (concat (format-code
-              [["    ;; (if %s %s %s)\n" comparison true-l false-l]
-               ["    ;; left expr\n"]])
+     (concat [;['comment (format "(if %s %s %s)\n" comparison true-l false-l)]
+              ;['comment "left expr"]
+              ]
              codel
-             ["    ;; right expr\n"]
+             [;['comment "right expr"]
+              ]
              coder
-             (format-code
-              [["    ;; and compare\n"]
-               ["    test %s, %s\n" dstl dstr]
-               ["    %s %s\n"
-                (case comparison
-                  (<=) "jle"
-                  (<)  "jl"
-                  (>=) "jge"
-                  (>)  "jg"
-                  (==) "je"
-                  (<>) "jne")
+             [;['comment "and compare"]
+              ['test dstl dstr]
+              [(case comparison
+                 (<=) 'jle
+                 (<)  'jl
+                 (>=) 'jge
+                 (>)  'jg
+                 (==) 'je
+                 (<>) 'jne)
                 true-l]
-               ["    jmp %s\n" false-l]]))
+              ['jmp false-l]])
      nil]))
 
 (defn genif
