@@ -4,7 +4,8 @@
             [me.arrdem.pascal.lexer :refer [pascal]]
             [me.arrdem.pascal.symtab :refer [pr-symtab with-symtab]]
             [me.arrdem.compiler.symtab]
-            [name.choi.joshua.fnparse :as fnp])
+            [name.choi.joshua.fnparse :as fnp]
+            [clojure.tools.logging :only [info]])
   (:gen-class :main true))
 
 (defn pr-code
@@ -17,7 +18,11 @@
 (defn pr-line
   "Prints an 80 char wide dash line."
   []
-  (println (apply str (cons "; " (repeat 78 \-)))))
+  (->> \-
+       (repeat 78)
+       (cons "; " )
+       (apply str )
+       println))
 
 (defn build-ast
   "Wrapper around the grammar and the FNParse rule invocation to make throwing a
@@ -36,23 +41,14 @@
   "The only valid arguments are targeted files. If there are no targeted files
    then decomp will target stdin as its token source."
   [& args]
-  (if-not (empty? args)
-    (doseq [f args]
+    (doseq [f (if-not (empty? args)
+                args [*in*])]
       (with-symtab
-        (println "attempting to read file" f)
+        (info "attempting to read file" f)
         (-> f
             slurp
             process-string
             pr-code)
         (pr-line)
         (pr-symtab)
-        nil))
-
-    (with-symtab
-      (-> *in*
-          slurp
-          process-string
-          pr-code)
-      (pr-line)
-      (pr-symtab)
-      nil)))
+        nil)))

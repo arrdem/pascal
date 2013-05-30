@@ -24,7 +24,7 @@
 
 - Add tests for the various grammar fragments
 
-- Implement a debug library with selectable printing ala debug.h.
+- Instrument via the Java logging library (clojure.tools.logging)
 
 - Take grfrederik's advice and rework the entire symbol table system using the
   old fashioned "pass a map around like nobody's buisness" approach as noted in
