@@ -25,10 +25,6 @@
 (def x86-regs #{'%rax '%rbx '%rcx '%rdx '%rsi' '%rdi '%r8 '%r9 '%r10
                 '%r11 '%r12 '%r13 '%r14 '%r15})
 
-;;(defmacro format-code [& format-seqs]
-;;  `(map (partial apply format)
-;;        ~@format-seqs))
-
 ;;------------------------------------------------------------------------------
 ;; preamble api
 (defn preamble-ensure-installed
@@ -149,7 +145,8 @@
 ;; genarith and supporting functions
 
 (declare genc genarith genop genc genderef gensub genmul genadd genfuncall
-         genlabel gengoto genitof loadlit loadsym genaref genprogn genif)
+         genlabel gengoto genitof loadlit loadsym genaref genprogn genif
+         genitof)
 
 (defn genaddr [state sym-or-expr]
   (cond (string? sym-or-expr)
@@ -188,6 +185,7 @@
        (aref)          genaref
        (progn)         genprogn
        (integer->real) genitof
+       (real->integer) genftoi
        (funcall)       genfuncall
        (if)            genif
        (+)             genadd
@@ -416,6 +414,19 @@
              [;['comment (format "int -> float %s" expr)]
               ['fild dst]])
      '[st 0]]))
+
+(defn genftoi
+  "Generates a floating point to integer conversion. Note that this conversion
+   is naive and provides no protection against errors resulting from conversion
+   failures."
+  [state [_ftoi expr]]
+  (let [[state ecode fdest] (genarith state expr)
+        [state rcode dst] (reg-alloc state)]
+    [state
+     (concat ecode
+             rcode
+             [['fist dst]])
+     dst]))
 
 (defn genconditional
   "Generates a conditional expression preface, suitable for use in choosing
