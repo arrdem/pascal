@@ -5,8 +5,6 @@
   -- provide this by making each (program) generate a heap structure of some sort
 - Implement better command line arguments
   -- macros? (defaults to true)
-  -- codegen? (defaults to true)
-  -- print symbol table? (defaults to true)
 
 ## back burner
 - improve the output of the symbol table printer so as to be... reasonable
