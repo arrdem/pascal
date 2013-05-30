@@ -1,11 +1,13 @@
 (ns me.arrdem.pascal
   (:require [clojure.pprint :refer :all]
-            [me.arrdem.pascal.grammar :refer [pascal-program]]
-            [me.arrdem.pascal.lexer :refer [pascal]]
-            [me.arrdem.pascal.symtab :refer [pr-symtab with-symtab]]
-            [me.arrdem.compiler.symtab]
-            [name.choi.joshua.fnparse :as fnp]
-            [clojure.tools.logging :only [info]])
+            (clojure.tools [logging :refer [info]]
+                           [cli :refer [cli]])
+            (me.arrdem.pascal [grammar :refer [pascal-program]]
+                              [lexer :refer [pascal]]
+                              [symtab :refer [pr-symtab with-symtab]])
+            (me.arrdem.compiler [symtab]
+                                [code-generation :as code])
+            [name.choi.joshua.fnparse :as fnp])
   (:gen-class :main true))
 
 (defn pr-code
@@ -37,10 +39,19 @@
 (def process-string
   (comp build-ast pascal))
 
+;;------------------------------------------------------------------------------
+
+(defn parse-args [args]
+  (cli args
+       ["-genc"   "--[no-]gencode" :default true]
+       ["-symtab" "--[no-]psymtab" :default false]))
+
 (defn -main
   "The only valid arguments are targeted files. If there are no targeted files
    then decomp will target stdin as its token source."
   [& args]
+  (let [[options args banner]
+        (parse-args args)]
     (doseq [f (if-not (empty? args)
                 args [*in*])]
       (with-symtab
@@ -48,7 +59,12 @@
         (-> f
             slurp
             process-string
-            pr-code)
-        (pr-line)
-        (pr-symtab)
-        nil)))
+            pr-code
+            (#(if (:gencode options)
+                (code/gencode %1)
+                %1))
+            )
+        (if (:psymtab options)
+          (do (pr-line)
+              (pr-symtab)))
+        nil))))
