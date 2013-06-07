@@ -4,12 +4,6 @@
   -- macros? (defaults to true)
 - Implement missing arithmetic operations
   -- modulus (int, float)
-  -- division (int, float)
-  -- bit shift (int)
-  -- bitwise and (int)
-  -- bitwise or (int)
-  -- bitwise xor (int)
-  -- bitwise inversion (not)
 
 ## back burner
 - improve the output of the symbol table printer so as to be... reasonable
