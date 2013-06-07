@@ -12,7 +12,7 @@
   []
   (doseq [t [;; Basic types
              ["integer" 8]
-             ["char" 1]
+             ["alpha" 1]
              ["boolean" 8]
              ["real" 8]
              ]]
@@ -20,7 +20,7 @@
 
   (doseq [t [;; Pointer types
              ["^integer" 8 "integer"]
-             ["^char" 8 "char"]
+             ["^alpha" 8 "char"]
              ["^boolean" 8 "boolean"]
              ["^real" 8 "real"]
              ]]
