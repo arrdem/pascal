@@ -40,9 +40,9 @@
    for the return register. Other registers may be meaningful, but such meaning
    is entirely optional and may be discarded at any time."
   [state expr]
-  (cond
+  ((cond
    (list? expr)
-     ((case (first expr)
+     (case (first expr)
        (:=)            genc
        (deref)         genderef
        (aref)          genaref
@@ -63,15 +63,15 @@
        (xor)           genxor
        (not)           gennot
        )
-      state expr)
        ;; note that division and modulus are not implemented.
 
    (number? expr)
-     (loadlit state expr)
+     loadlit
 
    (string? expr)
-     (loadsym state expr)
-   ))
+     loadsym
+   )
+   state expr))
 
 ;;------------------------------------------------------------------------------
 ;; fragment generators used to simplify the genarith function.
@@ -205,16 +205,16 @@
          dst])
 
       ;; rax is unused case
-        [(-> state
-             (free-reg dst)
-             (use-reg '%rax))
-         (concat [;['comment (format "[genfuncall] %s %s\n" fn arg)]
-                  ;["    ;; compute the argument..\n"]
-                  ]
-                 code
-                  [['mov 'rax dst]
-                   ['call fn]])
-         "%rax"])))
+      [(-> state
+           (free-reg dst)
+           (use-reg '%rax))
+       (concat [;['comment (format "[genfuncall] %s %s\n" fn arg)]
+                ;["    ;; compute the argument..\n"]
+                ]
+               code
+               [['mov 'rax dst]
+                ['call fn]])
+       "%rax"])))
 
 (defn genlabel
   "A simple but essential function for emitting ASM labels"
