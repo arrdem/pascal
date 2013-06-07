@@ -4,12 +4,6 @@
   -- macros? (defaults to true)
 - Implement missing arithmetic operations
   -- modulus (int, float)
-  -- division (int, float)
-  -- bit shift (int)
-  -- bitwise and (int)
-  -- bitwise or (int)
-  -- bitwise xor (int)
-  -- bitwise inversion (not)
 
 - Rework anon type naming so that it's both deterministic and repeatable. EG:
   two structs with the same sequence of member fields should generate a named 
