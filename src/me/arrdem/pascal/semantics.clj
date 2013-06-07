@@ -192,7 +192,6 @@
 (defn install-record
   [[_tr field-list _tend]]
   (let [members (reduce concat field-list)
-        _ (println members)
         t (->RecordType (record-name members)
                         members)]
     (nameof (install! t))))
@@ -205,7 +204,10 @@
 
 (defn install-type
   [[id _ type]]
-  (nameof (install! (->ThinType id type))))
+  (->> type
+       (->ThinType id)
+       (install!)
+       (nameof)))
 
 (defn type-declaration
   [[_t decls _e]]
