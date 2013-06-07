@@ -68,13 +68,6 @@
   (let [cs (map second cs)] ;; cs is pairs tok_semi, const
     (apply makecomment "got constant decl group:" (cons c0 cs))))
 
-(defn string
-  "Generates an anonymous string variable & returns its identifier so that other
-   code can use (and shadow) the constant string val it represents."
-  [s]
-  (let [sym (->VariableType (gensym! "__str_") "string" s)]
-    (nameof (install! sym))))
-
 (defn label-declaration
   "Generates variables with the _string_ values of labels, integer type and a
    constant value equal to the genlabel! when they were parsed. Installs these
@@ -120,6 +113,9 @@
       (install! (->VariableType i t j)))
     t))
 
+(defn make-array-name [type count]
+  (format  "array<%s>[%s]" type count))
+
 (defn apply-type
   [syms type]
   ;; (println "[apply-type] syms: " syms)
@@ -148,6 +144,21 @@
                  (cons (nameof substruct) state))
           (cons (nameof substruct) state))))))
 
+(defn ensure-array-type! [type count]
+  (let [name (make-array-name type count)]
+    (or (try (search name) (catch Exception e nil))
+        (install! (->ArrayType name
+                               (* count (sizeof type))
+                               {})))))
+
+(defn string
+  "Generates an anonymous string variable & returns its identifier so that other
+   code can use (and shadow) the constnt string val it represents."
+  [s]
+  (let [type (ensure-array-type! "alpha" (count s))
+        sym (->VariableType (gensym! "__str_") type s)]
+    (nameof (install! sym))))
+
 (defn install-arrtype
   "Computes and installs an array type, being a record with multi-integer
    addressed fields."
@@ -155,7 +166,13 @@
   ;; (println "[install-arrtype] index-list: " index-list)
   ;; (println "[install-arrtype] type: " type)
   (->> (build-array index-list type)
-       (#(->ArrayType (gensym! "array_")
+       (#(->ArrayType (->> index-list
+                           (map (comp count
+                                      :range
+                                      search))
+                           (interpose ",")
+                           (apply str)
+                           (make-array-name type))
                     (sizeof (first %1))
                     %1))
        (install!)
