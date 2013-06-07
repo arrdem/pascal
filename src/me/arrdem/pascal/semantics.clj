@@ -182,10 +182,18 @@
   [[idlist _ type]]
   (apply-type idlist type))
 
+(defn record-name [members]
+  (str "record{" (->> members
+                      (map typeof)
+                      (interpose ",")
+                      (apply str))
+       "}"))
+
 (defn install-record
   [[_tr field-list _tend]]
   (let [members (reduce concat field-list)
-        t (->RecordType (gensym! "__record_")
+        _ (println members)
+        t (->RecordType (record-name members)
                         members)]
     (nameof (install! t))))
 
