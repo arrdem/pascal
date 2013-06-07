@@ -1,5 +1,6 @@
 (ns me.arrdem.compiler.code-generation.registers-tests
-  (:require [me.arrdem.compiler.code-generation.registers :refer :all]))
+  (:require [clojure.test :refer [deftest is]]
+            [me.arrdem.compiler.code-generation.registers :refer :all]))
 
 (deftest free-reg-test
   (is (= (free-reg {:used-regs #{"a"}} "a")
