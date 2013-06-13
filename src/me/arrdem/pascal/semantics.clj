@@ -120,9 +120,8 @@
   [syms type]
   ;; (println "[apply-type] syms: " syms)
   ;; (println "[apply-type] type: " type)
-  (let [t (nameof (typeof type))]
-     (map #(->RecordEntry %1 t nil)
-          syms)))
+  (map #(->RecordEntry %1 type nil)
+       syms))
 
 (defn build-array [index-range-list basictype]
   ;; (println "[build-array] " index-range-list)
