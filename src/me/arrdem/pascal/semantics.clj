@@ -7,13 +7,14 @@
                                                search gensym! render-ns
                                                ->qname]]
             [me.arrdem.compiler.ast :refer :all]
-            [me.arrdem.pascal.types :refer [convert level]]
-            (me.arrdem.compiler.symbols
-               [primitives]
-               [records :refer [->RecordType ->RecordEntry]]
-               [core :refer [->PointerType]]
-               [complex :refer [->EnumType ->ThinType ->RangeType
-                                ->VariableType ->ArrayType]])))
+            (me.arrdem.compiler.symbols [primitives]
+                                        [records :refer [->RecordType ->RecordEntry]]
+                                        [core :refer [->PointerType ->FunctionType]]
+                                        [complex :refer [->EnumType ->ThinType ->RangeType
+                                                         ->VariableType ->ArrayType]])
+            [me.arrdem.pascal.types :as types
+                                    :refer [convert level]]
+            ))
 
 (defn tail-cons
   "Basic cons operation for joining recursively defined eliminated lists.
@@ -198,7 +199,9 @@
 (defn install-reftype
   [[_opt id]]
   (let [name (str "^" id)
-        entry (->PointerType name 8 id)]
+        entry (->PointerType name 8 id)
+        fun   (->FunctionType nil #{'("^niltype")} name)]
+    (types/install-transformer! "^niltype" name fun)
     (nameof (install! entry))))
 
 (defn install-type

@@ -21,9 +21,18 @@
    character  Boolean
    to be exact"
   (-> (graph/digraph)
+
+      ;; edges for the basic stdlib types..
       (graph/add-edges ["integer"   "real"])
       (graph/add-edges ["boolean"   "integer"])
-      (graph/add-edges ["character" "integer"])))
+      (graph/add-edges ["alpha"     "integer"])
+
+      ;; ^niltype needs to convert to everything :/
+      (graph/add-edges ["^niltype"  "^integer"])
+      (graph/add-edges ["^niltype"  "^alpha"])
+      (graph/add-edges ["^niltype"  "^boolean"])
+      (graph/add-edges ["^niltype"  "^real"])
+      ))
 
 (def ^:dynamic *type-graph* (atom -type-graph))
 

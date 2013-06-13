@@ -1,5 +1,6 @@
 (ns me.arrdem.pascal.symtab.stdlib
-  (:require [me.arrdem.compiler.symbols.core :refer [->FunctionType]]
+  (:require (me.arrdem.compiler.symbols [core :refer [->FunctionType]]
+                                        [complex :refer [->VariableType]])
             [me.arrdem.compiler.symtab :refer [install!]]))
 
 (defn init!
