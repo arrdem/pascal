@@ -43,7 +43,7 @@
         (is (= true
                (instance? me.arrdem.compiler.symbols.complex.VariableType r))
             "Did the record install at all?")
-        (is (= "__record_0"
+        (is (= "record{real,real}"
                (nameof (typeof r)))
             "Did the record install as a gensym named record?")
         (is (= #{"y" "h"}

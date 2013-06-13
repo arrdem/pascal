@@ -1,6 +1,6 @@
 (ns me.arrdem.pascal.test-text)
 
-(def pint {:name "integer" :size 4})
+(def pint {:name "integer" :size 8})
 (def preal {:name "real" :size 8})
 
 ;;------------------------------------------------------------------------------

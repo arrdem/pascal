@@ -12,7 +12,7 @@
 
 (deftest use-reg-test
   (is (= (use-reg {:used-regs #{}
-                   :free-regs #{}}
+                   :free-regs #{"a"}}
                   "a")
          {:used-regs #{"a"}
           :free-regs #{}})))
