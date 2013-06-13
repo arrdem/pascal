@@ -5,12 +5,12 @@
             [loom.graph :as graph]))
 
 (deftest self-conversion
-  (doseq [t ["integer" "real" "character" "boolean"]]
+  (doseq [t ["integer" "real" "alpha" "boolean"]]
     (is (= (conversion-path -type-graph t t) [nil nil]))))
 
 (deftest int-conversion
-  (is (= (conversion-path -type-graph "character" "integer")
-         ['("character" "integer") nil]))
+  (is (= (conversion-path -type-graph "alpha" "integer")
+         ['("alpha" "integer") nil]))
 
   (is (= (conversion-path -type-graph "boolean" "integer")
          ['("boolean" "integer") nil])))
